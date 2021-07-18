@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.MidiLayerAndSplitUi?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
+<?import javafx.util.converter.IntegerStringConverter?>
+<?import nl.nlcode.m.ui.ControlUi?>
+
+<fx:root
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiLayerAndSplitUi">
+    <instrumentTab>
+        <Tab text="%layerAndSplit" styleClass="instrument">
+            <HBox>
+                <VBox styleClass="buttons">
+                    <Button text="%add" fx:id="addButton"/>
+                    <Button text="%edit" fx:id="editButton"/>
+                    <Button text="%remove" fx:id="removeButton"/>
+                </VBox>
+                <TableView fx:id="layersView">
+                    <prefHeight>
+                        <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+                    </prefHeight>
+                    <columns>
+                        <TableColumn text="%inputChannel" fx:id="inputChannelColumn">
+                        </TableColumn>
+                        <TableColumn text="%fromNote" fx:id="fromNoteColumn">
+                        </TableColumn>
+                        <TableColumn text="%toNote" fx:id="toNoteColumn">
+                        </TableColumn>
+                        <TableColumn text="%transpose" fx:id="transposeColumn">
+                        </TableColumn>
+                        <TableColumn text="%outputChannel" fx:id="outputChannelColumn">
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </HBox>
+        </Tab>
+    </instrumentTab>
+</fx:root>

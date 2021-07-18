@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import nl.nlcode.m.ui.ControlUi?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.MidiMessageDumpUi?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+
+<fx:root
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiMessageDumpUi"
+    tabClosingPolicy="UNAVAILABLE" styleClass="midiMessageDump">
+    <instrumentTab>
+        <Tab text="%messages" styleClass="instrument">
+            <BorderPane>
+                <top>
+                    <Field labelText="%tick">
+                        <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
+                    </Field>
+                </top>
+                <center>
+                    <TableView fx:id="midiMessageTable">
+                        <columns>
+                            <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="100"/>
+                            <TableColumn fx:id="messageHexColumn" text="%messageHex" prefWidth="100"/>
+                            <TableColumn fx:id="messageDecColumn" text="%messageDec" prefWidth="100"/>
+                            <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="375"/>
+                        </columns>
+                        <prefHeight>
+                            <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+                        </prefHeight>
+                    </TableView>
+                </center>
+            </BorderPane>
+        </Tab>
+    </instrumentTab>
+</fx:root>

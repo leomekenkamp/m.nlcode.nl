@@ -1,0 +1,594 @@
+package nl.nlcode.m.ui;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import javafx.util.StringConverter;
+import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.engine.MidiInOut;
+import static nl.nlcode.m.engine.Control.FILE_EXTENTION_FILTER;
+import nl.nlcode.m.engine.KeyboardKeyboard;
+import nl.nlcode.m.engine.MidiChannelMatrix;
+import nl.nlcode.m.engine.MidiClock;
+import nl.nlcode.m.engine.MidiDeviceLink;
+import nl.nlcode.m.engine.MidiLayerAndSplit;
+import nl.nlcode.m.engine.MidiLights;
+import nl.nlcode.m.engine.MidiMessageDump;
+import nl.nlcode.m.engine.MidiSequencer;
+import nl.nlcode.m.engine.Project;
+import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author leo
+ */
+public final class ProjectUi extends BorderPane implements FxmlController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectUi.class);
+
+    public static final FileChooser.ExtensionFilter M_FILTER
+            = new FileChooser.ExtensionFilter(App.MESSAGES.getString("m.nlcode.nl.files"), FILE_EXTENTION_FILTER);
+
+    private static final String FOCUS = "focus";
+
+    private static final String CONNECTED_SENDER = "connectedSender";
+    private static final String CONNECTED_RECEIVER = "connectedReceiver";
+
+    @FXML
+    private MenuItem midiKeyboardKeyboard;
+
+    @FXML
+    private MenuItem midiDeviceLink;
+
+    @FXML
+    private MenuItem midiMessageDump;
+
+    @FXML
+    private MenuItem midiChannelMatrix;
+
+    @FXML
+    private MenuItem midiLayerAndSplit;
+
+    @FXML
+    private MenuItem midiLights;
+
+    @FXML
+    private MenuItem midiSequencer;
+
+    @FXML
+    private MenuItem midiClock;
+
+    @FXML
+    private Menu windowMenu;
+
+    private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+
+    private ObservableList<MidiInOutUi<?>> activeSenders = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+
+    private ObservableList<MidiInOutUi<?>> activeSendersReadonly = FXCollections.unmodifiableObservableList(activeSenders);
+
+    private ObservableList<MidiInOutUi<?>> activeReceivers = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+
+    private ObservableList<MidiInOutUi<?>> activeReceiversReadonly = FXCollections.unmodifiableObservableList(activeReceivers);
+
+    private Project project;
+
+    private ControlUi controlUi;
+
+    private ObjectProperty<Path> pathProperty = new SimpleObjectProperty<>();
+
+    public ExecutorService executor;
+
+    private BooleanProperty dirtyProperty = new SimpleBooleanProperty();
+
+    private StringProperty logoProperty = new SimpleStringProperty();
+
+    private ReadOnlyStringWrapper namePropertyWrapper = new ReadOnlyStringWrapper();
+
+    private MenuItem menuItem;
+
+    private ChangeListener<Boolean> midiInOutUiSenderChange = new ChangeListener<>() {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
+            Platform.runLater(() -> {
+                ReadOnlyBooleanProperty senderProperty = (ReadOnlyBooleanProperty) ov;
+                MidiInOutUi midiInOutUi = (MidiInOutUi) senderProperty.getBean();
+                if (oldValue.booleanValue()) {
+                    activeSenders.remove(midiInOutUi);
+                }
+                if (newValue.booleanValue()) {
+                    activeSenders.add(midiInOutUi);
+                }
+            });
+        }
+    };
+
+    private ChangeListener<Boolean> midiInOutUiReceiverChange = new ChangeListener<>() {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
+            Platform.runLater(() -> {
+                ReadOnlyBooleanProperty receiverProperty = (ReadOnlyBooleanProperty) ov;
+                MidiInOutUi midiInOutUi = (MidiInOutUi) receiverProperty.getBean();
+                if (oldValue.booleanValue()) {
+                    activeReceivers.remove(midiInOutUi);
+                }
+                if (newValue.booleanValue()) {
+                    activeReceivers.add(midiInOutUi);
+                }
+            });
+        }
+    };
+
+    public ProjectUi(ControlUi controlUi, Project project, MenuItem menuItem) {
+        loadFxml(App.MESSAGES);
+        this.project = project;
+        this.controlUi = controlUi;
+        this.menuItem = menuItem;
+
+        executor = ForkJoinPool.commonPool();
+
+        pathProperty.set(project.getPath());
+
+        menuItem.textProperty().bindBidirectional(pathProperty(), new StringConverter<Path>() {
+            @Override
+            public String toString(Path path) {
+                return path.toString();
+            }
+
+            @Override
+            public Path fromString(String string) {
+                return Path.of(string);
+            }
+        });
+
+        midiKeyboardKeyboard.setOnAction(eh -> {
+            createStage(new KeyboardKeyboard(getProject()));
+            setDirty();
+        });
+        midiDeviceLink.setOnAction(eh -> {
+            createStage(new MidiDeviceLink(getProject()));
+            setDirty();
+        });
+        midiMessageDump.setOnAction(eh -> {
+            Stage stage = createStage(new MidiMessageDump(getProject()));
+            stage.setResizable(true);
+            setDirty();
+        });
+        midiChannelMatrix.setOnAction(eh -> {
+            createStage(new MidiChannelMatrix(getProject()));
+            setDirty();
+        });
+        midiLayerAndSplit.setOnAction(eh -> {
+            Stage stage = createStage(new MidiLayerAndSplit(getProject()));
+            stage.setResizable(true);
+            setDirty();
+        });
+        midiLights.setOnAction(eh -> {
+            createStage(new MidiLights(getProject()));
+            setDirty();
+        });
+        midiSequencer.setOnAction(eh -> {
+            createStage(new MidiSequencer(getProject()));
+            setDirty();
+        });
+        midiClock.setOnAction(eh -> {
+            createStage(new MidiClock(getProject()));
+            setDirty();
+        });
+        windowMenu.setDisable(windowMenu.getItems().size() <= 3);
+        windowMenu.getItems().addListener(new ListChangeListener() {
+            public void onChanged(ListChangeListener.Change c) {
+                windowMenu.setDisable(c.getList().size() <= 3);
+            }
+        });
+
+        midiInOutUiList.addListener(midiInOutListChange());
+        logoProperty.bind(Bindings.createStringBinding(
+                () -> pathProperty.get() + " " + (dirtyProperty.get() ? '\u0394' : '\u2261'), dirtyProperty, pathProperty)
+        );
+
+        namePropertyWrapper.bind(Bindings.createStringBinding(
+                () -> pathProperty().get().getFileName().toString(), pathProperty())
+        );
+    }
+
+    private ListChangeListener<MidiInOutUi> midiInOutListChange() {
+        return (change) -> {
+            while (change.next()) {
+                for (MidiInOutUi midiInOutUi : change.getRemoved()) {
+                    LOGGER.debug("removed from general list: {}", midiInOutUi);
+                    midiInOutUi.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
+                    midiInOutUi.activeSenderProperty().removeListener(midiInOutUiSenderChange);
+                    activeReceivers.remove(midiInOutUi); // could call contains() first
+                    activeSenders.remove(midiInOutUi); // could call contains() first
+                }
+                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
+                    LOGGER.debug("added to general list: {}", midiInOutUi);
+                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
+                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
+                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
+                        activeReceivers.add(midiInOutUi);
+                    }
+                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
+                        activeSenders.add(midiInOutUi);
+                    }
+                }
+            }
+        };
+    }
+
+    public void createMidiInOutUisFromProjectMidiInOuts() {
+        for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
+            createStage(midiInOut);
+        }
+        Map<MidiInOut, MidiInOutUi> inOutToUi = new HashMap<>();
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            inOutToUi.put(midiInOutUi.getMidiInOut(), midiInOutUi);
+        }
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            midiInOutUi.setPropagateInputOutputChangesToOthers(false);
+        }
+        LOGGER.debug("iterating over {} midiInOut instances", getMidiInOutUiList().size());
+        for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
+            LOGGER.debug("processing instance {}", midiInOut);
+            MidiInOutUi midiInOutUi = inOutToUi.get(midiInOut);
+            LOGGER.debug("iterating over {} receivers", midiInOut.sendingTo().size());
+            for (MidiInOut receiver : midiInOut.sendingTo()) {
+                MidiInOutUi receiverUi = inOutToUi.get(receiver);
+                LOGGER.debug("adding {} to input list of {}...", midiInOutUi, receiverUi);
+                LOGGER.debug("possible inputs: {}", receiverUi.getInputListView().getItems());
+                LOGGER.debug("input pre: {}", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
+                receiverUi.getInputListView().getSelectionModel().select(midiInOutUi);
+                LOGGER.debug("input post: {}", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
+                LOGGER.debug("and reversely adding {} to output list of {}", receiverUi, midiInOutUi);
+                midiInOutUi.getOutputListView().getSelectionModel().select(receiverUi);
+            }
+        }
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            midiInOutUi.setPropagateInputOutputChangesToOthers(true);
+        }
+    }
+
+    public void setDirty() {
+        dirtyProperty.set(true);
+    }
+
+    private void dirtyReset() {
+        dirtyProperty.set(false);
+    }
+
+    public boolean isDirty() {
+        return dirtyProperty.get();
+    }
+
+    public ObservableList<MidiInOutUi<?>> getMidiInOutUiList() {
+        return midiInOutUiList;
+    }
+
+    public void move(Path path) {
+        ((Stage) getScene().getWindow()).setTitle(path.toString());
+        pathProperty.set(path);
+        setDirty();
+        getScene().getWindow().sizeToScene();
+    }
+
+    private Stage createStage(MidiInOut midiInOut) {
+        LOGGER.debug("creating for {}", midiInOut);
+        try {
+            Class<MidiInOutUi> midiInOutUiClass = (Class<MidiInOutUi>) Class.forName("nl.nlcode.m.ui." + midiInOut.getClass().getSimpleName() + "Ui");
+            Constructor<MidiInOutUi> ctor = midiInOutUiClass.getConstructor(getClass(), midiInOut.getClass(), MenuItem.class);
+            MenuItem menuItem = new MenuItem();
+            windowMenu.getItems().add(menuItem);
+            MidiInOutUi midiInOutUi = ctor.newInstance(this, midiInOut, menuItem);
+            Stage result = App.createStage(midiInOutUi);
+            result.titleProperty().bind(midiInOutUi.nameProperty());
+            getMidiInOutUiList().add(midiInOutUi);
+            midiInOutUi.restoreWindowPositionAndSetAutosave();
+            result.focusedProperty().addListener((ov, oldValue, newValue) -> {
+                if (newValue) {
+                    result.toFront();
+                    midiInOutUi.getStyleClass().add(FOCUS);
+                    addStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
+                    addStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
+                } else {
+                    midiInOutUi.getStyleClass().remove(FOCUS);
+                    removeStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
+                    removeStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
+                }
+                midiInOutUi.sizeToScene();
+            });
+            result.show();
+
+            menuItem.setOnAction(action -> {
+                result.show();
+                result.toFront();
+            });
+            menuItem.textProperty().bindBidirectional(midiInOutUi.nameProperty());
+            menuItem.textProperty().addListener((ov, oldValue, newValue) -> {
+                LOGGER.debug("from {} to {}", oldValue, newValue);
+                sortMenuItems();
+            });
+            sortMenuItems();
+
+            result.setOnCloseRequest(onCloseRequest(midiInOutUi));
+
+            return result;
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private void sortMenuItems() {
+        LOGGER.debug("sorting menu");
+        SortedSet<MenuItem> sortables = new TreeSet<>(new Comparator<MenuItem>() {
+            @Override
+            public int compare(MenuItem o1, MenuItem o2) {
+                return o1.getText().compareToIgnoreCase(o2.getText());
+            }
+        });
+        Iterator<MenuItem> i = windowMenu.getItems().iterator();
+        while (!i.next().getClass().equals(SeparatorMenuItem.class)) {
+            // find separator; below are the MidiInOutUi name menu items
+        }
+        while (i.hasNext()) {
+            sortables.add(i.next());
+            i.remove();
+        }
+        for (MenuItem menuItem : sortables) {
+            // bug in javafx: addAll() does not set the parentMenu for the menuItem, so we use add()
+            windowMenu.getItems().add(menuItem);
+        }
+    }
+
+    private void addStyleClass(MidiInOutUiListView listView, String styleClass) {
+        for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
+            other.getStyleClass().add(styleClass);
+            other.sizeToScene();
+        }
+    }
+
+    private void removeStyleClass(MidiInOutUiListView listView, String styleClass) {
+        for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
+            other.getStyleClass().remove(styleClass);
+            other.sizeToScene();
+        }
+    }
+
+    private EventHandler<WindowEvent> onCloseRequest(MidiInOutUi midiInOutUi) {
+        return event -> {
+            midiInOutUi.closeWindow();
+            event.consume();
+        };
+    }
+
+    public void remove(MidiInOutUi midiInOutUi) {
+        getMidiInOutUiList().remove(midiInOutUi);
+        setDirty();
+    }
+
+    public ControlUi getControlUi() {
+        return controlUi;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    @FXML
+    private void save() throws IOException {
+        if (getPath() == null) {
+            saveAs();
+        } else {
+            beforeSave();
+            getProject().save();
+            dirtyReset();
+        }
+    }
+
+    @FXML
+    private void saveAs() throws IOException {
+        FileChooser fileChooser = projectChooser("openProject");
+        fileChooser.getExtensionFilters().addAll(M_FILTER, ALL_FILTER);
+        fileChooser.setSelectedExtensionFilter(M_FILTER);
+        File file = fileChooser.showSaveDialog(getScene().getWindow());
+        if (file != null) {
+            Path path = file.toPath();
+            beforeSave();
+            getProject().saveAs(path);
+            pathProperty.set(path);
+            dirtyReset();
+        }
+    }
+
+    static FileChooser projectChooser(String titleKey, File initialDirectory) {
+        FileChooser result = new FileChooser();
+        result.setTitle(App.MESSAGES.getString(titleKey));
+        result.setInitialDirectory(initialDirectory);
+        result.getExtensionFilters().clear();
+        return result;
+    }
+
+    FileChooser projectChooser(String titleKey) {
+        FileChooser result = projectChooser(titleKey, getProject().getPath().getParent().toFile());
+        result.setInitialFileName(getProject().getPath().getFileName().toString());
+        return result;
+    }
+
+    public ObjectProperty<Path> pathProperty() {
+        return pathProperty;
+    }
+
+    public Path getPath() {
+        return pathProperty.get();
+    }
+
+    public void setPath(Path path) {
+        pathProperty.set(path);
+    }
+
+    public String getName() {
+        return namePropertyWrapper.get();
+    }
+
+    public ReadOnlyStringProperty nameProperty() {
+        return namePropertyWrapper.getReadOnlyProperty();
+    }
+
+    public ObservableList<MidiInOutUi<?>> getActiveSendersReadonly() {
+        return activeSendersReadonly;
+    }
+
+    public ObservableList<MidiInOutUi<?>> getActiveReceiversReadonly() {
+        return activeReceiversReadonly;
+    }
+
+    public void restoreWindowPosition() {
+        restoreWindowPosition((Stage) getScene().getWindow(), getProject().getInfo());
+    }
+
+    public static void restoreWindowPosition(Stage stage, Map<Serializable, Serializable> info) {
+        Double x = (Double) info.getOrDefault(App.PREF_X, null);
+        if (x != null) {
+            stage.setX(x);
+            LOGGER.info("init X to {}", x);
+        }
+        Double y = (Double) info.getOrDefault(App.PREF_Y, null);
+        if (y != null) {
+            stage.setY(y);
+            LOGGER.info("init Y to {}", y);
+        }
+    }
+
+    protected void beforeSave() {
+        double x = getScene().getWindow().getX();
+        double y = getScene().getWindow().getY();
+        getProject().getInfo().put(App.PREF_X, x);
+        getProject().getInfo().put(App.PREF_Y, y);
+        LOGGER.info("moved X,Y to {} {}", x, y);
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            midiInOutUi.beforeSave();
+        }
+    }
+
+    protected boolean canCloseWindow() {
+        AtomicBoolean result = new AtomicBoolean(false);
+        if (isDirty()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle(App.MESSAGES.getString("closeProject"));
+            alert.setContentText(String.format(App.MESSAGES.getString("whatToDo"), getPath()));
+            ButtonType saveAndClose = new ButtonType(App.MESSAGES.getString("saveAndClose"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelClose = new ButtonType(App.MESSAGES.getString("neverMind"), ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType deleteAndClose = new ButtonType(App.MESSAGES.getString("deleteAndClose"));
+            alert.getButtonTypes().setAll(saveAndClose, cancelClose, deleteAndClose);
+            alert.showAndWait().ifPresent(chosen -> {
+                if (chosen == saveAndClose) {
+                    try {
+                        getProject().save();
+                        result.set(true);
+                    } catch (IOException e) {
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setTitle(e.getClass().getName());
+                        error.setContentText(e.getMessage());
+                    }
+                } else if (chosen == deleteAndClose) {
+                    result.set(true);
+                }
+            });
+        } else {
+            result.set(true);
+        }
+        return result.get();
+    }
+
+    protected void cleanupBeforeCloseWindow() {
+        LOGGER.debug("closing project");
+        project.close();
+        LOGGER.debug("remove project from control ui");
+        getControlUi().remove(this);
+        LOGGER.debug("remove project menu itemi");
+        menuItem.getParentMenu().getItems().remove(menuItem);
+        LOGGER.debug("iterating over open midiInOutUi itemsi");
+        while (!getMidiInOutUiList().isEmpty()) {
+            // A closing MidiInOutUi indirectly removes itself from a.a. the midiInOutUiList, so we cannot use an iterator.
+            LOGGER.debug("closing window for {}", getMidiInOutUiList().get(0).getName());
+            getMidiInOutUiList().get(0).forceCloseWindow();
+        }
+    }
+
+    @FXML
+    public void closeWindow() {
+        if (canCloseWindow()) {
+            cleanupBeforeCloseWindow();
+            LOGGER.debug("closing my window: {}", getName());
+            ((Stage) getScene().getWindow()).close();
+        }
+        LOGGER.debug("done");
+    }
+
+    public String getLogo() {
+        return logoProperty.get();
+    }
+
+    public StringProperty logoProperty() {
+        return logoProperty;
+    }
+
+    @FXML
+    private void allMidiInOutToFront() {
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            ((Stage) midiInOutUi.getScene().getWindow()).toFront();
+        }
+    }
+
+    @FXML
+    private void minimizeAllMidiInOut() {
+        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+            ((Stage) midiInOutUi.getScene().getWindow()).setIconified(true);
+        }
+    }
+
+}

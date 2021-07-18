@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.KeyboardKeyboardUi?>
+<?import nl.nlcode.m.ui.Field?>
+
+<fx:root
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="KeyboardKeyboardUi" styleClass="keyboardKeyboard">
+    <instrumentTab>
+        <Tab text="%keyboard" styleClass="instrument">
+            <VBox>
+                <HBox styleClass="fields">
+                    <Field labelText="%velocity">
+                        <Spinner fx:id="velocity">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                    <Field labelText="%channel">
+                        <Spinner fx:id="channel">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="16"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                    <Field labelText="%octave">
+                        <Spinner fx:id="octave">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="9"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                </HBox>
+                <VBox>
+                    <GridPane fx:id="keyGrid">
+                        <columnConstraints>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                            <ColumnConstraints fillWidth="true"/>
+                        </columnConstraints>
+                        <children> 
+                            <Label text="    " GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="6" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="7" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="8" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="9" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="10" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="11" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="12" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="13" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="14" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="15" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="16" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="17" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="18" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="19" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="20" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="21" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="22" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="23" GridPane.rowIndex="0"/>
+                            <Label text="    " GridPane.columnIndex="24" GridPane.rowIndex="0"/>
+                            <Button fx:id="a0" mnemonicParsing="true" text="A" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="aSharp0" mnemonicParsing="false" text="W" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="b0" mnemonicParsing="true" text="S" GridPane.columnIndex="2" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="c0" mnemonicParsing="true" text="D" GridPane.columnIndex="4" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="cSharp0" mnemonicParsing="true" text="R" GridPane.columnIndex="5" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="d0" mnemonicParsing="true" text="F" GridPane.columnIndex="6" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="dSharp0" mnemonicParsing="true" text="T" GridPane.columnIndex="7" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="e0" mnemonicParsing="true" text="G" GridPane.columnIndex="8" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="f0" mnemonicParsing="false" text="H" GridPane.columnIndex="10" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="fSharp0" mnemonicParsing="false" text="U" GridPane.columnIndex="11" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="g0" mnemonicParsing="false" text="J" GridPane.columnIndex="12" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="gSharp0" mnemonicParsing="false" text="I" GridPane.columnIndex="13" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="a1" mnemonicParsing="false" text="K" GridPane.columnIndex="14" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="aSharp1" mnemonicParsing="false" text="O" GridPane.columnIndex="15" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="b1" mnemonicParsing="false" text="L" GridPane.columnIndex="16" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="c1" mnemonicParsing="false" text=";" GridPane.columnIndex="18" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="cSharp1" mnemonicParsing="false" text="[" GridPane.columnIndex="19" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="d1" mnemonicParsing="false" text="'" GridPane.columnIndex="20" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                            <Button fx:id="dSharp1" mnemonicParsing="false" text="]" GridPane.columnIndex="21" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                            <Button fx:id="e1" mnemonicParsing="false" text="\\" GridPane.columnIndex="22" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                        </children>
+                    </GridPane>
+                </VBox>
+            </VBox>
+        </Tab>
+    </instrumentTab>
+</fx:root>

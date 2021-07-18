@@ -1,0 +1,14 @@
+module nl.nlcode.m {
+    requires javafx.controls;
+    requires javafx.fxml;
+    requires java.desktop;
+    requires java.prefs;
+    requires org.slf4j;
+    requires org.controlsfx.controls;
+    requires org.junit.jupiter.api;
+
+    opens nl.nlcode.m.ui to javafx.fxml, org.junit.jupiter.api;
+    opens nl.nlcode.m.engine to javafx.fxml, org.junit.jupiter.api;
+    exports nl.nlcode.m.ui;
+    exports nl.nlcode.javafxutil;
+}

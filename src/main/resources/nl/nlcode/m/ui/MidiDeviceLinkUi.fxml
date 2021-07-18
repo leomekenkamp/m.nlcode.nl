@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToolBar?>
+<?import nl.nlcode.m.ui.MidiDeviceSelector?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.MidiDeviceLinkUi?>
+
+<fx:root 
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiDeviceLinkUi"  styleClass="midiDeviceLink">
+    <instrumentTab>
+        <Tab text="%midiDevice" styleClass="instrument">
+            <VBox>        
+                <MidiDeviceSelector fx:id="midiDeviceSelector"/>
+            </VBox>
+        </Tab>
+    </instrumentTab>
+</fx:root>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Font?>
+<?import nl.nlcode.m.ui.ControlUi?>
+
+<fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+         type="ControlUi" styleClass="control">
+    <top>
+        <MenuBar fx:id="systemMenuBar" BorderPane.alignment="CENTER">
+            <menus>
+                <Menu mnemonicParsing="true" text="%_file">
+                    <items>
+                        <MenuItem mnemonicParsing="true" text="%_newProject" onAction="#newProject" fx:id="newProject"/>
+                        <MenuItem mnemonicParsing="true" text="%_openProject" onAction="#openProject"/>
+                        <MenuItem mnemonicParsing="true" text="%_settings" onAction="#settings"/>                        
+                        <MenuItem mnemonicParsing="true" text="%_quit" onAction="#closeWindow"/>
+                    </items>
+                </Menu>
+                <Menu fx:id="projectsMenu" mnemonicParsing="true" text="%_projects">
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+    <center>
+        <Label styleClass="logo" text="m.nlcode.nl" >
+        </Label>
+    </center>
+</fx:root>

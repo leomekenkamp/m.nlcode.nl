@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import nl.nlcode.m.ui.ProjectUi?>
+
+<fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+         type="ProjectUi">
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="%_project" mnemonicParsing="true">
+                    <items>
+                        <MenuItem mnemonicParsing="true" text="%_save" onAction="#save"/>
+                        <MenuItem mnemonicParsing="true" text="%save_as" onAction="#saveAs"/>
+                        <MenuItem mnemonicParsing="true" text="%_close" onAction="#closeWindow"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="true" text="%_create">
+                    <items>
+                        <MenuItem fx:id="midiMessageDump" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiMessageDump" />
+                        <MenuItem fx:id="midiKeyboardKeyboard" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiKeyboardKeyboard" />
+                        <MenuItem fx:id="midiDeviceLink" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiDeviceLink" />
+                        <MenuItem fx:id="midiChannelMatrix" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiChannelMatrix" />
+                        <MenuItem fx:id="midiLayerAndSplit" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLayerAndSplit" />
+                        <MenuItem fx:id="midiLights" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLights" />
+                        <MenuItem fx:id="midiSequencer" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiSequencer" />
+                        <MenuItem fx:id="midiClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
+                    </items>
+                </Menu>
+                <Menu fx:id="windowMenu" mnemonicParsing="true" text="%_window">
+                    <items>
+                        <MenuItem mnemonicParsing="true" text="%allMidiInOutToFront" onAction="#allMidiInOutToFront"/>
+                        <MenuItem mnemonicParsing="true" text="%minimizeAllMidiInOut" onAction="#minimizeAllMidiInOut"/>
+                        <SeparatorMenuItem/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+    <right>
+    </right>
+    <center>
+        <Label text="${controller.logo}" styleClass="logo"/>
+    </center>
+    <bottom>
+    </bottom>
+    <left>
+    </left>
+</fx:root>
