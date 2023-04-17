@@ -116,13 +116,13 @@ public class MidiGate extends MidiInOut {
          */
         void maybeSend(ShortMessage message, boolean[] channelsSent) {
             if (noteRelated(message)) {
-                LOGGER.debug("note message {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("note message <{}>", MIDI_FORMAT.format(message));
                 if (noteInRange(message.getData1()) && inputChannel == message.getChannel()) {
                     LOGGER.debug("message in layer");
                     int data1 = message.getData1();
                     data1 += transpose;
                     if (validNote(data1)) {
-                        LOGGER.debug("note valid {}", data1);
+                        LOGGER.debug("note valid <{}>", data1);
                         try {
                             ShortMessage copy = (ShortMessage) message.clone();
                             copy.setMessage(message.getCommand(), outputChannel, data1, message.getData2());
@@ -139,9 +139,9 @@ public class MidiGate extends MidiInOut {
 
         private void sendOnce(ShortMessage message, boolean[] channelsSent) {
             if (channelsSent[message.getChannel()]) {
-                LOGGER.debug("already send to channel {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("already send to channel <{}>", MIDI_FORMAT.format(message));
             } else {
-                LOGGER.debug("send first in channel {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("send first in channel <{}>", MIDI_FORMAT.format(message));
                 send(message);
                 channelsSent[message.getChannel()] = true;
             }
@@ -177,16 +177,16 @@ public class MidiGate extends MidiInOut {
             ShortMessage shortMessage = (ShortMessage) message;
             if (noteRelated(shortMessage)) {
                 boolean[] channelsSent = new boolean[16];
-                LOGGER.debug("through layers {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("through layers <{}>", MIDI_FORMAT.format(message));
                 for (Layer layer : layers) {
                     layer.maybeSend(shortMessage, channelsSent);
                 }
             } else {
-                LOGGER.debug("non-note message {}, relaying to super", MIDI_FORMAT.format(message));
+                LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
                 super.send(message, timeStamp);
             }
         } else {
-            LOGGER.debug("non-note message {}, relaying to super", MIDI_FORMAT.format(message));
+            LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
             super.send(message, timeStamp);
         }
     }

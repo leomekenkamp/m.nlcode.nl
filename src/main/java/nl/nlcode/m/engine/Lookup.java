@@ -114,7 +114,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
                 return proposal;
             }
         }
-        throw new FunctionalException("there are too many names starting with " + base);
+        throw new FunctionalException("there are too many names starting with <" + base + ">");
     }
 
     public void verifyName(String name) {
@@ -122,7 +122,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         synchronized (synchronizedBackingList) {
             for (T t : synchronizedBackingList) {
                 if (t.equals(name)) {
-                    throw new FunctionalException("name already exists: " + name);
+                    throw new FunctionalException("name already exists: <" + name +">");
                 }
             }
         }
@@ -135,8 +135,8 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
             // will probably not trigger any listeners. Since we assume that the {@code name} if the item
             // will be used in certain ui-klists, we forcibly change the list when a name changes.
             // We do not know of the sort down below forces that change, so we force it here
-            synchronizedBackingList.add(synchronizedBackingList.remove(0));
             synchronizedBackingList.sort(NAME_COMPARATOR);
+            synchronizedBackingList.add(synchronizedBackingList.remove(0));
         }
     }
 

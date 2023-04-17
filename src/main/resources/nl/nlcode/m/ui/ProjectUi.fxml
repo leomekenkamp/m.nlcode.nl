@@ -28,8 +28,9 @@
                 </Menu>
                 <Menu mnemonicParsing="true" text="%_create">
                     <items>
+                        <MenuItem fx:id="arpeggiator" mnemonicParsing="true" text="%nl.nlcode.m.engine.Arpeggiator" />
                         <MenuItem fx:id="midiMessageDump" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiMessageDump" />
-                        <MenuItem fx:id="midiKeyboardKeyboard" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiKeyboardKeyboard" />
+                        <MenuItem fx:id="keyboardKeyboard" mnemonicParsing="true" text="%nl.nlcode.m.engine.KeyboardKeyboard" />
                         <MenuItem fx:id="midiDeviceLink" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiDeviceLink" />
                         <MenuItem fx:id="midiChannelMatrix" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiChannelMatrix" />
                         <MenuItem fx:id="midiLayerAndSplit" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLayerAndSplit" />

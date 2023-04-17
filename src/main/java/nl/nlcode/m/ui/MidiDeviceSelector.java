@@ -67,12 +67,12 @@ public class MidiDeviceSelector extends Pane implements FxmlController {
 
         @Override
         public int getMaxReceivers() {
-            return 1;
+            return 0;
         }
 
         @Override
         public int getMaxTransmitters() {
-            return 1;
+            return 0;
         }
 
         @Override

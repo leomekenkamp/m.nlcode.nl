@@ -15,6 +15,7 @@ import javafx.util.Callback;
 import javax.sound.midi.MidiMessage;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.MidiMessageDump;
+import nl.nlcode.m.engine.MidiMessageDump.MessageAndTime;
 import nl.nlcode.m.engine.MidiMessageFormat;
 import nl.nlcode.m.engine.ShowTicks;
 import org.slf4j.Logger;
@@ -84,15 +85,23 @@ public class MidiMessageDumpUi extends MidiInOutUi<MidiMessageDump> implements F
                 Platform.runLater(() -> {
                     synchronized (midiMessageDump.getMidiMessageList()) { // ugly as hell
                         while (change.next()) {
-                            midiMessageTable.getItems().addAll(0, new ArrayList(change.getAddedSubList()));
-                            midiMessageTable.getItems().removeAll(change.getRemoved());
+                            if ((change.wasRemoved())) {
+                                // change.getRemoved() is buggy, use indices instead
+                                for (int localIndex = change.getFrom(); localIndex <= change.getTo(); localIndex ++) {
+                                    MessageAndTime removed = midiMessageDump.getMidiMessageList().get(localIndex);
+                                    midiMessageTable.getItems().remove(removed);
+                                }
+                            }
+                            if (change.wasAdded()) {
+                                midiMessageTable.getItems().addAll(0, new ArrayList(change.getAddedSubList()));
+                            }
                         }
                     }
                 });
             }
         });
         showTicks.valueProperty().addListener((ov, oldValue, newValue) -> {
-            LOGGER.debug("setting showTicks to {}", newValue);
+            LOGGER.debug("setting showTicks to <{}>", newValue);
             getMidiInOut().setShowTicks(newValue);
         });
         showTicks.setValue(getMidiInOut().getShowTicks());

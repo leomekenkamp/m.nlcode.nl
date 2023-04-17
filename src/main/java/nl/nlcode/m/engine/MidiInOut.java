@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * too cumbersome to 'enhance' the Java MIDI API to do this; bridging via {@code MidiDeviceLink}
  * gives far simpler code.
  * <p>
- * Note while there is a public {@link receive(MidiMessage, int)}, there is no public 'send' method.
+ * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send' method.
  * Implementations need to decide for themselves if they keep total control over their own sending
  * of messages and thus keep their send method(s) private. A receiving instance however must be
  * visible to the world, but there is no guarantee that the data received will actually be
@@ -122,18 +122,28 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
         return sendingToReadonly;
     }
 
+    private void ensureNotRecursiveSendingTo(MidiInOut toBeAdded) {
+        if (this == toBeAdded) {
+            throw new MidiInOut.SendReceiveLoopDetectedException();
+        }
+        for (MidiInOut receiver : sendingTo()) {
+            receiver.ensureNotRecursiveSendingTo(toBeAdded);
+        }
+    }
+            
     public void startSendingTo(MidiInOut receiver) {
-        LOGGER.debug("{} starting sending to {}", this, receiver);
+        receiver.ensureNotRecursiveSendingTo(this);
+        LOGGER.debug("<{}> starting sending to <{}>", this, receiver);
         if (sendingTo.add(receiver)) {
         } else {
-            throw new IllegalArgumentException(this + " already sending to " + receiver);
+   //         throw new IllegalArgumentException("<" + this + "> already sending to <" + receiver + ">");
         }
     }
 
     public void stopSendingTo(MidiInOut receiver) {
         if (sendingTo.remove(receiver)) {
         } else {
-            throw new IllegalArgumentException(this + " was not sending to " + receiver);
+ //           throw new IllegalArgumentException("<" + this + "> was not sending to <" + receiver + ">");
         }
     }
 
@@ -146,12 +156,12 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
      */
     protected void send(MidiMessage message, long timeStamp) {
         if (sendingTo.isEmpty()) {
-            LOGGER.info("eating message, no delegates for {}", this);
+            LOGGER.info("eating message, no delegates for <{}>", this);
         } else {
-            LOGGER.debug("iterating over {}", sendingTo);
+            LOGGER.debug("iterating over <{}>", sendingTo);
             for (MidiInOut receiver : sendingTo) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("sending message {} to {}", MIDI_FORMAT.format(message), receiver);
+                    LOGGER.debug("sending message <{}> to <{}>", MIDI_FORMAT.format(message), receiver);
                 }
                 receiver.asyncReceive(message, timeStamp);
             }
@@ -159,7 +169,7 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
     }
 
     protected void send(MidiMessage message) {
-        LOGGER.info("default send {}", MIDI_FORMAT.format(message));
+        LOGGER.info("default send <{}>", MIDI_FORMAT.format(message));
         send(message, -1);
     }
 
@@ -207,17 +217,23 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
     public void asyncReceive(MidiMessage message, long timeStamp) {
         if (asyncReceiveQueue.offer(message)) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("{} on received queue {}", this, MIDI_FORMAT.format(message));
+                LOGGER.debug("<{}> on received queue <{}>", this, MIDI_FORMAT.format(message));
             }
         } else {
-            LOGGER.error("{} dropping message", this);
+            LOGGER.error("<{}> dropping message", this);
         }
     }
 
-    public BiConsumer<MidiMessage, Long> setOnMidiMessageReceive() {
+    /**
+     * Provides for a way for user interface elements to plug in to be notified if a message is received.
+     */
+    public BiConsumer<MidiMessage, Long> getOnMidiMessageReceive() {
         return onMidiMessageReceiveRef.get();
     }
 
+    /**
+     * Provides for a way for user interface elements to plug in to be notified if a message is received.
+     */
     public void setOnMidiMessageReceive(BiConsumer<MidiMessage, Long> onAsyncReceive) {
         onMidiMessageReceiveRef.set(onAsyncReceive);
     }
@@ -272,13 +288,11 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
         return () -> {
             try {
                 while (processing.get()) {
-                    MidiMessage midiMessage = getAsyncReceiveQueue().poll(250, TimeUnit.MILLISECONDS);
-                    if (midiMessage != null) {
-                        processReceive(midiMessage);
-                        BiConsumer<MidiMessage, Long> onMidiMessageReceive = onMidiMessageReceiveRef.get();
-                        if (onMidiMessageReceive != null) {
-                            onMidiMessageReceive.accept(midiMessage, -1L);
-                        }
+                    MidiMessage midiMessage = getAsyncReceiveQueue().take();
+                    processReceive(midiMessage);
+                    BiConsumer<MidiMessage, Long> onMidiMessageReceive = onMidiMessageReceiveRef.get();
+                    if (onMidiMessageReceive != null) {
+                        onMidiMessageReceive.accept(midiMessage, -1L);
                     }
                 }
             } catch (InterruptedException e) {
@@ -327,6 +341,10 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
             LOGGER.debug("createMidiTimeCodes", e);
             throw new IllegalStateException(e);
         }
+    }
+    
+    public static class SendReceiveLoopDetectedException extends RuntimeException {
+        
     }
 
 }

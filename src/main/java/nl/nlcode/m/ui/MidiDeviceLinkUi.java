@@ -27,9 +27,10 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> {
         MidiDevice selected = getMidiInOut().getMidiDevice();
         if (selected == null) {
             selected = MidiDeviceSelector.NONE;
+            // todo: add some nice ui field to indicate the selected name
             LOGGER.debug("previous not linked (or device not open / not found), so linking to 'none'");
         } else {
-            LOGGER.debug("previously linked to {}", selected);
+            LOGGER.debug("previously linked to <{}>", selected);
         }
         midiDeviceSelector.getComboBox().setValue(selected);
         syncActiveSenderReceiver();

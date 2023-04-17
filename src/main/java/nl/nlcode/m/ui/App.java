@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -80,6 +82,7 @@ public class App extends Application {
     @Override
     public void stop() throws Exception {
         LOGGER.info("stopping");
+        ForkJoinPool.commonPool().awaitQuiescence(1, TimeUnit.SECONDS);
         System.exit(0); // needed because the midi system will prevent proper shutdown
         LOGGER.info("this line should not be executed anymore");
     }
@@ -162,7 +165,7 @@ public class App extends Application {
         }
         errorUi.getErrorMessage().setText(errorMsg);
         stage.showAndWait();
-        LOGGER.debug("error dialog shown for {}", e);
+        LOGGER.debug("error dialog shown for <{}>", e);
     }
 
     private static abstract class ListItemStringConverter<T> extends StringConverter<T> {

@@ -101,7 +101,7 @@ public final class SettingsUi extends TabPane implements FxmlController {
         MidiDeviceMgr.getInstance().refreshMidiDevices();
         midiDevicesPane.getChildren().clear();
         for (MidiDevice device : midiDeviceMgr.getMidiDevices()) {
-            LOGGER.debug("device {}", device);
+            LOGGER.debug("device <{}>", device);
             ToggleSwitch deviceSwitch = new ToggleSwitch();
             Label deviceLabel = new Label(MidiDeviceMgr.getDisplayName(device), deviceSwitch);
             deviceSwitch.selectedProperty().set(device.isOpen());

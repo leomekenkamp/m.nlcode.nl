@@ -37,8 +37,11 @@ public final class Project implements Serializable {
 
     private Map<Serializable, Serializable> info = new HashMap<>();
     
+    
     public static Project load(Control control, Path path) throws FileNotFoundException, IOException {
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+//main();
+
+        try (ObjectInputStream in = new AllowedClassesObjectInputStream(new FileInputStream(path.toFile()))) {
             Project result = (Project) in.readObject();
             result.init(control, path);
             ArrayList<MidiInOut> justRead = (ArrayList<MidiInOut>) in.readObject();
@@ -53,7 +56,7 @@ public final class Project implements Serializable {
 
     public static Project create(Control control, Path path) {
         if (Files.exists(path)) {
-            throw new IllegalArgumentException("path already exists: " + path);
+            throw new IllegalArgumentException("path already exists: <" + path + ">");
         }
         Project result = new Project();
         result.init(control, path);

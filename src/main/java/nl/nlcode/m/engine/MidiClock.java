@@ -134,8 +134,8 @@ public class MidiClock extends MidiInOut {
         return bar.get();
     }
 
-    public void setBeatsPerBar(int beatsperbar) {
-        beatsPerBar.set(beatsperbar);
+    public void setBeatsPerBar(int beatsPerBar) {
+        this.beatsPerBar.set(beatsPerBar);
     }
 
     public int getBeatsPerBar() {
@@ -146,8 +146,8 @@ public class MidiClock extends MidiInOut {
         return beats100PerMinute.get() / 100;
     }
 
-    public void setBeatsPerMinute(float beatsperminute) {
-        setBeats100PerMinute(Math.round(beatsperminute * 100));
+    public void setBeatsPerMinute(float beatsPerMinute) {
+        this.setBeats100PerMinute(Math.round(beatsPerMinute * 100));
     }
 
     public int getBeats100PerMinute() {
@@ -155,7 +155,7 @@ public class MidiClock extends MidiInOut {
     }
 
     public void setBeats100PerMinute(int b100pm) {
-        LOGGER.info("setting bmp to {} / 100", b100pm);
+        LOGGER.info("setting bmp to <{}> / 100", b100pm);
         beats100PerMinute.set(b100pm);
 
     }
@@ -174,6 +174,7 @@ public class MidiClock extends MidiInOut {
         send(createMidiClock());
     }
 
+    @Override
     public boolean isActiveReceiver() {
         return true;
     }

@@ -114,36 +114,26 @@ public class MidiLayerAndSplit extends MidiInOut {
          * @param channelsSent to keep track on which channel the message has already functionally
          * been sent
          */
-        void maybeSend(ShortMessage message, boolean[] channelsSent) {
+        void maybeSend(ShortMessage message) {
             if (noteRelated(message)) {
-                LOGGER.debug("note message {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("note message <{}>", MIDI_FORMAT.format(message));
                 if (noteInRange(message.getData1()) && inputChannel == message.getChannel()) {
                     LOGGER.debug("message in layer");
                     int data1 = message.getData1();
                     data1 += transpose;
                     if (validNote(data1)) {
-                        LOGGER.debug("note valid {}", data1);
+                        LOGGER.debug("note valid <{}>", data1);
                         try {
                             ShortMessage copy = (ShortMessage) message.clone();
                             copy.setMessage(message.getCommand(), outputChannel, data1, message.getData2());
-                            sendOnce(copy, channelsSent);
+                            send(copy);
                         } catch (InvalidMidiDataException e) {
                             throw new IllegalArgumentException(e);
                         }
                     }
                 }
             } else {
-                sendOnce(message, channelsSent);
-            }
-        }
-
-        private void sendOnce(ShortMessage message, boolean[] channelsSent) {
-            if (channelsSent[message.getChannel()]) {
-                LOGGER.debug("already send to channel {}", MIDI_FORMAT.format(message));
-            } else {
-                LOGGER.debug("send first in channel {}", MIDI_FORMAT.format(message));
                 send(message);
-                channelsSent[message.getChannel()] = true;
             }
         }
 
@@ -157,6 +147,9 @@ public class MidiLayerAndSplit extends MidiInOut {
     public MidiLayerAndSplit(Project project) {
         super(project);
         layers = Collections.synchronizedList(new ArrayList());
+    }
+
+    public void detaultLayers() {
         for (int i = 0; i < 16; i++) {
             layers.add(new Layer(i));
         }
@@ -168,6 +161,7 @@ public class MidiLayerAndSplit extends MidiInOut {
 
     public Layer createLayer() {
         Layer result = new Layer(0);
+        getLayers().add(result);
         return result;
     }
 
@@ -177,16 +171,16 @@ public class MidiLayerAndSplit extends MidiInOut {
             ShortMessage shortMessage = (ShortMessage) message;
             if (noteRelated(shortMessage)) {
                 boolean[] channelsSent = new boolean[16];
-                LOGGER.debug("through layers {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("through layers <{}>", MIDI_FORMAT.format(message));
                 for (Layer layer : layers) {
-                    layer.maybeSend(shortMessage, channelsSent);
+                    layer.maybeSend(shortMessage);
                 }
             } else {
-                LOGGER.debug("non-note message {}, relaying to super", MIDI_FORMAT.format(message));
+                LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
                 super.send(message, timeStamp);
             }
         } else {
-            LOGGER.debug("non-note message {}, relaying to super", MIDI_FORMAT.format(message));
+            LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
             super.send(message, timeStamp);
         }
     }

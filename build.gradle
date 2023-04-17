@@ -1,7 +1,7 @@
 plugins {
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.9'
-    id 'org.beryx.runtime' version '1.12.3'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.beryx.runtime' version '1.13.0'
 }
 
 defaultTasks 'build'
@@ -51,11 +51,9 @@ runtime {
 }
 
 test {
-    useJUnitPlatform {
-        //        includeTags 'fast', 'smoke & feature-a'
-        // excludeTags 'slow', 'ci'
-        //        includeEngines 'junit-jupiter'
-        // excludeEngines 'junit-vintage'
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }
 
@@ -64,19 +62,19 @@ test {
 
 group = 'nl.nlcode'
 version = '1.0.0'
-sourceCompatibility = '1.13'
+sourceCompatibility = '1.16'
 
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30';
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     implementation group: 'org.controlsfx', name: 'controlsfx', version: '11.0.1'
     implementation 'uk.co.xfactory-librarians:coremidi4j:1.6'
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.1"
+
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation "org.testfx:testfx-core:4.0.16-alpha"
     testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
-
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.1" 
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 tasks.withType(JavaCompile) {

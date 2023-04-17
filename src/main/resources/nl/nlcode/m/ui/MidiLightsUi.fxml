@@ -26,20 +26,13 @@
     type="MidiLightsUi"
     tabClosingPolicy="UNAVAILABLE">
     <instrumentTab>
-        <Tab text="%messages" styleClass="instrument">
+        <Tab text="%lights" styleClass="instrument">
             <HBox styleClass="lights">
                 <HBox styleClass="canvasContainer">
                     <minHeight><Region fx:constant="USE_PREF_SIZE"/></minHeight>
                     <maxHeight><Region fx:constant="USE_PREF_SIZE"/></maxHeight>
-                    <Canvas fx:id="keysCanvas" height="128" width="16" />
+                    <Canvas fx:id="keysCanvas" height="64" width="256" />
                 </HBox>
-                <!--
-                <HBox styleClass="canvasContainer">
-                    <minHeight><Region fx:constant="USE_PREF_SIZE"/></minHeight>
-                    <maxHeight><Region fx:constant="USE_PREF_SIZE"/></maxHeight>
-                    <Canvas fx:id="asdf" height="128" width="16" />
-                </HBox>
-                                -->
             </HBox>
         </Tab>
     </instrumentTab>

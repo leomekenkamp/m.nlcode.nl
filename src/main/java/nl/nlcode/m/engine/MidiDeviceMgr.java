@@ -1,13 +1,11 @@
 package nl.nlcode.m.engine;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
-import uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
@@ -60,74 +58,71 @@ public final class MidiDeviceMgr {
     }
 
     public MidiDevice.Info[] getMidiDeviceInfo() {
-        return USE_COREMIDI4j ?
-                CoreMidiDeviceProvider.getMidiDeviceInfo() :
-                MidiSystem.getMidiDeviceInfo();
+        return USE_COREMIDI4j
+                ? CoreMidiDeviceProvider.getMidiDeviceInfo()
+                : MidiSystem.getMidiDeviceInfo();
     }
 
     public final void refreshMidiDevices() {
-        // FIXME: we should not have a dependency on JavaFX here.
-        Platform.runLater(() -> {
-            Collection<String> errors = new ArrayList<>();
-            MidiDevice.Info[] midiDeviceInfos = getMidiDeviceInfo();
-            List<MidiDevice> newList = new ArrayList();
-            int retried = 0;
-            for (MidiDevice.Info info : midiDeviceInfos) {
-                LOGGER.info("opening {}", info);
+        Collection<String> errors = new ArrayList<>();
+        MidiDevice.Info[] midiDeviceInfos = getMidiDeviceInfo();
+        List<MidiDevice> newList = new ArrayList();
+        int retried = 0;
+        for (MidiDevice.Info info : midiDeviceInfos) {
+            LOGGER.info("adding/refreshing <{}>", info);
+            try {
+                MidiDevice midiDevice = MidiSystem.getMidiDevice(info);
+                newList.add(midiDevice);
+                retried = 0;
+            } catch (MidiUnavailableException | IllegalArgumentException e) {
+                LOGGER.error("could not get midi device <{}>", info);
+                LOGGER.error("caught", e);
+                errors.add(e.getMessage() + " (" + info + ")");
+                if (retried++ >= 5) {
+                    continue;
+                }
+                LOGGER.info("retrying");
                 try {
-                    MidiDevice midiDevice = MidiSystem.getMidiDevice(info);
-                    newList.add(midiDevice);
-                    retried = 0;
-                } catch (MidiUnavailableException | IllegalArgumentException e) {
-                    LOGGER.error("could not get midi device {}", info);
-                    LOGGER.error("caught", e);
-                    errors.add(e.getMessage() + " (" + info + ")");
-                    if (retried++ >= 5) {
-                        continue;
-                    }
-                    LOGGER.info("retrying");
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException i) {
-                        Thread.interrupted(); // Yes, I have read the javadoc!
-                    }
+                    Thread.sleep(50);
+                } catch (InterruptedException i) {
+                    Thread.interrupted(); // Yes, I have read the javadoc!
                 }
             }
-            List<MidiDevice> oldList = new ArrayList(midiDevicesBacking);
+        }
+        List<MidiDevice> oldList = new ArrayList(midiDevicesBacking);
 
-            List<MidiDevice> deltaAddList = removeByMidiDeviceInfo(oldList, newList);
+        List<MidiDevice> deltaAddList = removeByMidiDeviceInfo(oldList, newList);
 
-            List<MidiDevice> deltaRemoveList = removeByMidiDeviceInfo(newList, oldList);
+        List<MidiDevice> deltaRemoveList = removeByMidiDeviceInfo(newList, oldList);
 
-            LOGGER.debug("refreshing 'old' set {}", oldList);
-            LOGGER.debug("... by removing {}", deltaRemoveList);
-            LOGGER.debug("... by adding {}", deltaAddList);
+        LOGGER.debug("refreshing 'old' set <{}>", oldList);
+        LOGGER.debug("... by removing <{}>", deltaRemoveList);
+        LOGGER.debug("... by adding <{}>", deltaAddList);
 
-            List<MidiDevice> buffer = new ArrayList(midiDevicesBacking);
-            for (MidiDevice remove : deltaRemoveList) {
-                if (remove.isOpen()) {
-                    remove.close();
-                }
-                synchronized (openMidiDevicesBacking) {
-                    openMidiDevicesBacking.remove(remove);
-                }
-                buffer.remove(remove);
+        List<MidiDevice> buffer = new ArrayList(midiDevicesBacking);
+        for (MidiDevice remove : deltaRemoveList) {
+            if (remove.isOpen()) {
+                remove.close();
             }
-            //buffer.addAll(deltaAddList);
-            //buffer.sort(COMPARE_BY_DISPLAY_NAME);
-            //midiDevicesBacking.clear();
-            //midiDevicesBacking.addAll(buffer);
-
-            midiDevicesBacking.removeAll(deltaRemoveList);
-            midiDevicesBacking.addAll(deltaAddList);
-            midiDevicesBacking.sort(COMPARE_BY_DISPLAY_NAME);
-
-            LOGGER.debug("set is now {}", midiDevicesBacking);
-
-            if (!errors.isEmpty()) {
-                throw new FunctionalException("one or more exceptions: " + String.join(", ", errors));
+            synchronized (openMidiDevicesBacking) {
+                openMidiDevicesBacking.remove(remove);
             }
-        });
+            buffer.remove(remove);
+        }
+        //buffer.addAll(deltaAddList);
+        //buffer.sort(COMPARE_BY_DISPLAY_NAME);
+        //midiDevicesBacking.clear();
+        //midiDevicesBacking.addAll(buffer);
+
+        midiDevicesBacking.removeAll(deltaRemoveList);
+        midiDevicesBacking.addAll(deltaAddList);
+        midiDevicesBacking.sort(COMPARE_BY_DISPLAY_NAME);
+
+        LOGGER.debug("set is now <{}>", midiDevicesBacking);
+
+        if (!errors.isEmpty()) {
+            throw new FunctionalException("one or more exceptions: " + String.join(", ", errors));
+        }
     }
 
     // MidiDevice.equals returns false for two MidiDevice instances opened with the same MidiDevice.Info.
@@ -198,7 +193,7 @@ public final class MidiDeviceMgr {
         // the next time the application starts.
         for (MidiDevice midiDevice : midiDevicesBacking) {
             if (midiDevice.isOpen()) {
-                LOGGER.debug("closing {}", midiDevice);
+                LOGGER.debug("closing <{}>", midiDevice);
                 midiDevice.close();
             }
         }
@@ -208,13 +203,13 @@ public final class MidiDeviceMgr {
     public void open(MidiDevice device) {
         try {
             if (device.isOpen()) {
-                throw new IllegalArgumentException("already open: " + device);
+                throw new IllegalArgumentException("already open: <" + device + ">");
             } else {
-                LOGGER.debug("opening {}", device);
+                LOGGER.debug("opening <{}>", device);
                 device.open();
                 synchronized (openMidiDevicesBacking) {
                     openMidiDevicesBacking.add(device);
-                    LOGGER.debug("now open: {}", openMidiDevicesBacking);
+                    LOGGER.debug("opened <{}>", openMidiDevicesBacking);
                     Collections.sort(openMidiDevicesBacking, COMPARE_BY_DISPLAY_NAME);
                 }
             }
@@ -225,13 +220,13 @@ public final class MidiDeviceMgr {
 
     public void close(MidiDevice device) {
         if (device.isOpen()) {
-            LOGGER.debug("closing {}", device);
+            LOGGER.debug("closing <{}>", device);
             device.close();
             synchronized (openMidiDevicesBacking) {
                 openMidiDevicesBacking.remove(device);
             }
         } else {
-            throw new IllegalArgumentException("already closed: " + device);
+            throw new IllegalArgumentException("already closed: <" + device + ">");
         }
     }
 }

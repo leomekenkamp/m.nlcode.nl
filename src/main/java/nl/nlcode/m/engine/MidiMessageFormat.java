@@ -1,5 +1,7 @@
 package nl.nlcode.m.engine;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringJoiner;
 import javax.sound.midi.MetaMessage;
@@ -22,6 +24,13 @@ public class MidiMessageFormat {
     private final static String[] NOTE_DESC = new String[] {
         "C", "C♯/D♭", "D", "E♭/D♯", "E", "F", "F♯/G♭", "G", "A♭/G♯", "A", "B♭/A♯", "B"
     };
+    
+    private static Map<String, Integer> DESC_TO_NOTE_OFFSET = new HashMap<>();
+    static {
+        for (int i = 0; i < NOTE_DESC.length; i++) {
+            DESC_TO_NOTE_OFFSET.put(NOTE_DESC[i], i);
+        }
+    }
 
     public static ResourceBundle MIDI = ResourceBundle.getBundle("nl.nlcode.m.MIDI");
 
@@ -38,12 +47,19 @@ public class MidiMessageFormat {
         return result.toString();
     }
 
-    public String formatNote(int note) {
+    public String noteToDesc(int note) {
         if (note < 0 || note > 127) {
-            throw new IllegalArgumentException("note value " + note + " out of range");
+            throw new IllegalArgumentException("invalid <" + note + ">");
         }
         return NOTE_DESC[note % NOTE_DESC.length] + ((note / 12) - 1);
     }
+    
+//    public int descToNote(String desc) {
+//        int len = desc.length();
+//        int octave = Integer.parseInt(desc.substring(len - 2, len - 1));
+//        String noteDesc = desc.substring(0, len - 2);
+//        int 
+//    }
 
     public String format(MidiMessage message) {
         if (message instanceof ShortMessage) {
@@ -125,7 +141,7 @@ public class MidiMessageFormat {
         result.add(MIDI.getString(STAT_HI_PREFIX + Integer.toHexString(statusHi)));
         result.add(MIDI.getString("channel") + " " + (shortMsg.getChannel() + 1));
         if (statusHi <= 0xA) {
-            result.add(MIDI.getString("note") + " " + formatNote(shortMsg.getData1()));
+            result.add(MIDI.getString("note") + " " + noteToDesc(shortMsg.getData1()));
         } else {
             switch (statusHi) {
                 case 0x8:

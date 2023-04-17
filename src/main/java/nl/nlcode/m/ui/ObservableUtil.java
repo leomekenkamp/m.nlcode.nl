@@ -14,11 +14,15 @@ public interface ObservableUtil {
             target.addAll(list);
             list.addListener((ListChangeListener.Change<? extends T> change) -> {
                 while (change.next()) {
+                    if (change.wasRemoved()) {
+                        // change.getRemoved() is buggy, use indices instead
+                       for (int localIndex = change.getFrom(); localIndex <= change.getTo(); localIndex ++) {
+                           T removed = list.get(localIndex);
+                            target.removeAll(removed);
+                       }
+                    }
                     if (change.wasAdded()) {
                         target.addAll(change.getAddedSubList());
-                    }
-                    if (change.wasRemoved()) {
-                        target.removeAll(change.getRemoved());
                     }
                 }
             });

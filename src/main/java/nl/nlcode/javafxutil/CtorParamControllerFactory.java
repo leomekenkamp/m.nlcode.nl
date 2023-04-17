@@ -12,42 +12,33 @@ import javafx.util.Callback;
  */
 public class CtorParamControllerFactory implements Callback<Class<?>, Object> {
 
-    private Map<Class<?>, Object> classToCtorParam = new HashMap<>();
+    private Object[] ctorParams;
+    private Class<?>[] ctorClasses;
 
     public CtorParamControllerFactory(Object ... ctorParams) {
-        add(ctorParams);
-    }
-    
-    public final void add(Object ... ctorParams) {
-        for (Object ctorParam : ctorParams) {
-            classToCtorParam.put(ctorParam.getClass(), ctorParam);
+        this.ctorParams = ctorParams;
+        ctorClasses = new Class<?>[ctorParams.length];
+        for (int i = 0; i < ctorParams.length; i++) {
+            ctorClasses[i] = ctorParams[i].getClass();
         }
     }
-
+    
     @Override
     public Object call(Class<?> type) {
         try {
-            Constructor<?>[] ctors = type.getConstructors();
-            if (ctors.length != 1) {
-                throw new IllegalStateException("multiple ctors for " + type);
-            }
-            Constructor<?> ctor = ctors[0];
-            Class<?>[] paramTypes = ctor.getParameterTypes();
-            Object[] initArgs = new Object[paramTypes.length];
-            for (int i = 0; i < paramTypes.length; i++) {
-                initArgs[i] = classToCtorParam.get(paramTypes[i]);
-            }
-            return ctor.newInstance(initArgs);
+            Constructor<?> ctor = type.getConstructor(ctorClasses);
+            return ctor.newInstance(ctorParams);
         } catch (SecurityException 
                 | InstantiationException 
                 | IllegalAccessException
                 | IllegalArgumentException 
-                | InvocationTargetException e) {
-            throw new IllegalStateException(e);
+                | InvocationTargetException
+                | NoSuchMethodException e) {
+            throw new IllegalStateException("troubles with <" + type + "> and <" + ctorClasses + ">", e);
         }
     }
     
     public String toString() {
-        return "" + classToCtorParam;
+        return "" + ctorParams;
     }
 }

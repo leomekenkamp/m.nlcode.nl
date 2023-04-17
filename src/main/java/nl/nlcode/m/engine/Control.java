@@ -5,30 +5,59 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
 /**
  *
  * @author leo
  */
 public final class Control {
-    
+
+    static {
+        AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.ConcurrentHashMap$Segment;");
+        AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.atomic.AtomicBoolean;");
+        AllowedClassesObjectInputStream.allow("[[Ljava.util.concurrent.atomic.AtomicBoolean;");
+        AllowedClassesObjectInputStream.allow("java.lang.Boolean");
+        AllowedClassesObjectInputStream.allow("java.lang.Double");
+        AllowedClassesObjectInputStream.allow("java.lang.Enum");
+        AllowedClassesObjectInputStream.allow("java.lang.Number");
+        AllowedClassesObjectInputStream.allow("java.util.ArrayList");
+        AllowedClassesObjectInputStream.allow("java.util.Collections$SynchronizedCollection");
+        AllowedClassesObjectInputStream.allow("java.util.Collections$SynchronizedList");
+        AllowedClassesObjectInputStream.allow("java.util.HashMap");
+        AllowedClassesObjectInputStream.allow("java.util.HashSet");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$CollectionView");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$KeySetView");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$Segment");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.atomic.AtomicBoolean");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.AbstractOwnableSynchronizer");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.AbstractQueuedSynchronizer");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$NonfairSync");
+        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$Sync");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.KeyboardKeyboard");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiChannelMatrix");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiClock");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiDelay");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiDeviceLink");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiGate");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiInOut");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLayerAndSplit");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLayerAndSplit$Layer");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLights");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiMessageDump");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiSequencer");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.Project");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.ShowTicks");
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Control.class);
 
     private static final String FILE_EXTENTION = ".m";
@@ -51,7 +80,6 @@ public final class Control {
 //            return getDisplayName(o1).compareTo(getDisplayName(o2));
 //        }
 //    };
-
     private final ObservableList<MidiDevice> midiDevicesBacking;
 
     private final ObservableList<MidiDevice> midiDevices;
@@ -119,95 +147,4 @@ public final class Control {
         }
         return false;
     }
-
-//    public static List<String> getCapabilities(MidiDevice device) {
-//        List<String> result = new ArrayList<>();
-//        if (device.getMaxReceivers() != 0) {
-//            result.add("receiver");
-//        }
-//        if (device.getMaxTransmitters() != 0) {
-//            result.add(("sender"));
-//        }
-//        return result;
-//    }
-
-//    public static String getCapabilitiesDecription(MidiDevice device) {
-//        List<String> caps = getCapabilities(device);
-//        if (caps.isEmpty()) {
-//            return "";
-//        } else {
-//            return "(" + String.join(", ", caps) + ")";
-//        }
-//    }
-//
-//    public static String getDisplayName(MidiDevice device) {
-//        if (device == null) {
-//            return "<empty>";
-//        } else {
-//            return getDisplayName(device.getDeviceInfo()) + getCapabilitiesDecription(device);
-//        }
-//    }
-//
-//    public static String getDisplayName(MidiDevice.Info info) {
-//        StringBuilder result = new StringBuilder(info.getName());
-//        if (info.getDescription() != null) {
-//            result.append(", ").append(info.getDescription());
-//        }
-//        if (info.getVendor() != null) {
-//            result.append(" - ").append(info.getVendor());
-//        }
-//        // We skip the version, because this display name is used to identify devices over different
-//        // executions of the program. So a newer version does probably mean that the same settings should
-//        // be used.
-//        return result.toString();
-//    }
-
-//    public ObservableList<MidiDevice> getMidiDevices() {
-//        return midiDevices;
-//    }
-//
-//    public ObservableList<MidiDevice> getOpenMidiDevices() {
-//        return openMidiDevices;
-//    }
-
-//    public void close() {
-//        // We explicitly close ONLY the java midi devices. We want our devices to be reopened automatically
-//        // the next time the application starts.
-//        for (MidiDevice midiDevice : midiDevicesBacking) {
-//            if (midiDevice.isOpen()) {
-//                LOGGER.debug("closing {}", midiDevice);
-//                midiDevice.close();
-//            }
-//        };
-//    }
-
-//    public void open(MidiDevice device) {
-//        try {
-//            if (device.isOpen()) {
-//                throw new IllegalArgumentException("already open: " + device);
-//            } else {
-//                LOGGER.debug("opening {}", device);
-//                device.open();
-//                synchronized(openMidiDevicesBacking) {
-//                    openMidiDevicesBacking.add(device);
-//                    LOGGER.debug("now open: {}", openMidiDevicesBacking);
-//                    Collections.sort(openMidiDevicesBacking, COMPARE_BY_DISPLAY_NAME);
-//                }
-//            }
-//        } catch (MidiUnavailableException e) {
-//            throw new IllegalStateException(e);
-//        }
-//    }
-//
-//    public void close(MidiDevice device) {
-//        if (device.isOpen()) {
-//            LOGGER.debug("closing {}", device);
-//            device.close();
-//            synchronized(openMidiDevicesBacking) {
-//                openMidiDevicesBacking.remove(device);
-//            }
-//        } else {
-//                throw new IllegalArgumentException("already closed: " + device);
-//        }
-//    }
 }

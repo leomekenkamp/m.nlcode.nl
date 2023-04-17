@@ -1,5 +1,8 @@
 .root {
     -fx-font-size: 9pt;
+/*    -fx-font-family: sans-serif;
+undelete in case of strange font problems on a mac
+*/
 }
 
 .root.midiInOut.focus .tab-header-background {

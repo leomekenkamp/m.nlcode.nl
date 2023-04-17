@@ -6,10 +6,8 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
-<?import nl.nlcode.m.ui.ControlUi?>
 
-<fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-         type="nl.nlcode.m.ui.ControlUi" styleClass="control">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1" fx:controller="nl.nlcode.m.ui.ControlUi">
     <top>
         <MenuBar fx:id="systemMenuBar" BorderPane.alignment="CENTER">
             <menus>
@@ -30,4 +28,4 @@
         <Label styleClass="logo" text="m.nlcode.nl" >
         </Label>
     </center>
-</fx:root>
+</BorderPane>

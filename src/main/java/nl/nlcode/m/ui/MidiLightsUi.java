@@ -21,6 +21,7 @@ public class MidiLightsUi extends MidiInOutUi<MidiLights> implements FxmlControl
     private static final Logger LOGGER = LoggerFactory.getLogger(MidiLightsUi.class);
 
     private static final Color TRANSPARENT = Color.rgb(0, 0, 0, 0);
+    
     @FXML
     private Canvas keysCanvas;
 
@@ -46,11 +47,18 @@ public class MidiLightsUi extends MidiInOutUi<MidiLights> implements FxmlControl
                         color = TRANSPARENT;
                     }
                     if (color != null) {
-                        ctx.getPixelWriter().setColor(shortMessage.getChannel(), 127 - shortMessage.getData1(), color);
+                        setColor(ctx, 127 - shortMessage.getData1(), shortMessage.getChannel(), color);
                     }
                 }
             });
         });
+    }
+    
+    private void setColor(GraphicsContext ctx, int x, int y, Color color) {
+         ctx.getPixelWriter().setColor(256 - (2 * x), 2 * y, color);
+         ctx.getPixelWriter().setColor(256 - (2 * x + 1), 2 * y, color);
+         ctx.getPixelWriter().setColor(256 - (2 * x), 2 * y + 1, color);
+         ctx.getPixelWriter().setColor(256 - (2 * x + 1), 2 * y + 1, color);
     }
 
 }

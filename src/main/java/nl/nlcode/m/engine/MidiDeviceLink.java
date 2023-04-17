@@ -41,7 +41,7 @@ public final class MidiDeviceLink extends MidiInOut {
             // This is what we receive from the delegate, so this must be send out to all 'sendingTo'
             // instances.
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("received from system midi device: {}", MIDI_FORMAT.format(message));
+                LOGGER.debug("received from system midi device: <{}>", MIDI_FORMAT.format(message));
             }
             MidiDeviceLink.this.send(message, -1);
         }
@@ -77,12 +77,12 @@ public final class MidiDeviceLink extends MidiInOut {
             for (MidiDevice search : MidiDeviceMgr.getInstance().getMidiDevices()) {
                 if (midiDeviceName.equals(MidiDeviceMgr.getDisplayName(search))) {
                     setMidiDevice(search);
-                    LOGGER.debug("found match for {} in {}", midiDeviceName, midiDevice);
+                    LOGGER.debug("found match for <{}> in <{}>", midiDeviceName, midiDevice);
                     break;
                 }
             }
             if (midiDevice == null) {
-                LOGGER.warn("could not match {} to any of the open system midi devices", midiDeviceName);
+                LOGGER.warn("could not match <{}> to any of the open system midi devices", midiDeviceName);
             }
         }
     }
@@ -100,16 +100,16 @@ public final class MidiDeviceLink extends MidiInOut {
     }
 
     public void setMidiDevice(MidiDevice midiDevice) {
-        LOGGER.debug("setting midi device {}", MidiDeviceMgr.getDisplayName(midiDevice));
+        LOGGER.debug("setting midi device <{}>", MidiDeviceMgr.getDisplayName(midiDevice));
         if (this.midiDevice != null) {
         }
         if (receiver != null) {
-            LOGGER.debug("closing {} on {}", receiver, MidiDeviceMgr.getDisplayName(midiDevice));
+            LOGGER.debug("closing <{}> on <{}>", receiver, MidiDeviceMgr.getDisplayName(midiDevice));
             receiver.close();
             receiver = null;
         }
         if (transmitter != null) {
-            LOGGER.debug("closing {} on {}", transmitter, MidiDeviceMgr.getDisplayName(midiDevice));
+            LOGGER.debug("closing <{}> on <{}>", transmitter, MidiDeviceMgr.getDisplayName(midiDevice));
             transmitter.close();
             transmitter = null;
         }
@@ -120,18 +120,18 @@ public final class MidiDeviceLink extends MidiInOut {
             midiDeviceName = MidiDeviceMgr.getDisplayName(midiDevice);
             try {
                 if (midiDevice.getMaxReceivers() != 0) {
-                    LOGGER.debug("opening receiver for {}", MidiDeviceMgr.getDisplayName(midiDevice));
+                    LOGGER.debug("opening receiver for <{}>", MidiDeviceMgr.getDisplayName(midiDevice));
                     receiver = midiDevice.getReceiver();
                 }
                 if (midiDevice.getMaxTransmitters() != 0) {
-                    LOGGER.debug("opening transmitter for {}", MidiDeviceMgr.getDisplayName(midiDevice));
+                    LOGGER.debug("opening transmitter for <{}>", MidiDeviceMgr.getDisplayName(midiDevice));
                     transmitter = midiDevice.getTransmitter();
                     transmitter.setReceiver(sendReceiver);
                 }
             } catch (MidiUnavailableException e) {
                 // FIXME: must be refactored, because this is too late
                 // exception must be thrown earlier in this method, before the internal state has been
-                // changed; it is now fubar when this exeption occurs
+                // changed; it is now fubar when this exception occurs
                 throw new IllegalStateException(e);
             }
         }
@@ -165,11 +165,11 @@ public final class MidiDeviceLink extends MidiInOut {
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
         if (receiver == null) {
-            LOGGER.info("eating message in {}: {} {}", getName(), message, timeStamp);
+            LOGGER.info("eating message in <{}>: <{}> <{}>", getName(), message, timeStamp);
         } else {
             // What we receive must actually be send to our delegate; the Java MIDI api is a bit weird.
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("actually relaying to a receiver: {}, {}", MIDI_FORMAT.format(message), timeStamp);
+                LOGGER.debug("actually relaying to a receiver: <{}>, <{}>", MIDI_FORMAT.format(message), timeStamp);
             }
             ShortMessage toSend = (ShortMessage) message.clone();
             receiver.send(toSend, timeStamp);

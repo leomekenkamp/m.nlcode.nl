@@ -40,11 +40,15 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
+import nl.nlcode.javafxutil.CtorParamControllerFactory;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.javafxutil.FxmlHelper;
+import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.MidiInOut;
 import static nl.nlcode.m.engine.Control.FILE_EXTENTION_FILTER;
 import nl.nlcode.m.engine.KeyboardKeyboard;
@@ -76,8 +80,13 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private static final String CONNECTED_SENDER = "connectedSender";
     private static final String CONNECTED_RECEIVER = "connectedReceiver";
 
+    private static final String UI_CLASS_PREFIX = ProjectUi.class.getPackage().getName() + ".";
+
     @FXML
-    private MenuItem midiKeyboardKeyboard;
+    private MenuItem arpeggiator;
+
+    @FXML
+    private MenuItem keyboardKeyboard;
 
     @FXML
     private MenuItem midiDeviceLink;
@@ -183,7 +192,18 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             }
         });
 
-        midiKeyboardKeyboard.setOnAction(eh -> {
+        arpeggiator.setOnAction(eh -> {
+            createStage(new Arpeggiator(getProject()));
+            setDirty();
+        });
+        keyboardKeyboard.setOnAction(eh -> {
+            createStage(new KeyboardKeyboard(getProject()));
+            setDirty();
+        });
+        keyboardKeyboard.setOnAction(eh -> {
+            KeyboardKeyboard device = new KeyboardKeyboard(getProject());
+            CtorParamControllerFactory callback = new CtorParamControllerFactory(this, device, keyboardKeyboard);
+            Object ui = FxmlHelper.loadFxml(KeyboardKeyboardController.class, callback, App.MESSAGES);
             createStage(new KeyboardKeyboard(getProject()));
             setDirty();
         });
@@ -237,22 +257,32 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {
         return (change) -> {
             while (change.next()) {
-                for (MidiInOutUi midiInOutUi : change.getRemoved()) {
-                    LOGGER.debug("removed from general list: {}", midiInOutUi);
-                    midiInOutUi.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
-                    midiInOutUi.activeSenderProperty().removeListener(midiInOutUiSenderChange);
-                    activeReceivers.remove(midiInOutUi); // could call contains() first
-                    activeSenders.remove(midiInOutUi); // could call contains() first
-                }
-                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
-                    LOGGER.debug("added to general list: {}", midiInOutUi);
-                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
-                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
-                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
-                        activeReceivers.add(midiInOutUi);
+                if (change.wasRemoved()) {
+                    int localIndex = change.getFrom();
+                    for (MidiInOutUi removed : change.getRemoved()) {
+                        if (removed == null) {
+                            // change.getRemoved() is buggy, use indices instead
+                            removed = midiInOutUiList.get(localIndex);
+                        }
+                        LOGGER.debug("removed from general list: <{}>", removed);
+                        removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
+                        removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
+                        activeReceivers.remove(removed); // could call contains() first
+                        activeSenders.remove(removed); // could call contains() first
+                        localIndex++;
                     }
-                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
-                        activeSenders.add(midiInOutUi);
+                }
+                if (change.wasAdded()) {
+                    for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
+                        LOGGER.debug("added to general list: <{}>", midiInOutUi);
+                        midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
+                        midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
+                        if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
+                            activeReceivers.add(midiInOutUi);
+                        }
+                        if (midiInOutUi.getMidiInOut().isActiveSender()) {
+                            activeSenders.add(midiInOutUi);
+                        }
                     }
                 }
             }
@@ -270,19 +300,19 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
             midiInOutUi.setPropagateInputOutputChangesToOthers(false);
         }
-        LOGGER.debug("iterating over {} midiInOut instances", getMidiInOutUiList().size());
+        LOGGER.debug("iterating over <{}> midiInOut instances", getMidiInOutUiList().size());
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
-            LOGGER.debug("processing instance {}", midiInOut);
+            LOGGER.debug("processing instance <{}>", midiInOut);
             MidiInOutUi midiInOutUi = inOutToUi.get(midiInOut);
-            LOGGER.debug("iterating over {} receivers", midiInOut.sendingTo().size());
+            LOGGER.debug("iterating over <{}> receivers", midiInOut.sendingTo().size());
             for (MidiInOut receiver : midiInOut.sendingTo()) {
                 MidiInOutUi receiverUi = inOutToUi.get(receiver);
-                LOGGER.debug("adding {} to input list of {}...", midiInOutUi, receiverUi);
-                LOGGER.debug("possible inputs: {}", receiverUi.getInputListView().getItems());
-                LOGGER.debug("input pre: {}", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
+                LOGGER.debug("adding <{}> to input list of <{}>", midiInOutUi, receiverUi);
+                LOGGER.debug("selectable inputs: <{}>", receiverUi.getInputListView().getItems());
+                LOGGER.debug("input pre: <{}>", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
                 receiverUi.getInputListView().getSelectionModel().select(midiInOutUi);
-                LOGGER.debug("input post: {}", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
-                LOGGER.debug("and reversely adding {} to output list of {}", receiverUi, midiInOutUi);
+                LOGGER.debug("input post: <{}>", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
+                LOGGER.debug("and reversely adding <{}> to output list of <{}>", receiverUi, midiInOutUi);
                 midiInOutUi.getOutputListView().getSelectionModel().select(receiverUi);
             }
         }
@@ -315,9 +345,9 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     private Stage createStage(MidiInOut midiInOut) {
-        LOGGER.debug("creating for {}", midiInOut);
+        LOGGER.debug("creating for <{}>", midiInOut);
         try {
-            Class<MidiInOutUi> midiInOutUiClass = (Class<MidiInOutUi>) Class.forName("nl.nlcode.m.ui." + midiInOut.getClass().getSimpleName() + "Ui");
+            Class<MidiInOutUi> midiInOutUiClass = (Class<MidiInOutUi>) Class.forName(UI_CLASS_PREFIX + midiInOut.getClass().getSimpleName() + "Ui");
             Constructor<MidiInOutUi> ctor = midiInOutUiClass.getConstructor(getClass(), midiInOut.getClass(), MenuItem.class);
             MenuItem menuItem = new MenuItem();
             windowMenu.getItems().add(menuItem);
@@ -549,12 +579,12 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         project.close();
         LOGGER.debug("remove project from control ui");
         getControlUi().remove(this);
-        LOGGER.debug("remove project menu itemi");
+        LOGGER.debug("remove project menu item");
         menuItem.getParentMenu().getItems().remove(menuItem);
-        LOGGER.debug("iterating over open midiInOutUi itemsi");
+        LOGGER.debug("iterating over open midiInOutUi items");
         while (!getMidiInOutUiList().isEmpty()) {
             // A closing MidiInOutUi indirectly removes itself from a.a. the midiInOutUiList, so we cannot use an iterator.
-            LOGGER.debug("closing window for {}", getMidiInOutUiList().get(0).getName());
+            LOGGER.debug("closing window for <{}>", getMidiInOutUiList().get(0));
             getMidiInOutUiList().get(0).forceCloseWindow();
         }
     }
@@ -563,7 +593,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     public void closeWindow() {
         if (canCloseWindow()) {
             cleanupBeforeCloseWindow();
-            LOGGER.debug("closing my window: {}", getName());
+            LOGGER.debug("closing my window: <{}>", getName());
             ((Stage) getScene().getWindow()).close();
         }
         LOGGER.debug("done");

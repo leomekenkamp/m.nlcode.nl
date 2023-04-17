@@ -3,6 +3,7 @@ package nl.nlcode.m.ui;
 import java.util.Collections;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
@@ -27,29 +28,38 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
     private ListChangeListener<MidiInOutUi<?>> availableMidiInOutUiListChangeListener = new ListChangeListener<>() {
         @Override
         public void onChanged(ListChangeListener.Change<? extends MidiInOutUi<?>> change) {
-            LOGGER.debug("change {} on {} ", change, change.getList());
             boolean sort = false;
             while (change.next()) {
-                for (MidiInOutUi removed: change.getRemoved()) {
-                    LOGGER.debug("removed: {}", removed);
-                    getItems().remove(removed);
-                }
-                for (MidiInOutUi<?> added : change.getAddedSubList()) {
-                    if (added == getOwner()) {
-                        LOGGER.debug("skipping owner");
-                    } else {
-                        LOGGER.debug("added: {}", added);
-                        // DEBUG
-                        if (added == null) {
-                            throw new IllegalArgumentException();
+                if (change.wasRemoved()) {
+                    for (MidiInOutUi removed : change.getRemoved()) {
+                        LOGGER.debug("not longer available, removed <{}> from <{}>", removed.getMidiInOut(), getOwner());
+                        int remoteOutIndex = removed.getOutputListView().getItems().indexOf(removed);
+                        if (remoteOutIndex != -1) {
+                            removed.getOutputListView().getSelectionModel().clearSelection(remoteOutIndex);
                         }
-                        getItems().add(added);
-                        sort = true;
+                        int remoteInIndex = removed.getOutputListView().getItems().indexOf(removed);
+                        if (remoteInIndex != -1) {
+                            removed.getOutputListView().getSelectionModel().clearSelection(remoteInIndex);
+                        }
+                        getItems().remove(removed);
+                    }
+                }
+                if (change.wasAdded()) {
+                    for (MidiInOutUi<?> added : change.getAddedSubList()) {
+                        if (added == getOwner()) {
+                            LOGGER.debug("skipping owner");
+                        } else {
+                            LOGGER.debug("newly available, added <{}> to <{}>", added.getMidiInOut(), getOwner());
+                            getItems().add(added);
+                            sort = true;
+                        }
                     }
                 }
                 sort = sort || change.wasPermutated() || change.wasUpdated();
             }
-            sortItems();
+            if (sort) {
+                sortItems();
+            }
         }
     };
 
@@ -69,13 +79,13 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
 
         itemsProperty().addListener((ov, oldValue, newValue) -> {
             if (newValue != null) {
-                LOGGER.debug("items changed to {}", newValue);
+                LOGGER.debug("items changed to <{}>", newValue);
                 midiInOutUiListToItems();
             }
         });
 
         availableMidiInOutUiListProperty.addListener((ov, oldValue, newValue) -> {
-            LOGGER.debug("midiInOutListProperty changed from {} to {} ", oldValue, newValue);
+            LOGGER.debug("midiInOutListProperty changed from <{}> to <{}>", oldValue, newValue);
             if (oldValue != null) {
                 oldValue.removeListener(availableMidiInOutUiListChangeListener);
             }
@@ -96,7 +106,6 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
     }
 
     private void midiInOutUiListToItems() {
-//        if (true) throw new IllegalStateException("HERE!");
         getItems().clear();
         for (MidiInOutUi midiInOutUi : getAvailableMidiInOutUiList()) {
             if (midiInOutUi != getOwner()) {
@@ -107,7 +116,7 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
     }
 
     private void sortItems() {
-        Collections.sort(getItems(), (left, right) -> {
+        FXCollections.sort(getItems(), (left, right) -> {
             return left.getMidiInOut().getName().compareTo(right.getMidiInOut().getName());
         });
     }

@@ -23,10 +23,10 @@ public interface FxmlObject {
         for (Class currentClass = getClass(); FxmlObject.class.isAssignableFrom(currentClass); currentClass = currentClass.getSuperclass()) {
             final URL url = classToFxmlUrl(currentClass);
             toBeLoaded.addFirst(url);
-            LOGGER.debug("will load {} for {}", url, currentClass);
+            LOGGER.debug("will load <{}> for <{}>", url, currentClass);
         }
         for (URL url : toBeLoaded) {
-            LOGGER.debug("loading {}", url);
+            LOGGER.debug("loading <{}>", url);
             FXMLLoader fxmlLoader = new FXMLLoader(url, App.MESSAGES);
             fxmlLoader.setController(this);
             fxmlLoader.setRoot(this);
@@ -41,7 +41,7 @@ public interface FxmlObject {
 
     default <T> void replace(ObservableList<T> list, T oldValue, T newValue) {
         int index = list.indexOf(oldValue);
-        LOGGER.debug("oldValue {}, newValue {}, index {}", oldValue, newValue, index);
+        LOGGER.debug("oldValue <{}>, newValue <{}>, index <{}>", oldValue, newValue, index);
         if (index >= 0) {
             list.remove(oldValue);
             list.add(index, newValue);

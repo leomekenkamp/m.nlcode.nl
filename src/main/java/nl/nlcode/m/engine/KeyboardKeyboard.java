@@ -46,7 +46,7 @@ public class KeyboardKeyboard extends MidiInOut {
     }
 
     public void setZeroBasedChannel(int channel) {
-        LOGGER.debug("octave (0-based) now {}", octave);
+        LOGGER.debug("octave (0-based) now <{}>", octave);
         this.channel = channel;
     }
 
@@ -63,12 +63,12 @@ public class KeyboardKeyboard extends MidiInOut {
     }
 
     public void setOctave(int octave) {
-        LOGGER.debug("octave now {}", octave);
+        LOGGER.debug("octave now <{}>", octave);
         this.octave = octave;
     }
 
     public void keyChange(int note, boolean pressed) {
-        LOGGER.debug("note: {}, pressed: {}", note, pressed);
+        LOGGER.debug("note: <{}>, pressed: <{}>", note, pressed);
         int transposedNote = note + (getOctave() - 4) * 12;
         if (transposedNote >= 0 && transposedNote <= 127) {
             try {
@@ -83,7 +83,7 @@ public class KeyboardKeyboard extends MidiInOut {
                 throw new IllegalArgumentException(e);
             }
         } else {
-            LOGGER.warn("key outside of reach: {}", transposedNote);
+            LOGGER.warn("key outside of reach: <{}>", transposedNote);
         }
     }
 

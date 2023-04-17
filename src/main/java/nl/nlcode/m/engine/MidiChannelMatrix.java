@@ -27,8 +27,20 @@ public class MidiChannelMatrix extends MidiInOut {
                 fromTo[from][to] = new AtomicBoolean();
             }
         }
-        for (int i = 0; i < 16; i++) {
-            fromTo[i][i].set(true);
+        defaultFromTo();
+    }
+
+    public void defaultFromTo() {
+        for (int fromTo = 0; fromTo < 16; fromTo++) {
+            zeroBasedFromTo(fromTo, fromTo, true);
+        }
+    }
+
+    public void clearFromTo() {
+        for (int from = 0; from < 16; from++) {
+            for (int to = 0; to < 16; to++) {
+                zeroBasedFromTo(from, from, false);
+            }
         }
     }
 
@@ -53,11 +65,11 @@ public class MidiChannelMatrix extends MidiInOut {
     public boolean oneBasedFromTo(int from, int to) {
         return zeroBasedFromTo(from - 1, to - 1);
     }
-    
+
     public void oneBasedFromTo(int from, int to, boolean connected) {
         zeroBasedFromTo(from - 1, to - 1, connected);
     }
-    
+
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
         if (message instanceof ShortMessage) {
@@ -76,11 +88,11 @@ public class MidiChannelMatrix extends MidiInOut {
     private ShortMessage forChannel(int channel, ShortMessage original) {
         ShortMessage result;
         if (channel == original.getChannel()) {
-            LOGGER.debug("using original for channel {}", channel);
+            LOGGER.debug("using original for channel <{}>", channel);
             result = original;
         } else {
             try {
-                LOGGER.debug("making copy for channel {}", channel);
+                LOGGER.debug("making copy for channel <{}>", channel);
                 result = new ShortMessage(original.getCommand(), channel, original.getData1(), original.getData2());
             } catch (InvalidMidiDataException e) {
                 throw new IllegalStateException(e);

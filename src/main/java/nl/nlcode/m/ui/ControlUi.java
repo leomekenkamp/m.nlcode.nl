@@ -1,11 +1,17 @@
 package nl.nlcode.m.ui;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -66,11 +72,18 @@ public class ControlUi extends BorderPane implements FxmlController {
     public static final Preferences PREFERENCES = Preferences.userNodeForPackage(Control.class);
 
     private static final Preferences systemMidiPrefs = PREFERENCES.node("systemMidi");
+    
+    private static final Preferences openProjectsPrefs = PREFERENCES.node("openProjects");
 
     private Stage settings;
 
     private Collection<ProjectUi> projectUis;
 
+    public ControlUi() {
+        control = Control.getInstance();
+        midiDeviceMgr = MidiDeviceMgr.getInstance();
+    }
+    
     public ControlUi(Control control, MidiDeviceMgr midiDeviceMgr) {
         loadFxml(App.MESSAGES);
 
@@ -94,10 +107,31 @@ public class ControlUi extends BorderPane implements FxmlController {
             }
         }
         newProject.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN));
+        Platform.runLater(() -> {
+            try {
+                for (String projectPath : openProjectsPrefs.keys()) {
+                    try {
+                        openProject(Paths.get(projectPath));
+                    } catch (IOException e) {
+                        LOGGER.error("cannot load project", e);
+                    }
+                }
+            } catch (BackingStoreException e) {
+                LOGGER.error("cannot load prefs", e);
+            }
+        });
     }
 
     public static Preferences prefs(MidiDevice midiDevice) {
-        return systemMidiPrefs.node(MidiDeviceMgr.getDisplayName(midiDevice));
+        Preferences result = systemMidiPrefs.node(MidiDeviceMgr.getDisplayName(midiDevice));
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        try {
+            result.exportNode(stream);
+            LOGGER.debug(stream.toString("UTF-8"));
+        } catch (BackingStoreException | IOException e) {
+            LOGGER.error("this is weird, cannot stream prefs?...", e);
+        }
+        return result;
     }
 
     public Control getControl() {
@@ -113,6 +147,11 @@ public class ControlUi extends BorderPane implements FxmlController {
         createStage(getControl().createProject());
     }
 
+    public void openProject(Path path) throws FileNotFoundException, IOException {
+        Project project = Project.load(getControl(), path);
+        createStage(project);
+    }
+
     @FXML
     private void openProject() throws FileNotFoundException, IOException {
         FileChooser fileChooser = ProjectUi.projectChooser("openProject", getControl().getProjectDirectory());
@@ -120,8 +159,7 @@ public class ControlUi extends BorderPane implements FxmlController {
         fileChooser.setSelectedExtensionFilter(M_FILTER);
         File file = fileChooser.showOpenDialog(getScene().getWindow());
         if (file != null) {
-            Project project = Project.load(getControl(), file.toPath());
-            createStage(project);
+            openProject(file.toPath());
         }
     }
 
@@ -175,12 +213,12 @@ public class ControlUi extends BorderPane implements FxmlController {
         double x = preferences.getDouble(App.PREF_X, Double.NaN);
         if (x != Double.NaN) {
             stage.setX(x);
-            LOGGER.info("init X to {}", x);
+            LOGGER.info("init X to <{}>", x);
         }
         double y = preferences.getDouble(App.PREF_Y, Double.NaN);
         if (y != Double.NaN) {
             stage.setY(y);
-            LOGGER.info("init Y to {}", y);
+            LOGGER.info("init Y to <{}>", y);
         }
 
         stage.showingProperty().addListener(new ChangeListener<Boolean>() {
@@ -189,14 +227,20 @@ public class ControlUi extends BorderPane implements FxmlController {
                 if (!newValue) {
                     preferences.putDouble(App.PREF_X, stage.getX());
                     preferences.putDouble(App.PREF_Y, stage.getY());
-                    LOGGER.info("moved X,Y to {} {}", stage.getX(), stage.getY());
+                    LOGGER.info("moved X,Y to <{}> <{}>", stage.getX(), stage.getY());
                 }
             }
         });
     }
 
     public boolean canCloseWindow() {
+        try {
+            openProjectsPrefs.clear();
+        } catch (BackingStoreException ex) {
+            LOGGER.error("huh?", ex);
+        }
         for (ProjectUi projectUi : projectUis) {
+            openProjectsPrefs.put(projectUi.getPath().toString(), "");
             projectUi.closeWindow();
         }
         return projectUis.isEmpty();

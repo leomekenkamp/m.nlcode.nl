@@ -112,8 +112,8 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
             return transpose.get();
         }
 
-        public void setTranspose(int keys) {
-            transpose.set(keys);
+        public void setTranspose(int semiNotes) {
+            transpose.set(semiNotes);
         }
 
         public Layer getLayer() {
