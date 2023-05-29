@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class AllowedClassesObjectInputStream extends ObjectInputStream {
 
-    private static final boolean LEARN_MODE = false; // always put to FALSE for production
+    private static final boolean LEARN_MODE = true; // always put to FALSE for production
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AllowedClassesObjectInputStream.class);
     private static Set<String> allowed = new TreeSet<>();

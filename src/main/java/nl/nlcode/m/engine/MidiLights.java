@@ -6,10 +6,12 @@ package nl.nlcode.m.engine;
  */
 public class MidiLights extends MidiInOut {
 
+    public static interface Ui extends MidiInOut.Ui {
+    }
+    
     private static final long serialVersionUID = 0L;
 
-    public MidiLights(Project project) {
-        super(project);
+    public MidiLights() {
     }
 
     @Override

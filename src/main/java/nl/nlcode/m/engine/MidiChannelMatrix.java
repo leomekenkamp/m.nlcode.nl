@@ -20,8 +20,7 @@ public class MidiChannelMatrix extends MidiInOut {
 
     private volatile AtomicBoolean fromTo[][] = new AtomicBoolean[16][16];
 
-    public MidiChannelMatrix(Project project) {
-        super(project);
+    public MidiChannelMatrix() {
         for (int from = 0; from < 16; from++) {
             for (int to = 0; to < 16; to++) {
                 fromTo[from][to] = new AtomicBoolean();
@@ -72,8 +71,7 @@ public class MidiChannelMatrix extends MidiInOut {
 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
-        if (message instanceof ShortMessage) {
-            ShortMessage original = (ShortMessage) message;
+        if (message instanceof ShortMessage original) {
             for (int to = 0; to < 16; to++) {
                 if (MidiChannelMatrix.this.zeroBasedFromTo(original.getChannel(), to)) {
                     super.send(forChannel(to, original), timeStamp);
@@ -81,7 +79,7 @@ public class MidiChannelMatrix extends MidiInOut {
             }
         } else {
             LOGGER.debug("non-channel message, relaying to super");
-            super.send(message, timeStamp);
+            super.processReceive(message, timeStamp);
         }
     }
 

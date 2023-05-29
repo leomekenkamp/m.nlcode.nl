@@ -2,11 +2,7 @@ package nl.nlcode.javafxutil;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import org.slf4j.Logger;
@@ -81,6 +77,10 @@ public interface FxmlController<T> {
 
     default T loadFxml(Class type, CtorParamControllerFactory factory, ResourceBundle bundle) {
         return loadFxml(type.getResource(type.getSimpleName() + ".fxml"), factory, bundle);
+    }
+
+    default T loadFxml(String fxmlFileName, ResourceBundle bundle) {
+        return loadFxml(fxmlFileName, null, bundle);
     }
 
     default T loadFxml(String fxmlFileName, CtorParamControllerFactory factory, ResourceBundle bundle) {

@@ -25,15 +25,17 @@
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
     type="MidiLightsUi"
     tabClosingPolicy="UNAVAILABLE">
-    <instrumentTab>
-        <Tab text="%lights" styleClass="instrument">
-            <HBox styleClass="lights">
-                <HBox styleClass="canvasContainer">
-                    <minHeight><Region fx:constant="USE_PREF_SIZE"/></minHeight>
-                    <maxHeight><Region fx:constant="USE_PREF_SIZE"/></maxHeight>
-                    <Canvas fx:id="keysCanvas" height="64" width="256" />
-                </HBox>
+    <instrument>
+        <HBox styleClass="lights">
+            <HBox styleClass="canvasContainer">
+                <minHeight>
+                    <Region fx:constant="USE_PREF_SIZE"/>
+                </minHeight>
+                <maxHeight>
+                    <Region fx:constant="USE_PREF_SIZE"/>
+                </maxHeight>
+                <Canvas fx:id="keysCanvas" height="64" width="256" />
             </HBox>
-        </Tab>
-    </instrumentTab>
+        </HBox>
+    </instrument>
 </fx:root>

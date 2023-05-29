@@ -49,6 +49,9 @@ public class MidiLayerAndSplit extends MidiInOut {
         }
 
         public void setFromNote(int fromNote) {
+            if (fromNote < 0 || fromNote > 127) {
+                throw new IllegalArgumentException();
+            }
             this.fromNote = fromNote;
         }
 
@@ -57,6 +60,9 @@ public class MidiLayerAndSplit extends MidiInOut {
         }
 
         public void setToNote(int toNote) {
+            if (toNote < 0 || toNote > 127) {
+                throw new IllegalArgumentException();
+            }
             this.toNote = toNote;
         }
 
@@ -65,6 +71,9 @@ public class MidiLayerAndSplit extends MidiInOut {
         }
 
         public void setInputChannel(int inputChannel) {
+            if (inputChannel < 0 || inputChannel > 15) {
+                throw new IllegalArgumentException();
+            }
             this.inputChannel = inputChannel;
         }
 
@@ -81,6 +90,9 @@ public class MidiLayerAndSplit extends MidiInOut {
         }
 
         public void setOutputChannel(int outputChannel) {
+            if (outputChannel < 0 || outputChannel > 15) {
+                throw new IllegalArgumentException();
+            }
             this.outputChannel = outputChannel;
         }
 
@@ -144,8 +156,7 @@ public class MidiLayerAndSplit extends MidiInOut {
 
     private List<Layer> layers;
 
-    public MidiLayerAndSplit(Project project) {
-        super(project);
+    public MidiLayerAndSplit() {
         layers = Collections.synchronizedList(new ArrayList());
     }
 
@@ -167,8 +178,7 @@ public class MidiLayerAndSplit extends MidiInOut {
 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
-        if (message instanceof ShortMessage) {
-            ShortMessage shortMessage = (ShortMessage) message;
+        if (message instanceof ShortMessage shortMessage) {
             if (noteRelated(shortMessage)) {
                 boolean[] channelsSent = new boolean[16];
                 LOGGER.debug("through layers <{}>", MIDI_FORMAT.format(message));
@@ -177,11 +187,11 @@ public class MidiLayerAndSplit extends MidiInOut {
                 }
             } else {
                 LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
-                super.send(message, timeStamp);
+                super.processReceive(message, timeStamp);
             }
         } else {
             LOGGER.debug("non-note message <{}>, relaying to super", MIDI_FORMAT.format(message));
-            super.send(message, timeStamp);
+            super.processReceive(message, timeStamp);
         }
     }
 

@@ -2,6 +2,7 @@ package nl.nlcode.m.engine;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +21,42 @@ public class KeyboardKeyboard extends MidiInOut {
     private int velocity;
 
     private int octave;
+    
+    public static record SaveData0 (
+            int id,
+            int channel,
+            int velocity,
+            int octave,
+            Marshalled<MidiInOut> s) implements Marshalled<KeyboardKeyboard> {
 
-    public KeyboardKeyboard(Project project) {
-        super(project);
+        @Override
+        public void unmarshalInternal(Context context, KeyboardKeyboard target) {
+            target.channel = channel();
+            target.velocity = velocity();
+            target.octave = octave();
+            s.unmarshalInternal(context, target);
+        }
+
+        @Override
+        public KeyboardKeyboard createMarshallable() {
+            return new KeyboardKeyboard();
+        }
+        
+        
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new SaveData0(
+                id,
+                channel,
+                velocity,
+                octave,
+                super.marshalInternal(-1, context)
+        );
+    }
+
+    public KeyboardKeyboard() {
         channel = 0;
         velocity = 63;
         octave = 4;

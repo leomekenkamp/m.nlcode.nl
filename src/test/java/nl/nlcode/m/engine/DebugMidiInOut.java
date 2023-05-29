@@ -2,9 +2,7 @@ package nl.nlcode.m.engine;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 
@@ -18,7 +16,7 @@ public class DebugMidiInOut extends MidiInOut {
     private List<Long> timeStamps = new ArrayList<>(); 
             
     public DebugMidiInOut(Project project) {
-        super(project);
+        activate(project);
     }
 
     @Override
@@ -60,10 +58,15 @@ public class DebugMidiInOut extends MidiInOut {
     
     public ShortMessage receivedShort(int index) {
         MidiMessage midi = receivedMidi(index);
-        if (midi instanceof ShortMessage) {
-            return ShortMessage.class.cast(midi);
+        if (midi instanceof ShortMessage shortMessage) {
+            return shortMessage;
         } else {
             throw new IllegalArgumentException("message at index <" + index + "> has type <" + midi.getClass() + ">");
         }
+    }
+    
+    public void clearReceived() {
+        midiMessages.clear();
+        timeStamps.clear();
     }
 }

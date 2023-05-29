@@ -18,14 +18,15 @@ public class MidiMessageFormat {
     private static final String STAT_HI_PREFIX = "STAT_HI_";
 
     private static final String STAT_PREFIX = "STAT_";
-    
+
     private static final String CONTROLLER_PREFIX = "CONTROLLER_";
 
     private final static String[] NOTE_DESC = new String[] {
         "C", "C♯/D♭", "D", "E♭/D♯", "E", "F", "F♯/G♭", "G", "A♭/G♯", "A", "B♭/A♯", "B"
     };
-    
+
     private static Map<String, Integer> DESC_TO_NOTE_OFFSET = new HashMap<>();
+
     static {
         for (int i = 0; i < NOTE_DESC.length; i++) {
             DESC_TO_NOTE_OFFSET.put(NOTE_DESC[i], i);
@@ -47,27 +48,49 @@ public class MidiMessageFormat {
         return result.toString();
     }
 
-    public String noteToDesc(int note) {
+    public static String noteToDesc(int note) {
         if (note < 0 || note > 127) {
             throw new IllegalArgumentException("invalid <" + note + ">");
         }
-        return NOTE_DESC[note % NOTE_DESC.length] + ((note / 12) - 1);
+        
+        return note <= 20 ? "" : NOTE_DESC[note % NOTE_DESC.length] + ((note / 12) - 1);
     }
-    
+
+    public static int descToNote(String desc) {
+        desc = desc.trim();
+        int octave = Integer.parseInt(desc.substring(desc.length() - 1));
+        String noteWithoutOctave = desc.substring(0, desc.length() - 1).toUpperCase();
+        if (desc.length() == 2) {
+            for (int i = 0; i < NOTE_DESC.length; i++) {
+                if (NOTE_DESC[i].equals(noteWithoutOctave)) {
+                    return (octave + 1) * 12 + i;
+                }
+            }
+            throw new IllegalArgumentException();
+        } else {
+            for (int i = 0; i < NOTE_DESC.length; i++) {
+                if (NOTE_DESC[i].contains(noteWithoutOctave)) {
+                    return (octave + 1) * 12 + i;
+                }
+            }
+            throw new IllegalArgumentException();
+
+        }
+    }
+
 //    public int descToNote(String desc) {
 //        int len = desc.length();
 //        int octave = Integer.parseInt(desc.substring(len - 2, len - 1));
 //        String noteDesc = desc.substring(0, len - 2);
 //        int 
 //    }
-
     public String format(MidiMessage message) {
-        if (message instanceof ShortMessage) {
-            return format((ShortMessage) message);
-        } else if (message instanceof SysexMessage) {
-            return format((SysexMessage) message);
-        } else if (message instanceof MetaMessage) {
-            return format((MetaMessage) message);
+        if (message instanceof ShortMessage shortMessage) {
+            return format(shortMessage);
+        } else if (message instanceof SysexMessage sysexMessage) {
+            return format(sysexMessage);
+        } else if (message instanceof MetaMessage metaMessage) {
+            return format(metaMessage);
         } else {
             return MIDI.getString("unknownMessageType");
         }
@@ -82,11 +105,11 @@ public class MidiMessageFormat {
             return formatChannelMessage(shortMsg);
         }
     }
-    
+
     public String format(SysexMessage sysexMsg) {
         return format(sysexMsg, 7);
     }
-    
+
     public String format(SysexMessage sysexMsg, int maxBytes) {
         StringBuffer result = new StringBuffer(MIDI.getString(STAT_PREFIX + Integer.toHexString(sysexMsg.getStatus())));
         if (maxBytes >= 0) {
@@ -103,7 +126,7 @@ public class MidiMessageFormat {
         }
         return result.toString();
     }
-    
+
     public String format(MetaMessage shortMsg) {
         return "not implemented";
     }
@@ -111,11 +134,11 @@ public class MidiMessageFormat {
     private int decode14bit(ShortMessage shortMessage) {
         return ((shortMessage.getData2() & 0x7F) << 7) | (shortMessage.getData1() & 0x7F);
     }
-     
+
     private StringJoiner stringJoiner() {
         return new StringJoiner(MIDI.getString("stringJoiner"));
     }
-    
+
     private String formatSystemMessage(ShortMessage shortMsg) {
         StringJoiner result = stringJoiner();
         result.add(MIDI.getString(STAT_PREFIX + Integer.toHexString(shortMsg.getStatus())));

@@ -23,7 +23,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class MidiClock extends MidiInOut {
+public class MidiClock extends MidiInOut<MidiClock.Ui> {
+
+    public static interface Ui extends MidiInOut.Ui {
+
+        void timingClock(int tick);
+
+        void beat(int beat);
+
+        void bar(int bar);
+
+        void bpm(float bmp);
+    }
 
     private static final long serialVersionUID = 0L;
 
@@ -49,14 +60,9 @@ public class MidiClock extends MidiInOut {
 
     private transient ScheduledFuture tickFuture;
 
-    private transient AtomicReference<Consumer<Integer>> onTickChangeRef;
-    private transient AtomicReference<Consumer<Integer>> onBeatChangeRef;
-    private transient AtomicReference<Consumer<Integer>> onBarChangeRef;
-    
     private transient AtomicBoolean tickTimerRunning;
 
-    public MidiClock(Project project) {
-        super(project);
+    public MidiClock() {
         clockSource = ClockSource.INTERNAL;
         bar = new AtomicInteger();
         beat = new AtomicInteger();
@@ -64,62 +70,33 @@ public class MidiClock extends MidiInOut {
         beatsPerBar = new AtomicInteger(4);
         ticksPerBeat = new AtomicInteger(24);
         beats100PerMinute = new AtomicInteger(12000);
-        initSerialization();
-        resetPosition();
-    }
-
-    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        in.defaultReadObject();
-        initSerialization();
-    }
-
-    private void initSerialization() {
         tickScheduler = Executors.newSingleThreadScheduledExecutor();
-        onTickChangeRef = new AtomicReference<>();
-        onBeatChangeRef = new AtomicReference<>();
-        onBarChangeRef = new AtomicReference<>();
         timerStartedWithTickTimeMicroseconds = new AtomicLong();
         tickTimerRunning = new AtomicBoolean(false);
+        resetPosition(false);
     }
 
-    public void setOnTickChange(Consumer<Integer> onTickChange) {
-        onTickChangeRef.set(onTickChange);
+    private void barChanged(int bar) {
+        getUi().bar(bar);
     }
 
-    public void setOnBeatChange(Consumer<Integer> onBeatChange) {
-        onBeatChangeRef.set(onBeatChange);
+    private void beatChanged(int beat) {
+        getUi().beat(beat);
     }
 
-    public void setOnBarChange(Consumer<Integer> onBarChange) {
-        onBarChangeRef.set(onBarChange);
+    private void tickChanged(int tick) {
+        getUi().timingClock(tick);
     }
 
-    private void changed(AtomicReference<Consumer<Integer>> onChangeRef, int value) {
-        Consumer<Integer> onChange = onChangeRef.get();
-        if (onChange != null) {
-            onChange.accept(value);
-        }
-    }
-
-    private void barChanged() {
-        changed(onBarChangeRef, bar.get());
-    }
-
-    private void beatChanged() {
-        changed(onBeatChangeRef, beat.get());
-    }
-
-    private void tickChanged() {
-        changed(onTickChangeRef, tick.get());
-    }
-
-    public void resetPosition() {
+    public void resetPosition(boolean informUi) {
         tick.set(0);
-        tickChanged();
         beat.set(1);
-        beatChanged();
         bar.set(1);
-        barChanged();
+        if (informUi) {
+            tickChanged(0);
+            beatChanged(1);
+            barChanged(1);
+        }
     }
 
     public int getTick() {
@@ -166,11 +143,11 @@ public class MidiClock extends MidiInOut {
             if (beat.incrementAndGet() > beatsPerBar.get()) {
                 beat.set(1);
                 bar.incrementAndGet();
-                barChanged();
+                barChanged(bar.incrementAndGet());
             }
-            beatChanged();
+            beatChanged(beat.get());
         }
-        tickChanged();
+        tickChanged(tick.get());
         send(createMidiClock());
     }
 
@@ -200,7 +177,7 @@ public class MidiClock extends MidiInOut {
 
     public void start() {
         stopTimer();
-        resetPosition();
+        resetPosition(true);
         if (clockSource == INTERNAL) {
             startTimer();
         }
@@ -230,7 +207,7 @@ public class MidiClock extends MidiInOut {
     private void startTimer() {
         startTimer(false);
     }
-    
+
     private void startTimer(boolean forceRestart) {
         if ((!tickTimerRunning.compareAndExchange(false, true) && !forceRestart) || (forceRestart && tickFuture.isCancelled())) {
             long scheduleInterval = getTickTimeMicroseconds();
@@ -288,7 +265,7 @@ public class MidiClock extends MidiInOut {
                 resume();
                 break;
             default:
-                send(message);
+                super.processReceive(message, timeStamp);
         }
     }
 

@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder;
+import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -18,6 +22,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
 import nl.nlcode.m.engine.MidiLayerAndSplit;
 import nl.nlcode.m.engine.MidiLayerAndSplit.Layer;
+import nl.nlcode.m.engine.EnglishNoteStringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +38,9 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
 
         private MidiLayerAndSplit.Layer layer;
 
-        private IntegerProperty fromNote;
+        private IntegerProperty fromNoteNumber;
+
+        private StringProperty fromNoteName;
 
         private IntegerProperty toNote;
 
@@ -46,7 +53,11 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
         public LayerUi(MidiLayerAndSplit.Layer layer) {
             try {
                 this.layer = layer;
-                fromNote = JavaBeanIntegerPropertyBuilder.create().bean(layer).name("fromNote").build();
+                fromNoteNumber = JavaBeanIntegerPropertyBuilder.create().bean(layer).name("fromNote").build();
+                fromNoteName = new SimpleStringProperty();
+                setFromNoteName("test");
+                //fromNote = JavaBeanStringPropertyBuilder.create().bean(layer).name("fromNote").build();
+//                Bindings.bindBidirectional(fromNote, (Property) fromNoteNumber, new NoteStringConverter());
                 toNote = JavaBeanIntegerPropertyBuilder.create().bean(layer).name("toNote").build();
                 inputChannel = JavaBeanIntegerPropertyBuilder.create().bean(layer).name("inputChannelOneBased").build();
                 outputChannel = JavaBeanIntegerPropertyBuilder.create().bean(layer).name("outputChannelOneBased").build();
@@ -56,16 +67,28 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
             }
         }
 
-        public IntegerProperty fromNoteProperty() {
-            return fromNote;
+        public IntegerProperty fromNoteNumberProperty() {
+            return fromNoteNumber;
         }
 
-        public int getFromNote() {
-            return fromNote.get();
+        public int getFromNoteNumber() {
+            return fromNoteNumber.get();
         }
 
-        public void setFromNote(int from) {
-            fromNote.set(from);
+        public void setFromNoteNumber(int from) {
+            fromNoteNumber.set(from);
+        }
+
+        public StringProperty fromNoteNameProperty() {
+            return fromNoteName;
+        }
+
+        public String getFromNoteName() {
+            return fromNoteName.get();
+        }
+
+        public void setFromNoteName(String from) {
+            fromNoteName.set(from);
         }
 
         public IntegerProperty toNoteProperty() {
@@ -137,10 +160,16 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
     private TableColumn inputChannelColumn;
 
     @FXML
-    private TableColumn fromNoteColumn;
+    private TableColumn fromNoteNumberColumn;
 
     @FXML
-    private TableColumn toNoteColumn;
+    private TableColumn fromNoteNameColumn;
+
+    @FXML
+    private TableColumn toNoteNumberColumn;
+
+    @FXML
+    private TableColumn toNoteNameColumn;
 
     @FXML
     private TableColumn transposeColumn;
@@ -183,33 +212,58 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
                 new EventHandler<CellEditEvent<LayerUi, Integer>>() {
             @Override
             public void handle(CellEditEvent<LayerUi, Integer> t) {
-                ((LayerUi) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setInputChannel(t.getNewValue());
-                setDirty();
+                if (t.getNewValue() >= 1 && t.getNewValue() <= 16) {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setInputChannel(t.getNewValue());
+                    setDirty();
+                    t.getTableView().refresh();
+                } else {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setInputChannel(t.getOldValue());
+                    t.getTableView().refresh();
+                }
             }
         });
-        fromNoteColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNote"));
-        fromNoteColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-        fromNoteColumn.setOnEditCommit(
+        fromNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNoteNumber"));
+        fromNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        fromNoteNumberColumn.setOnEditCommit(
                 new EventHandler<CellEditEvent<LayerUi, Integer>>() {
             @Override
             public void handle(CellEditEvent<LayerUi, Integer> t) {
-                ((LayerUi) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setFromNote(t.getNewValue());
-                setDirty();
+                if (t.getNewValue() >= 0 && t.getNewValue() <= 127) {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setFromNoteNumber(t.getNewValue());
+                    setDirty();
+                } else {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setFromNoteNumber(t.getOldValue());
+                    t.getTableView().refresh();
+                }
             }
         });
-        toNoteColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("toNote"));
-        toNoteColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-        toNoteColumn.setOnEditCommit(
-                new EventHandler<CellEditEvent<LayerUi, Integer>>() {
-            @Override
-            public void handle(CellEditEvent<LayerUi, Integer> t) {
-                ((LayerUi) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setToNote(t.getNewValue());
-                setDirty();
-            }
-        });
+        fromNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNoteNumber"));
+        fromNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(new EnglishNoteStringConverter()));
+        
+        toNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("toNote"));
+        toNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+//        toNoteNumberColumn.setOnEditCommit(
+//                new EventHandler<CellEditEvent<LayerUi, Integer>>() {
+//            @Override
+//            public void handle(CellEditEvent<LayerUi, Integer> t) {
+//                if (t.getNewValue() >= 0 && t.getNewValue() <= 127) {
+//                    ((LayerUi) t.getTableView().getItems().get(
+//                            t.getTablePosition().getRow())).setFromNoteNumber(t.getNewValue());
+//                    setDirty();
+//                } else {
+//                    ((LayerUi) t.getTableView().getItems().get(
+//                            t.getTablePosition().getRow())).setFromNoteNumber(t.getOldValue());
+//                    t.getTableView().refresh();
+//                }
+//            }
+//        });
+        toNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, String>("toNote"));
+        toNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(new EnglishNoteStringConverter()));
+        
         transposeColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("transpose"));
         transposeColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         transposeColumn.setOnEditCommit(
@@ -227,9 +281,15 @@ public class MidiLayerAndSplitUi extends MidiInOutUi<MidiLayerAndSplit> {
                 new EventHandler<CellEditEvent<LayerUi, Integer>>() {
             @Override
             public void handle(CellEditEvent<LayerUi, Integer> t) {
-                ((LayerUi) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setOutputChannel(t.getNewValue());
-                setDirty();
+                if (t.getNewValue() >= 1 && t.getNewValue() <= 16) {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setOutputChannel(t.getNewValue());
+                    setDirty();
+                } else {
+                    ((LayerUi) t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())).setOutputChannel(t.getOldValue());
+                    t.getTableView().refresh();
+                }
             }
         });
     }

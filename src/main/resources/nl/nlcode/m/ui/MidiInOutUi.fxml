@@ -25,7 +25,9 @@
 
 <fx:root type="MidiInOutUi" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
          tabClosingPolicy="UNAVAILABLE" fx:id="tabPane">
-    <Tab fx:id="instrumentTab"/>
+    <Tab text="${controller.instrumentTypeName}">
+        <HBox fx:id="instrument" styleClass="instrument"/>
+    </Tab>
     <Tab text="%settings">
         <BorderPane>
             <top>
@@ -67,6 +69,12 @@
     </Tab>
     <Tab fx:id="inputsTab" text="%inputs" >
         <MidiInOutUiListView fx:id="inputListView">
+            <!--
+FIXME: rewrite input list view so that items="${controller.activeSenders}" can be used and the
+controller knows only about the items and not of the way the are presented; i.e. does not know that
+a ListView is being used. Maybe this is not that easily done with JavaFX, because the controller
+need access to the SelectionModel of the ListView.
+            -->
             <prefHeight>
                 <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
             </prefHeight>

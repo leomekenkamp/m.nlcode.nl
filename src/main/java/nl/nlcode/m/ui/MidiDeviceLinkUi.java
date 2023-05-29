@@ -1,8 +1,11 @@
 package nl.nlcode.m.ui;
 
+import java.util.logging.Level;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
+import javax.sound.midi.ShortMessage;
 import nl.nlcode.m.engine.MidiDeviceLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +24,8 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> {
         loadFxml(MidiDeviceLinkUi.class, App.MESSAGES);
     }
 
-    protected void doInit() {
-        super.doInit();
+    protected void handleInitialize() {
+        super.handleInitialize();
         midiDeviceSelector.setItems(getProjectUi().getControlUi().getMidiDeviceMgr().getOpenMidiDevices());
         MidiDevice selected = getMidiInOut().getMidiDevice();
         if (selected == null) {
@@ -36,6 +39,14 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> {
         syncActiveSenderReceiver();
         midiDeviceSelector.getComboBox().valueProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setMidiDevice(newValue);
+            if (newValue != null) {
+                try {
+                    ShortMessage m = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 48, 0);
+                    getMidiInOut().asyncReceive(m, 0);
+                } catch (InvalidMidiDataException ex) {
+                    java.util.logging.Logger.getLogger(MidiDeviceLinkUi.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
             syncActiveSenderReceiver();
             getProjectUi().setDirty();
         });

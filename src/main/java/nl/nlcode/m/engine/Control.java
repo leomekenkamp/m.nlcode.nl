@@ -20,8 +20,13 @@ import org.slf4j.LoggerFactory;
 public final class Control {
 
     static {
+        AllowedClassesObjectInputStream.allow("[B");
+        AllowedClassesObjectInputStream.allow("[I");
+        AllowedClassesObjectInputStream.allow("[I;");
+        AllowedClassesObjectInputStream.allow("[Ljava.lang.Integer;");
         AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.ConcurrentHashMap$Segment;");
         AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.atomic.AtomicBoolean;");
+        AllowedClassesObjectInputStream.allow("[Z");
         AllowedClassesObjectInputStream.allow("[[Ljava.util.concurrent.atomic.AtomicBoolean;");
         AllowedClassesObjectInputStream.allow("java.lang.Boolean");
         AllowedClassesObjectInputStream.allow("java.lang.Double");
@@ -42,6 +47,8 @@ public final class Control {
         AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock");
         AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$NonfairSync");
         AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$Sync");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.IntInterval");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.IntervalClosure");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.KeyboardKeyboard");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiChannelMatrix");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiClock");
@@ -54,6 +61,9 @@ public final class Control {
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLights");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiMessageDump");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiSequencer");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.NoteGate");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.NoteHolder");
+        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.ProgramChanger");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.Project");
         AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.ShowTicks");
     }

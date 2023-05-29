@@ -8,8 +8,8 @@ public class KeyboardKeyboard0 extends KeyboardKeyboard {
 
     private static final long serialVersionUID = 0L;
 
-    public KeyboardKeyboard0(Project project) {
-        super(project);
+    public KeyboardKeyboard0() {
+        super();
     }
 
 }

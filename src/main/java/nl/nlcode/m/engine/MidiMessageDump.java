@@ -38,25 +38,11 @@ public class MidiMessageDump extends MidiInOut {
 
     private transient ObservableList<MessageAndTime> midiMessageList;
 
-    public MidiMessageDump(Project project) {
-        super(project);
-        deserializationInit();
-    }
-
-    private void deserializationInit() {
+    public MidiMessageDump() {
         midiMessageList = FXCollections.observableArrayList();
         if (showTicks == null) {
             showTicks = ShowTicks.ALL;
         }
-    }
-
-    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        in.defaultReadObject();
-        deserializationInit();
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
     }
 
     @Override

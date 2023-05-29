@@ -14,13 +14,12 @@
 <?import nl.nlcode.m.ui.MidiDeviceLinkUi?>
 
 <fx:root 
-    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiDeviceLinkUi"  styleClass="midiDeviceLink">
-    <instrumentTab>
-        <Tab text="%midiDevice" styleClass="instrument">
-            <VBox>        
-                <MidiDeviceSelector fx:id="midiDeviceSelector"/>
-            </VBox>
-        </Tab>
-    </instrumentTab>
+    xmlns="http://javafx.com/javafx" 
+    xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiDeviceLinkUi"  
+    styleClass="midiDeviceLink"
+>
+    <instrument>
+        <MidiDeviceSelector fx:id="midiDeviceSelector"/>
+    </instrument>
 </fx:root>

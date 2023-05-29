@@ -40,6 +40,7 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
     @BeforeEach
     public void setUp() {
         instance = createInstance();
+        instance.activate(project);
         defaultTestIn = new DebugMidiInOut(project);
         defaultTestOut = new DebugMidiInOut(project);
         defaultTestIn.startSendingTo(instance);
@@ -94,6 +95,11 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
 
     public int randomData2() {
         return random.nextInt(127);
+    }
+    
+    public void clearBuffers() {
+        defaultTestIn.clearReceived();
+        defaultTestOut.clearReceived();
     }
 
 }

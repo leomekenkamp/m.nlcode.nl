@@ -28,8 +28,8 @@ public class MidiSequencerUi extends MidiInOutUi<MidiSequencer> implements FxmlC
     }
 
     @Override
-    protected void doInit() {
-        super.doInit();
+    protected void handleInitialize() {
+        super.handleInitialize();
     }
 
 }

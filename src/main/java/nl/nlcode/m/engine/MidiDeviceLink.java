@@ -9,6 +9,7 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Transmitter;
+import nl.nlcode.marshalling.Marshalled;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +29,43 @@ import org.slf4j.LoggerFactory;
  */
 public final class MidiDeviceLink extends MidiInOut {
 
+    public static record MidiDeviceChanged(MidiInOut source, MidiDevice newDevice) implements Event {
+
+    }
+
     private static final long serialVersionUID = 0L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MidiDeviceLink.class);
+
+    private String midiDeviceName;
+
+    public static record SaveData0(
+            int id,
+            String midiDeviceName,
+            Marshalled<MidiInOut> s) implements Marshalled<MidiDeviceLink> {
+
+        @Override
+        public void unmarshalInternal(Context context, MidiDeviceLink target) {
+            target.midiDeviceName = midiDeviceName();
+            s.unmarshalInternal(context, target);
+            target.afterUnmarshal();
+        }
+
+        @Override
+        public MidiDeviceLink createMarshallable() {
+            return new MidiDeviceLink();
+        }
+
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new SaveData0(
+                id,
+                midiDeviceName,
+                super.marshalInternal(-1, context)
+        );
+    }
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
@@ -60,16 +95,11 @@ public final class MidiDeviceLink extends MidiInOut {
 
     private transient Receiver receiver;
 
-    private String midiDeviceName;
-
-    public MidiDeviceLink(Project project) {
-        super(project);
-        serializationInit();
+    public MidiDeviceLink() {
+        sendReceiver = new SendReceiver();
     }
 
-    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        in.defaultReadObject();
-        serializationInit();
+    private void afterUnmarshal() {
         if (midiDeviceName == null) {
             LOGGER.debug("no midiDeviceName, so not trying to find matching midiDevice");
         } else {
@@ -85,14 +115,6 @@ public final class MidiDeviceLink extends MidiInOut {
                 LOGGER.warn("could not match <{}> to any of the open system midi devices", midiDeviceName);
             }
         }
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-    }
-
-    private void serializationInit() {
-        sendReceiver = new SendReceiver();
     }
 
     public MidiDevice getMidiDevice() {
@@ -132,34 +154,27 @@ public final class MidiDeviceLink extends MidiInOut {
                 // FIXME: must be refactored, because this is too late
                 // exception must be thrown earlier in this method, before the internal state has been
                 // changed; it is now fubar when this exception occurs
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("this object is now fubar, please close the application without saving", e);
             }
+            toSendersRecursive(new MidiDeviceChanged(this, midiDevice));
         }
     }
 
     public boolean isActiveSender() {
-        if (midiDevice == null) {
-            // We are not linked, so you might think 'false' here, since we are not doing anything.
-            // However, we do want to end up in overviews of active senders, since we could get linked
-            // to an active senders at any time. If we get 'unlinked' for some reason, we do not want to
-            // risk being removed somewhere; if we are 'relinked' things should work as before.
-            return true;
-        } else {
-            return transmitter != null;
-        }
+        // Even if we are not linked. So you might think 'false' here if we are not linked.
+        // However, we do want to end up in overviews of active senders, since we could get linked
+        // to active senders at any time. If we get 'unlinked' for some reason, we do not want to
+        // risk being removed somewhere; if we are 'relinked' things should work as before.
+        return true;
     }
 
     @Override
     public boolean isActiveReceiver() {
-        if (midiDevice == null) {
-            // We are not linked, so you might think 'false' here, since we are not doing anything.
-            // However, we do want to end up in overviews of active receivers, since we could get linked
-            // to an active receiver at any time. If we get 'unlinked' for some reason, we do not want to
-            // risk being removed somewhere; if we are 'relinked' things should work as before.
-            return true;
-        } else {
-            return receiver != null;
-        }
+        // Even if we are not linked. So you might think 'false' here if we are not linked.
+        // However, we do want to end up in overviews of active receivers, since we could get linked
+        // to active receivers at any time. If we get 'unlinked' for some reason, we do not want to
+        // risk being removed somewhere; if we are 'relinked' things should work as before.
+        return true;
     }
 
     @Override
@@ -171,7 +186,7 @@ public final class MidiDeviceLink extends MidiInOut {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("actually relaying to a receiver: <{}>, <{}>", MIDI_FORMAT.format(message), timeStamp);
             }
-            ShortMessage toSend = (ShortMessage) message.clone();
+            ShortMessage toSend = (ShortMessage) message.clone(); // Is this really necessary?
             receiver.send(toSend, timeStamp);
         }
     }

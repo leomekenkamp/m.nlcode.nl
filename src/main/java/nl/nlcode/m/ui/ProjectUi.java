@@ -10,11 +10,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -31,8 +33,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -40,14 +46,12 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import nl.nlcode.javafxutil.CtorParamControllerFactory;
 import nl.nlcode.javafxutil.FxmlController;
-import nl.nlcode.javafxutil.FxmlHelper;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.MidiInOut;
 import static nl.nlcode.m.engine.Control.FILE_EXTENTION_FILTER;
@@ -59,6 +63,9 @@ import nl.nlcode.m.engine.MidiLayerAndSplit;
 import nl.nlcode.m.engine.MidiLights;
 import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.MidiSequencer;
+import nl.nlcode.m.engine.NoteGate;
+import nl.nlcode.m.engine.NoteHolder;
+import nl.nlcode.m.engine.ProgramChanger;
 import nl.nlcode.m.engine.Project;
 import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
 import org.slf4j.Logger;
@@ -108,6 +115,15 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     @FXML
     private MenuItem midiClock;
+
+    @FXML
+    private MenuItem noteGate;
+
+    @FXML
+    private MenuItem noteHolder;
+
+    @FXML
+    private MenuItem test;
 
     @FXML
     private Menu windowMenu;
@@ -193,49 +209,61 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         });
 
         arpeggiator.setOnAction(eh -> {
-            createStage(new Arpeggiator(getProject()));
+            activateAndCreateStage(new Arpeggiator());
             setDirty();
         });
         keyboardKeyboard.setOnAction(eh -> {
-            createStage(new KeyboardKeyboard(getProject()));
+            activateAndCreateStage(new KeyboardKeyboard());
             setDirty();
         });
-        keyboardKeyboard.setOnAction(eh -> {
-            KeyboardKeyboard device = new KeyboardKeyboard(getProject());
-            CtorParamControllerFactory callback = new CtorParamControllerFactory(this, device, keyboardKeyboard);
-            Object ui = FxmlHelper.loadFxml(KeyboardKeyboardController.class, callback, App.MESSAGES);
-            createStage(new KeyboardKeyboard(getProject()));
-            setDirty();
+        test.setOnAction(eh -> {
+            //loader.setController(new Object());
+            try {
+                CtorParamControllerFactory callback = new CtorParamControllerFactory(this);
+
+                FXMLLoader loader = new FXMLLoader(App.class.getResource("CompUser.fxml"));
+                Parent base = loader.load();
+
+                Scene scene = new Scene(base);
+                Stage stage = new Stage();
+                stage.setScene(scene);
+                stage.setHeight(300);
+                stage.setWidth(300);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
         });
         midiDeviceLink.setOnAction(eh -> {
-            createStage(new MidiDeviceLink(getProject()));
-            setDirty();
+            activateAndCreateStage(new MidiDeviceLink());
         });
         midiMessageDump.setOnAction(eh -> {
-            Stage stage = createStage(new MidiMessageDump(getProject()));
+            Stage stage = activateAndCreateStage(new MidiMessageDump());
             stage.setResizable(true);
-            setDirty();
         });
         midiChannelMatrix.setOnAction(eh -> {
-            createStage(new MidiChannelMatrix(getProject()));
-            setDirty();
+            activateAndCreateStage(new MidiChannelMatrix());
         });
         midiLayerAndSplit.setOnAction(eh -> {
-            Stage stage = createStage(new MidiLayerAndSplit(getProject()));
+            Stage stage = activateAndCreateStage(new MidiLayerAndSplit());
             stage.setResizable(true);
-            setDirty();
         });
         midiLights.setOnAction(eh -> {
-            createStage(new MidiLights(getProject()));
-            setDirty();
+            activateAndCreateStage(new MidiLights());
         });
         midiSequencer.setOnAction(eh -> {
-            createStage(new MidiSequencer(getProject()));
-            setDirty();
+            activateAndCreateStage(new MidiSequencer());
         });
         midiClock.setOnAction(eh -> {
-            createStage(new MidiClock(getProject()));
-            setDirty();
+            activateAndCreateStage(new MidiClock());
+        });
+        noteGate.setOnAction(eh -> {
+            activateAndCreateStage(new NoteGate());
+        });
+        noteHolder.setOnAction(eh -> {
+            activateAndCreateStage(new NoteHolder());
         });
         windowMenu.setDisable(windowMenu.getItems().size() <= 3);
         windowMenu.getItems().addListener(new ListChangeListener() {
@@ -252,6 +280,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         namePropertyWrapper.bind(Bindings.createStringBinding(
                 () -> pathProperty().get().getFileName().toString(), pathProperty())
         );
+    }
+
+    @FXML
+    public void createProgramChanger(ActionEvent event) {
+        activateAndCreateStage(new ProgramChanger());
     }
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {
@@ -305,7 +338,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             LOGGER.debug("processing instance <{}>", midiInOut);
             MidiInOutUi midiInOutUi = inOutToUi.get(midiInOut);
             LOGGER.debug("iterating over <{}> receivers", midiInOut.sendingTo().size());
-            for (MidiInOut receiver : midiInOut.sendingTo()) {
+            for (MidiInOut receiver : (Set<MidiInOut>) midiInOut.sendingTo()) {
                 MidiInOutUi receiverUi = inOutToUi.get(receiver);
                 LOGGER.debug("adding <{}> to input list of <{}>", midiInOutUi, receiverUi);
                 LOGGER.debug("selectable inputs: <{}>", receiverUi.getInputListView().getItems());
@@ -344,6 +377,14 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         getScene().getWindow().sizeToScene();
     }
 
+    private Stage activateAndCreateStage(MidiInOut midiInOut) {
+        midiInOut.activate(getProject());
+        Stage result = createStage(midiInOut);
+        setDirty();
+        return result;
+
+    }
+
     private Stage createStage(MidiInOut midiInOut) {
         LOGGER.debug("creating for <{}>", midiInOut);
         try {
@@ -352,6 +393,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             MenuItem menuItem = new MenuItem();
             windowMenu.getItems().add(menuItem);
             MidiInOutUi midiInOutUi = ctor.newInstance(this, midiInOut, menuItem);
+            midiInOut.setUi(midiInOutUi); // TODO: MOVE TO FACTORY METHOD
+
             Stage result = App.createStage(midiInOutUi);
             result.titleProperty().bind(midiInOutUi.nameProperty());
             getMidiInOutUiList().add(midiInOutUi);

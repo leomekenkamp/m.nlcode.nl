@@ -108,8 +108,8 @@ public class MidiMessageDumpUi extends MidiInOutUi<MidiMessageDump> implements F
     }
 
     @Override
-    protected void doInit() {
-        super.doInit();
+    protected void handleInitialize() {
+        super.handleInitialize();
     }
 
     private String toHex(MidiMessage msg, int maxLength) {

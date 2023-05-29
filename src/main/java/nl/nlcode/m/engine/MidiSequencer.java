@@ -8,8 +8,7 @@ public class MidiSequencer extends MidiInOut {
 
     private static final long serialVersionUID = 0L;
 
-    public MidiSequencer(Project project) {
-        super(project);
+    public MidiSequencer() {
     }
 
     @Override

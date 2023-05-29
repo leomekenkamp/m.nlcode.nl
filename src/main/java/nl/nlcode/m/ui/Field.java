@@ -1,12 +1,10 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import nl.nlcode.javafxutil.FxmlController;
 import org.slf4j.Logger;
@@ -18,11 +16,11 @@ import org.slf4j.LoggerFactory;
  */
 public class Field extends VBox implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Field.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
     private Label label;
-    
+
     private StringProperty labelTextProperty;
 
     public Field() {
@@ -33,12 +31,27 @@ public class Field extends VBox implements FxmlController {
     public StringProperty labelTextProperty() {
         return label.textProperty();
     }
-    
+
     public String getLabelText() {
         return label.getText();
     }
-    
+
     public void setLabelText(String labelText) {
-        label.setText(labelText);
+        if (labelText != null) {
+            for (;;) {
+                int first = labelText.indexOf("__");
+                if (first == -1) {
+                    break;
+                }
+                int second = labelText.indexOf("__", first + 1);
+                if (second == -1) {
+                    break;
+                }
+                String i18key = labelText.substring(first + 2, second);
+                String value = App.MESSAGES.getString(i18key);
+                labelText = labelText.substring(0, first) + value + labelText.substring(second + 2, labelText.length());
+            }
+        }
+        label.setText (labelText);
     }
 }

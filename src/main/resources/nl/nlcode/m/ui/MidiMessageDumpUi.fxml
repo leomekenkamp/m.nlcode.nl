@@ -25,28 +25,26 @@
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
     type="MidiMessageDumpUi"
     tabClosingPolicy="UNAVAILABLE" styleClass="midiMessageDump">
-    <instrumentTab>
-        <Tab text="%messages" styleClass="instrument">
-            <BorderPane>
-                <top>
-                    <Field labelText="%tick">
-                        <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
-                    </Field>
-                </top>
-                <center>
-                    <TableView fx:id="midiMessageTable">
-                        <columns>
-                            <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="100"/>
-                            <TableColumn fx:id="messageHexColumn" text="%messageHex" prefWidth="100"/>
-                            <TableColumn fx:id="messageDecColumn" text="%messageDec" prefWidth="100"/>
-                            <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="375"/>
-                        </columns>
-                        <prefHeight>
-                            <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
-                        </prefHeight>
-                    </TableView>
-                </center>
-            </BorderPane>
-        </Tab>
-    </instrumentTab>
+    <instrument>
+        <BorderPane>
+            <top>
+                <Field labelText="%tick">
+                    <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
+                </Field>
+            </top>
+            <center>
+                <TableView fx:id="midiMessageTable">
+                    <columns>
+                        <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="100"/>
+                        <TableColumn fx:id="messageHexColumn" text="%messageHex" prefWidth="100"/>
+                        <TableColumn fx:id="messageDecColumn" text="%messageDec" prefWidth="100"/>
+                        <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="375"/>
+                    </columns>
+                    <prefHeight>
+                        <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+                    </prefHeight>
+                </TableView>
+            </center>
+        </BorderPane>
+    </instrument>
 </fx:root>

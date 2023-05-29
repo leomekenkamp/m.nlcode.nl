@@ -37,6 +37,10 @@
                         <MenuItem fx:id="midiLights" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLights" />
                         <MenuItem fx:id="midiSequencer" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiSequencer" />
                         <MenuItem fx:id="midiClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
+                        <MenuItem fx:id="noteGate" mnemonicParsing="true" text="%nl.nlcode.m.engine.NoteGate" />
+                        <MenuItem fx:id="noteHolder" mnemonicParsing="true" text="%nl.nlcode.m.engine.NoteHolder" />
+                        <MenuItem onAction="#createProgramChanger" mnemonicParsing="true" text="%nl.nlcode.m.engine.ProgramChanger" />
+                        <MenuItem fx:id="test" text="test" />
                     </items>
                 </Menu>
                 <Menu fx:id="windowMenu" mnemonicParsing="true" text="%_window">

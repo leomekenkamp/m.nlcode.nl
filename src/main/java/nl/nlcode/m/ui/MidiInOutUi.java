@@ -10,6 +10,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -17,6 +18,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import nl.nlcode.javafxutil.CtorParamControllerFactory;
@@ -28,12 +30,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  */
-public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlController {
+public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlController, MidiInOut.Ui {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MidiInOutUi.class);
 
     private static final boolean SHORT_NAMES = true;
-    
+
     private static final String MIDI_IN_OUT = "midiInOut";
 
     private static final String ACTIVE_SENDER = "activeSender";
@@ -55,8 +57,19 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     @FXML
     private Tab inputsTab;
 
+    /**
+     * Should only have one child (or none)
+     */
     @FXML
-    private Tab instrumentTab;
+    private HBox instrument;
+    
+    public ObservableList<Node> getInstrument() {
+        return instrument.getChildren();
+    }
+    
+    public String getInstrumentTypeName() {
+        return App.MESSAGES.getString(getMidiInOut().getClass().getName());
+    }
 
     private T midiInOut;
 
@@ -97,17 +110,30 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         activeReceiverWrapper = new ReadOnlyBooleanWrapper(this, "activeReceiverWrapper");
         runOnce = new FxmlController.RunOnce(distance(getClass(), MidiInOutUi.class));
         Object x = loadFxml(MidiInOutUi.class, new CtorParamControllerFactory(projectUi), App.MESSAGES);
-        System.out.println(x);
     }
 
+    @FXML
     public final void initialize() {
+        // Every time the FXMLLoader loads an fxml file, it will call 'initialize'. This structure
+        // prevents the 'handleInitialize' method from being called multiple times; it will only be
+        // called once, at the load of the MidiInOutUi.fxml file.
         runOnce.runAtGivenInvocation(() -> {
-            doInit();
+            handleInitialize();
         });
     }
 
-    protected void doInit() {
+    public ObservableList<MidiInOutUi<?>> getActiveSenders() {
+        return projectUi.getActiveSendersReadonly();
+    }
+
+    /**
+     * Will get called right after FXML file loading.
+     * Subclasses *must* call their superclass <code>handleInitialize()</code> method, probably as
+     * the first instruction of their overriding implementation of this method.
+     */
+    protected void handleInitialize() {
         syncAll();
+
         inputListView.setAvailableMidiInOutUiList(projectUi.getActiveSendersReadonly());
         outputListView.setAvailableMidiInOutUiList(projectUi.getActiveReceiversReadonly());
 
@@ -250,18 +276,6 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         return midiInOut;
     }
 
-    public Tab getInstrumentTab() {
-        return instrumentTab;
-    }
-
-    public void setInstrumentTab(Tab instrumentTab) {
-        replace(getTabs(), this.instrumentTab, instrumentTab);
-        this.instrumentTab = instrumentTab;
-        if (instrumentTab != null) {
-            getSelectionModel().select(instrumentTab);
-        }
-    }
-
     public StringProperty nameProperty() {
         return name.textProperty();
     }
@@ -378,37 +392,36 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             consumer.accept(unconnected);
         }
     }
-
+    
     @FXML
-    private void connectedToFront() {
+    public void connectedToFront() {
         forAllConnected(midiInOutUi -> ((Stage) midiInOutUi.getScene().getWindow()).toFront());
     }
 
     @FXML
-    private void connectedMinimize() {
+    public void connectedMinimize() {
         forAllConnected(midiInOutUi -> ((Stage) midiInOutUi.getScene().getWindow()).setIconified(true));
     }
 
     @FXML
-    private void unconnectedToFront() {
+    public void unconnectedToFront() {
         forAllUnconnected(midiInOutUi -> ((Stage) midiInOutUi.getScene().getWindow()).toFront());
     }
 
     @FXML
-    private void unconnectedMinimize() {
+    public void unconnectedMinimize() {
         forAllUnconnected(midiInOutUi -> ((Stage) midiInOutUi.getScene().getWindow()).setIconified(true));
     }
 
-    @FXML
-    private void projectToFront() {
+    public void projectToFront() {
         ((Stage) getProjectUi().getScene().getWindow()).toFront();
     }
 
     public void forceCloseWindow() {
-//        inputListView.getSelectionModel().getSelectedItems().removeListener(inputSelectionChangeListener);
-//        outputListView.getSelectionModel().getSelectedItems().removeListener(outputSelectionChangeListener);
-//        inputListView.getSelectionModel().clearSelection();
-//        outputListView.getSelectionModel().clearSelection();
+        inputListView.getSelectionModel().clearSelection();
+        outputListView.getSelectionModel().clearSelection();
+        inputListView.getSelectionModel().getSelectedItems().removeListener(inputSelectionChangeListener);
+        outputListView.getSelectionModel().getSelectedItems().removeListener(outputSelectionChangeListener);
         menuItem.getParentMenu().getItems().remove(menuItem);
         getProjectUi().remove(this);
         getMidiInOut().close();
@@ -449,4 +462,5 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             return getMidiInOut().getName() + ": " + super.toString();
         }
     }
+
 }

@@ -16,7 +16,7 @@ public class MidiChannelMatrixTest extends DefaultMidiInOutTest<MidiChannelMatri
         
     @Override
     protected MidiChannelMatrix createInstance() {
-        return new MidiChannelMatrix(project);
+        return new MidiChannelMatrix();
     }
 
     /**
@@ -24,7 +24,7 @@ public class MidiChannelMatrixTest extends DefaultMidiInOutTest<MidiChannelMatri
      */
     @Test
     public void by_default_map_one_on_one() throws InvalidMidiDataException {
-        ShortMessage noteOn1 = new ShortMessage(ShortMessage.NOTE_OFF, 0, randomData1(), randomData2());
+        ShortMessage noteOn1 = new ShortMessage(ShortMessage.NOTE_ON, 0, randomData1(), randomData2());
         defaultTestIn.processReceive(noteOn1);
         ShortMessage noteOff1 = new ShortMessage(ShortMessage.NOTE_OFF, 0, randomData1(), randomData2());
         defaultTestIn.processReceive(noteOff1);

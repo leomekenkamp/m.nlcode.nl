@@ -1,6 +1,5 @@
 package nl.nlcode.m.ui;
 
-import java.util.Collections;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -129,6 +128,9 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
         ownerProperty.set(owner);
     }
 
+    /*
+    FIXME: get rid of this: the list with the items should know who the owner is and not add it
+    */
     public MidiInOutUi getOwner() {
         return ownerProperty.get();
     }

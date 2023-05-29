@@ -1,26 +1,30 @@
 package nl.nlcode.m.engine;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.marshalling.Marshallable;
+import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,83 +37,252 @@ import org.slf4j.LoggerFactory;
  * too cumbersome to 'enhance' the Java MIDI API to do this; bridging via {@code MidiDeviceLink}
  * gives far simpler code.
  * <p>
- * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send' method.
- * Implementations need to decide for themselves if they keep total control over their own sending
- * of messages and thus keep their send method(s) private. A receiving instance however must be
- * visible to the world, but there is no guarantee that the data received will actually be
+ * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send'
+ * method. Implementations need to decide for themselves if they keep total control over their own
+ * sending of messages and thus keep their send method(s) private. A receiving instance however must
+ * be visible to the world, but there is no guarantee that the data received will actually be
  * processed. Implementations may choose to ignore incoming messages, for instance if they represent
  * something like piano keys. Of course they are free to process them and -keeping with the example-
  * opt to act like a pianola.
+ * <p>
+ * Subclasses are expected to provide a {@code public static interface Ui} that extends the
+ * {@code UI} interface in {@code MidiInOut}.
  *
  * @author leo
  */
-public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut> {
+public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable, Lookup.Named<MidiInOut>, Marshallable {
+
+    public static interface Event {
+
+        public MidiInOut source();
+
+    }
+
+    /**
+     * <p>
+     * Interface to be implemented by user interface classes. This allows for decoupling of the user
+     * interface: the user interface knows <code>MidiInOut</code>, but not the other way around.
+     * <code>MidiInOut</code> only knows about the interface it should use to 'talk to'.
+     */
+    public static interface Ui {
+
+        default void midiInOutConnected() {
+        }
+
+        default void midiInOutDisconnecting() {
+        }
+
+        default void received(MidiMessage message, long timestamp) {
+        }
+
+        default void sent(MidiMessage message, long timestamp) {
+        }
+
+        default void name(String name) {
+        }
+    }
+
+    public class UpdateProperty implements Serializable {
+
+        private static final long serialVersionUID = 0L;
+
+        private transient Runnable afterSet;
+
+        public final void setAfterSet(Runnable afterSet) {
+            register(this);
+            this.afterSet = afterSet;
+        }
+
+        public final void runAfterSet(boolean change) {
+            if (change) {
+                runAfterSet();
+            }
+        }
+
+        public final void runAfterSet() {
+            if (getUi() != null && afterSet != null) {
+                afterSet.run();
+            }
+        }
+    }
+
+    public class IntUpdateProperty extends UpdateProperty {
+
+        private static final long serialVersionUID = 0L;
+
+        private AtomicInteger value = new AtomicInteger();
+
+        public int get() {
+            return value.get();
+        }
+
+        public void set(int newValue) {
+            int oldValue = value.getAndSet(newValue);
+            runAfterSet(oldValue != newValue);
+        }
+    }
+
+    public class BooleanUpdateProperty extends UpdateProperty {
+
+        private static final long serialVersionUID = 0L;
+
+        private AtomicBoolean value = new AtomicBoolean();
+
+        public BooleanUpdateProperty(boolean v) {
+            value.set(v);
+        }
+        
+        public boolean get() {
+            return value.get();
+        }
+
+        public void set(boolean newValue) {
+            boolean oldValue = value.getAndSet(newValue);
+            runAfterSet(oldValue != newValue);
+        }
+    }
+
+    public class ObjectUpdateProperty<T> extends UpdateProperty {
+
+        private static final long serialVersionUID = 0L;
+
+        private AtomicReference<T> value = new AtomicReference<>();
+
+        public T get() {
+            return value.get();
+        }
+
+        public void set(T newValue) {
+            T oldValue = value.getAndSet(newValue);
+            runAfterSet(!Objects.equals(value, newValue));
+        }
+    }
 
     private static final long serialVersionUID = 0L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiInOut.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    protected static final int NONE_FOR_7_BIT_INT = -1;
+
+    public static final int CHANNEL_MIN_ZERO_BASED = 0;
+
+    public static final int CHANNEL_MAX_ZERO_BASED = 15;
+
+    public static final int CHANNEL_MIN_ONE_BASED = CHANNEL_MIN_ZERO_BASED + 1;
+
+    public static final int CHANNEL_MAX_ONE_BASED = CHANNEL_MAX_ZERO_BASED + 1;
+
+    public static final int CHANNEL_COUNT = CHANNEL_MAX_ZERO_BASED - CHANNEL_MIN_ZERO_BASED + 1;
+
+    public static final int NOTE_MIN = 0;
+
+    public static final int NOTE_MAX = 127;
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
-
-    private Set<MidiInOut> sendingTo;
-
-    private Map<Serializable, Serializable> info;
 
     private transient Set sendingToReadonly;
 
     private transient Lookup<MidiInOut> lookup;
 
-    private transient BlockingQueue<MidiMessage> asyncReceiveQueue;
+    private transient BlockingQueue<TimestampedMessage> asyncReceiveQueue;
 
     private transient AtomicBoolean processing;
 
     private transient ExecutorService executorService;
 
+    private transient List<Consumer<U>> uiUpdates;
+
+    private transient List<UpdateProperty> updateProperties;
+
+    private transient U ui;
+
+    // persisted data
+    
     private String name;
 
-    private transient AtomicReference<BiConsumer<MidiMessage, Long>> onMidiMessageReceiveRef;
-    
-    protected MidiInOut(Project project) {
-        this(project.getMidiInOutLookup(), project.getMidiInOutExecutorService());
+    private Set<MidiInOut> sendingTo;
+
+    private Set<MidiInOut> receivingFrom;
+
+    private Map<Serializable, Serializable> info;
+
+
+    public static record SaveData0(
+            int id,
+            String name,
+            List<Marshalled> sendingTo,
+            List<Marshalled> receivingFrom,
+            Map<Serializable, Serializable> info) implements Marshalled<MidiInOut> {
+
+        @Override
+        public void unmarshalInternal(Context context, MidiInOut target) {
+            target.name = name();
+            for (Marshalled midiInOutOrRef : sendingTo()) {
+                target.sendingTo.add((MidiInOut) midiInOutOrRef.unmarshal(context));
+            }
+            for (Marshalled midiInOutOrRef : receivingFrom()) {
+                target.receivingFrom.add((MidiInOut) midiInOutOrRef.unmarshal(context));
+            }
+            target.info.putAll(info());
+        }
+
     }
 
-    protected MidiInOut(Lookup<MidiInOut> lookup, ExecutorService executorService) {
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new SaveData0(
+                id,
+                name,
+                context.toSaveDataList(sendingTo),
+                context.toSaveDataList(receivingFrom),
+                info
+        );
+    }
+
+    protected MidiInOut() {
         sendingTo = ConcurrentHashMap.newKeySet();
+        receivingFrom = ConcurrentHashMap.newKeySet();
         info = new HashMap<>();
-        deserializationInit();
-        init(lookup, executorService);
-    }
-
-    private void deserializationInit() {
-        sendingToReadonly = Collections.unmodifiableSet(sendingTo);
         asyncReceiveQueue = new LinkedBlockingQueue();
         processing = new AtomicBoolean(false);
-        onMidiMessageReceiveRef = new AtomicReference<>();
+        uiUpdates = new ArrayList<>();
+        updateProperties = new ArrayList<>();
+        sendingToReadonly = Collections.unmodifiableSet(sendingTo);
     }
 
-    public final void init(Lookup<MidiInOut> lookup, ExecutorService executorService) {
+    public final void activate(Project project) {
         if (this.lookup != null) {
-            throw new UnsupportedOperationException("can init only once");
+            throw new UnsupportedOperationException("can activate only once");
         }
-        if (lookup == null) {
+        if (project == null) {
+            throw new IllegalArgumentException("project cannot be null");
+        }
+        if (project.getMidiInOutLookup() == null) {
             throw new IllegalArgumentException("lookup cannot be null");
         }
-        if (executorService == null) {
+        if (project.getMidiInOutExecutorService() == null) {
             throw new IllegalArgumentException("executorService cannot be null");
         }
-        this.lookup = lookup;
+        this.lookup = project.getMidiInOutLookup();
         lookup.add(this);
-        this.executorService = executorService;
+        this.executorService = project.getMidiInOutExecutorService();
         startListening();
     }
 
-    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        in.defaultReadObject();
-        deserializationInit();
+    public U getUi() {
+        return ui;
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
+    public void setUi(U ui) {
+        if (this.ui != null) {
+            this.ui.midiInOutDisconnecting();
+        }
+        this.ui = ui;
+        if (ui != null) {
+            this.ui.midiInOutConnected();
+            uiUpdates.forEach(action -> action.accept(ui));
+            updateProperties.forEach(updateProperty -> updateProperty.runAfterSet());
+        }
     }
 
     public void close() {
@@ -130,20 +303,22 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
             receiver.ensureNotRecursiveSendingTo(toBeAdded);
         }
     }
-            
+
     public void startSendingTo(MidiInOut receiver) {
         receiver.ensureNotRecursiveSendingTo(this);
         LOGGER.debug("<{}> starting sending to <{}>", this, receiver);
         if (sendingTo.add(receiver)) {
+            receiver.receivingFrom.add(this);
         } else {
-   //         throw new IllegalArgumentException("<" + this + "> already sending to <" + receiver + ">");
+            //         throw new IllegalArgumentException("<" + this + "> already sending to <" + receiver + ">");
         }
     }
 
     public void stopSendingTo(MidiInOut receiver) {
         if (sendingTo.remove(receiver)) {
+            receiver.receivingFrom.remove(this);
         } else {
- //           throw new IllegalArgumentException("<" + this + "> was not sending to <" + receiver + ">");
+            //           throw new IllegalArgumentException("<" + this + "> was not sending to <" + receiver + ">");
         }
     }
 
@@ -154,17 +329,39 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
      * @param message
      * @param timeStamp
      */
-    protected void send(MidiMessage message, long timeStamp) {
+    protected void send(MidiMessage message, long timestamp) {
+        send(new TimestampedMessage(message, timestamp));
+    }
+
+    protected void send(TimestampedMessage message) {
         if (sendingTo.isEmpty()) {
             LOGGER.info("eating message, no delegates for <{}>", this);
         } else {
             LOGGER.debug("iterating over <{}>", sendingTo);
             for (MidiInOut receiver : sendingTo) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("sending message <{}> to <{}>", MIDI_FORMAT.format(message), receiver);
+                    LOGGER.debug("sending message <{}> to <{}>", MIDI_FORMAT.format(message.midiMessage()), receiver);
                 }
-                receiver.asyncReceive(message, timeStamp);
+                receiver.asyncReceive(message);
             }
+        }
+        uiUpdate(ui -> ui.sent(message.midiMessage(), message.timestamp()));
+    }
+
+    protected void send(TimestampedMessage... messages) {
+        if (sendingTo.isEmpty()) {
+            LOGGER.info("eating message, no delegates for <{}>", this);
+        } else {
+            LOGGER.debug("iterating over <{}>", sendingTo);
+            for (MidiInOut receiver : sendingTo) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("bulk sending <[]> messages to <{}>", messages.length, receiver);
+                }
+                receiver.asyncReceive(messages);
+            }
+        }
+        for (TimestampedMessage message : messages) {
+            getUi().sent(message.midiMessage(), message.timestamp());
         }
     }
 
@@ -179,13 +376,17 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
     }
 
     public void setName(String name) {
-        boolean changeing = lookup != null && !name.equals(this.name);
-        if (changeing) {
+        boolean changing = Objects.equals(this.name, name);
+        boolean verify = lookup != null && changing;
+        if (verify) {
             lookup.verifyName(name);
         }
         this.name = name;
-        if (changeing) {
+        if (verify) {
             lookup.renamed(this);
+        }
+        if (changing) {
+            getUi().name(name);
         }
     }
 
@@ -200,7 +401,7 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
     }
 
     protected void processReceive(MidiMessage message, long timeStamp) {
-        // by default, do nothing
+        send(message, timeStamp);
     }
 
     protected void processReceive(MidiMessage message) {
@@ -214,28 +415,26 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
      * @param message
      * @param timeStamp
      */
-    public void asyncReceive(MidiMessage message, long timeStamp) {
-        if (asyncReceiveQueue.offer(message)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("<{}> on received queue <{}>", this, MIDI_FORMAT.format(message));
+    public void asyncReceive(TimestampedMessage... messages) {
+        synchronized (asyncReceiveQueue) {
+            for (TimestampedMessage message : messages) {
+                if (asyncReceiveQueue.offer(message)) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("<{}> on received queue <{}>", this, MIDI_FORMAT.format(message.midiMessage()));
+                    }
+                } else {
+                    LOGGER.error("<{}> dropping message", this);
+                }
             }
-        } else {
-            LOGGER.error("<{}> dropping message", this);
         }
     }
 
-    /**
-     * Provides for a way for user interface elements to plug in to be notified if a message is received.
-     */
-    public BiConsumer<MidiMessage, Long> getOnMidiMessageReceive() {
-        return onMidiMessageReceiveRef.get();
+    public void asyncReceive(MidiMessage message) {
+        asyncReceive(new TimestampedMessage(message, -1L));
     }
 
-    /**
-     * Provides for a way for user interface elements to plug in to be notified if a message is received.
-     */
-    public void setOnMidiMessageReceive(BiConsumer<MidiMessage, Long> onAsyncReceive) {
-        onMidiMessageReceiveRef.set(onAsyncReceive);
+    public void asyncReceive(MidiMessage message, long timestamp) {
+        asyncReceive(new TimestampedMessage(message, timestamp));
     }
 
     /**
@@ -263,7 +462,7 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
      *
      * @return
      */
-    protected BlockingQueue<MidiMessage> getAsyncReceiveQueue() {
+    protected BlockingQueue<TimestampedMessage> getAsyncReceiveQueue() {
         return asyncReceiveQueue;
     }
 
@@ -288,12 +487,9 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
         return () -> {
             try {
                 while (processing.get()) {
-                    MidiMessage midiMessage = getAsyncReceiveQueue().take();
-                    processReceive(midiMessage);
-                    BiConsumer<MidiMessage, Long> onMidiMessageReceive = onMidiMessageReceiveRef.get();
-                    if (onMidiMessageReceive != null) {
-                        onMidiMessageReceive.accept(midiMessage, -1L);
-                    }
+                    TimestampedMessage message = getAsyncReceiveQueue().take();
+                    processReceive(message.midiMessage(), message.timestamp());
+                    uiUpdate(ui -> ui.received(message.midiMessage(), message.timestamp()));
                 }
             } catch (InterruptedException e) {
                 LOGGER.warn("interrupted", e);
@@ -342,9 +538,99 @@ public abstract class MidiInOut implements Serializable, Lookup.Named<MidiInOut>
             throw new IllegalStateException(e);
         }
     }
-    
+
+    protected void verifyChannelZeroBased(int channel) {
+        if (channel < CHANNEL_MIN_ZERO_BASED || channel > CHANNEL_MAX_ZERO_BASED) {
+            throw new IllegalArgumentException("channel must be in range [0,15]");
+        }
+    }
+
+    protected void verify7Bit(int data) {
+        if (data < 0 || data > 127) {
+            throw new IllegalArgumentException("value must be range [0,127]");
+        }
+    }
+
+    protected void verify7BitPlusNone(int data) {
+        if (data < -1 || data > 127) {
+            throw new IllegalArgumentException("value must be range [0,127]");
+        }
+    }
+
+    public static void forAllChannels(IntConsumer intConsumer) {
+        for (int channel = CHANNEL_MIN_ZERO_BASED; channel < CHANNEL_MAX_ZERO_BASED; channel++) {
+            intConsumer.accept(channel);
+        }
+    }
+
+    protected void forReceiversRecursive(Consumer<? super MidiInOut> action) {
+        if (sendingTo != null) { // could be null during init; but then we do not have any senders yet, so...
+            sendingTo.forEach(receiver -> {
+                action.accept(receiver);
+                receiver.forReceiversRecursive(action);
+            });
+        }
+    }
+
+    protected void forSendersRecursive(Consumer<? super MidiInOut> action) {
+        if (receivingFrom != null) { // could be null during init; but then we do not have any senders yet, so...
+            receivingFrom.forEach(sender -> {
+                action.accept(sender);
+                sender.forSendersRecursive(action);
+            });
+        }
+    }
+
+    protected void forSendersAndReceiversRecursive(Consumer<? super MidiInOut> action) {
+        forReceiversRecursive(action);
+        forSendersRecursive(action);
+    }
+
+    protected void toReceiversRecursive(Event event) {
+        forReceiversRecursive(receiver -> receiver.fromSender(event));
+    }
+
+    protected void toSendersRecursive(Event event) {
+        forSendersRecursive(receiver -> receiver.fromReceiver(event));
+    }
+
+    protected void toSendersAndReceiversRecursive(Event event) {
+        forSendersAndReceiversRecursive(midiInOut -> midiInOut.fromReceiver(event));
+    }
+
+    public void fromReceiver(Event event) {
+    }
+
+    public void fromSender(Event event) {
+    }
+
+    public void projectFullyLoaded() {
+    }
+
+    protected void addUiUpdate(Consumer<U> action) {
+        uiUpdates.add(uiUpdate);
+    }
+
+    protected void uiUpdate(Runnable uiUpdate) {
+        if (getUi() != null) {
+            uiUpdate.run();
+        }
+    }
+
+    protected void uiUpdate(Consumer<U> action) {
+        if (getUi() != null) {
+            action.accept(getUi());
+        }
+    }
+
+    protected void register(UpdateProperty updateProperty) {
+        if (!updateProperties.contains(updateProperty)) {
+            updateProperties.add(updateProperty);
+        }
+    }
+
     public static class SendReceiveLoopDetectedException extends RuntimeException {
-        
+
     }
 
 }

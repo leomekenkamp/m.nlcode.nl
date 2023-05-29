@@ -19,9 +19,26 @@
     type="MidiChannelMatrixUi"
     styleClass="midiChannelMatrix"
 >
-    <instrumentTab>
-        <Tab text="%nl.nlcode.m.engine.MidiChannelMatrix" styleClass="instrument">
-            <fx:include source="MidiChannelMatrix.fxml" fx:id="default"/>
-        </Tab>
-    </instrumentTab>
+    <instrument>
+        <HBox>
+            <VBox styleClass="buttons">
+                <Button text="%reset" onAction="#reset"/>
+                <Button text="%invert" onAction="#invert"/>
+                <Button text="%clear" onAction="#clear"/>
+            </VBox>
+            <BorderPane>
+                <top>
+                    <Label text="%to" BorderPane.alignment="CENTER"/>
+                </top>
+                <left>
+                    <Label text="%from" BorderPane.alignment="CENTER" rotate="-90"/>
+                </left>
+                <center>
+                    <GridPane fx:id="matrix" styleClass="checkboxes"> 
+                        <!-- checkboxes will be placed here -->
+                    </GridPane>
+                </center>
+            </BorderPane>
+        </HBox>
+    </instrument>
 </fx:root>

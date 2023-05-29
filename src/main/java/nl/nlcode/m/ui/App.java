@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.awt.Toolkit;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import java.io.IOException;
@@ -45,14 +46,14 @@ public class App extends Application {
 
     public static final String PREF_Y = "y";
 
-    public static final String DEFAULT_CSS_FILENAME = "default.css";
+    public static final String DEFAULT_CSS_FILENAME = "dark.css";
 
     public static final String DEFAULT_STYLE_SHEET = App.class.getResource(DEFAULT_CSS_FILENAME).toExternalForm();
 
     private static final String STYLE_SHEET_PREF = "css";
 
     private static String styleSheet;
-    
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -138,12 +139,13 @@ public class App extends Application {
     }
 
     private static void showError(Thread t, Throwable e) {
-        if (!(e instanceof FunctionalException)) {
-            e.printStackTrace(System.err);
-        }
-        if (Platform.isFxApplicationThread()) {
-            showErrorDialog(e);
+        if (e instanceof FunctionalException) {
+            Toolkit.getDefaultToolkit().beep();
+            LOGGER.info("probably user error", e);
+        } else if (!Platform.isFxApplicationThread()) {
+            LOGGER.info("error in background", e);
         } else {
+            showErrorDialog(e);
             LOGGER.warn("An unexpected error occurred in {}", t);
         }
     }
@@ -151,9 +153,11 @@ public class App extends Application {
     private static void showErrorDialog(Throwable e) {
         ErrorUi errorUi = new ErrorUi(MESSAGES);
         Stage stage = createStage(errorUi);
-        stage.setWidth(500);
-        stage.setHeight(250);
+        stage.setWidth(1000);
+        stage.setHeight(750);
         stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setResizable(true);
+
         String errorMsg;
         if (e instanceof FunctionalException) {
             errorMsg = e.getMessage();
@@ -165,7 +169,7 @@ public class App extends Application {
         }
         errorUi.getErrorMessage().setText(errorMsg);
         stage.showAndWait();
-        LOGGER.debug("error dialog shown for <{}>", e);
+        LOGGER.debug("error dialog shown for <{}>", e.getMessage());
     }
 
     private static abstract class ListItemStringConverter<T> extends StringConverter<T> {

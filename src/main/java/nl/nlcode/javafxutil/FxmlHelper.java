@@ -21,8 +21,8 @@ public class FxmlHelper {
     public static <T> T loadFxml(Class<?> controllerClass) {
         return null;
     }
-    public static <T> T loadFxml(Class<T> controllerClass, Callback<Class<?>, Object> factory, ResourceBundle bundle) {
-        return loadFxml(controllerClass.getResource(controllerClass.getSimpleName().replace("Controller", "").concat(".fxml")), factory, bundle);
+    public static <T> T loadFxml(Class<T> baseClass, Callback<Class<?>, Object> factory, ResourceBundle bundle) {
+        return loadFxml(baseClass.getResource(baseClass.getSimpleName().concat(".fxml")), factory, bundle);
     }
 
     public static <T> T loadFxml(String fxmlFileName, Callback<Class<?>, Object> factory, ResourceBundle bundle) {

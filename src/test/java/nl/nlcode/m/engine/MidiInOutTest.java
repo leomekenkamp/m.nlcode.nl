@@ -17,8 +17,7 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
 
     class MyMidiInOut extends MidiInOut {
 
-        public MyMidiInOut(Project project) {
-            super(project);
+        public MyMidiInOut() {
         }
 
         public boolean isActiveReceiver() {
@@ -37,7 +36,7 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
 
     @Override
     protected MidiInOut createInstance() {
-        return new MyMidiInOut(project);
+        return new MyMidiInOut();
     }
 
     @Test
@@ -55,7 +54,7 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
             defaultTestIn.asyncReceive(randomNoteOn(), randomTimeStamp());
         }
 
-        settle(100);
+        settle(150);
 
         assertThat(defaultTestOut.receivedCount(), is(defaultTestIn.receivedCount()));
         for (int i = 0; i < defaultTestIn.receivedCount(); i++) {

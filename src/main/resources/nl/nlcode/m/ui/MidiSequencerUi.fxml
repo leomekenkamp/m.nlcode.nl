@@ -28,58 +28,56 @@
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
     type="MidiSequencerUi"
     tabClosingPolicy="UNAVAILABLE">
-    <instrumentTab>
-        <Tab text="%sequencer" styleClass="instrument">
-            <HBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator,active"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-                <VBox>
-                    <Field labelText="%note">
-                        <ComboBox/>
-                    </Field>
-                    <Label text="●" styleClass="stepIndicator"/>
-                </VBox>
-            </HBox>
-        </Tab>
-    </instrumentTab>
+    <instrument>
+        <HBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator,active"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+            <VBox>
+                <Field labelText="%note">
+                    <ComboBox/>
+                </Field>
+                <Label text="●" styleClass="stepIndicator"/>
+            </VBox>
+        </HBox>
+    </instrument>
 </fx:root>

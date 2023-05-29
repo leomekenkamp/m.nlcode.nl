@@ -1,7 +1,5 @@
 package nl.nlcode.m.ui;
 
-import java.math.BigDecimal;
-import java.util.function.UnaryOperator;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.IntegerProperty;
@@ -9,9 +7,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.util.StringConverter;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.ClockSource;
 import nl.nlcode.m.engine.MidiClock;
@@ -22,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author lmekenkamp
  */
-public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlController {
+public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlController, MidiClock.Ui {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MidiClockUi.class);
 
@@ -42,17 +37,14 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
     public MidiClockUi(ProjectUi projectUi, MidiClock midiClock, MenuItem menuItem) {
         super(projectUi, midiClock, menuItem);
         loadFxml(MidiClockUi.class, App.MESSAGES);
-        midiClock.setOnBarChange(bar -> Platform.runLater(() -> barProperty.set(bar)));
-        midiClock.setOnBeatChange(beat -> Platform.runLater(() -> beatProperty.set(beat)));
-        midiClock.setOnTickChange(tick -> Platform.runLater(() -> tickProperty.set(tick)));
         barProperty.set(midiClock.getBar());
         beatProperty.set(midiClock.getBeat());
         tickProperty.set(midiClock.getTick());
     }
 
     @Override
-    protected void doInit() {
-        super.doInit();
+    protected void handleInitialize() {
+        super.handleInitialize();
         clockSourceProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setClockSource(newValue);
             switch (newValue) {
@@ -128,5 +120,24 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
     @FXML
     private void resume() {
         getMidiInOut().resume();
+    }
+
+    @Override
+    public void timingClock(int tick) {
+        Platform.runLater(() -> setTick(tick));
+    }
+
+    @Override
+    public void beat(int beat) {
+        Platform.runLater(() -> setBeat(beat));
+    }
+
+    @Override
+    public void bar(int bar) {
+        Platform.runLater(() -> setBar(bar));
+    }
+
+    @Override
+    public void bpm(float bmp) {
     }
 }
