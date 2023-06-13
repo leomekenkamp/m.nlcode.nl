@@ -1,7 +1,11 @@
 package nl.nlcode.m.engine;
 
+import java.lang.invoke.MethodHandles;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,16 +13,55 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteGate extends MidiInOut {
+public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
 
-    private static final long serialVersionUID = 0L;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoteGate.class);
+    public static interface Ui extends MidiInOut.Ui {
+
+    }
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private IntInterval velocityInterval = new IntInterval();
-    
+    private IntUpdateProperty fromVelocity = new IntUpdateProperty(MIDI_DATA_MIN);
+
+    private IntUpdateProperty toVelocity = new IntUpdateProperty(MIDI_DATA_MAX);
+
+    private ObjectUpdateProperty<IntervalClosure, U, NoteGate<U>> intervalClosure = new ObjectUpdateProperty(IntervalClosure.CLOSED);
+
+    public static record SaveData0(
+            int id,
+            int fromVelocity,
+            int toVelocity,
+            IntervalClosure intervalClosure,
+            Marshalled<MidiInOut> s) implements Marshalled<NoteGate> {
+
+        @Override
+        public void unmarshalInto(Marshalled.Context context, NoteGate target) {
+            target.fromVelocity.set(fromVelocity());
+            target.toVelocity.set(toVelocity());
+            target.intervalClosure.set(intervalClosure());
+            s.unmarshalInto(context, target);
+        }
+
+        @Override
+        public NoteGate createMarshallable() {
+            return new NoteGate();
+        }
+
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new NoteGate.SaveData0(
+                id,
+                fromVelocity.get(),
+                toVelocity.get(),
+                intervalClosure.get(),
+                super.marshalInternal(-1, context)
+        );
+    }
+
     public NoteGate() {
     }
 
@@ -27,6 +70,10 @@ public class NoteGate extends MidiInOut {
         boolean sendMessage = true;
         if (message instanceof ShortMessage shortMessage) {
             if (shortMessage.getCommand() == ShortMessage.NOTE_ON) {
+                IntInterval velocityInterval = new IntInterval();
+                velocityInterval.setIntervalClosure(getIntervalClosure());
+                velocityInterval.setLow(fromVelocity.get());
+                velocityInterval.setHigh(toVelocity.get());
                 sendMessage = velocityInterval.contains(shortMessage.getData2());
             }
         }
@@ -50,34 +97,35 @@ public class NoteGate extends MidiInOut {
     }
 
     public int getFromVelocity() {
-        return velocityInterval.getLow();
+        return fromVelocity.get();
     }
 
     public void setFromVelocity(int fromVelocity) {
-        if (fromVelocity < 0 || fromVelocity > 127) {
-            throw new IllegalArgumentException("fromVelocity must be >= 0 and <= 127");
-        }
-        velocityInterval.setLow(fromVelocity);
+        this.fromVelocity.set(fromVelocity);
+    }
+
+    public IntUpdateProperty<U, NoteGate<U>> fromVelocity() {
+        return fromVelocity;
     }
 
     public int getToVelocity() {
-        return velocityInterval.getHigh();
+        return toVelocity.get();
     }
 
     public void setToVelocity(int toVelocity) {
-        if (toVelocity < 0 || toVelocity > 127) {
-            throw new IllegalArgumentException("toVelocity must be >= 0 and <= 127");
-        }
-        velocityInterval.setHigh(toVelocity);
+        this.toVelocity.set(toVelocity);
+    }
+
+    public IntUpdateProperty<U, NoteGate<U>> toVelocity() {
+        return toVelocity;
     }
 
     public IntervalClosure getIntervalClosure() {
-        return velocityInterval.getIntervalClosure();
+        return intervalClosure.get();
     }
 
     public void setIntervalClosure(IntervalClosure intervalClosure) {
-        velocityInterval.setIntervalClosure(intervalClosure);
+        this.intervalClosure.set(intervalClosure);
     }
-
 
 }

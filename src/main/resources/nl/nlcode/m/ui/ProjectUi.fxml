@@ -28,19 +28,24 @@
                 </Menu>
                 <Menu mnemonicParsing="true" text="%_create">
                     <items>
+                        <MenuItem onAction="#createMidiDeviceLink" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiDeviceLink" />
+                        <SeparatorMenuItem/>
                         <MenuItem fx:id="arpeggiator" mnemonicParsing="true" text="%nl.nlcode.m.engine.Arpeggiator" />
-                        <MenuItem fx:id="midiMessageDump" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiMessageDump" />
-                        <MenuItem fx:id="keyboardKeyboard" mnemonicParsing="true" text="%nl.nlcode.m.engine.KeyboardKeyboard" />
-                        <MenuItem fx:id="midiDeviceLink" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiDeviceLink" />
-                        <MenuItem fx:id="midiChannelMatrix" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiChannelMatrix" />
-                        <MenuItem fx:id="midiLayerAndSplit" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLayerAndSplit" />
-                        <MenuItem fx:id="midiLights" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiLights" />
                         <MenuItem fx:id="midiSequencer" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiSequencer" />
+                        <SeparatorMenuItem/>
+                        <MenuItem fx:id="channelMatrix" mnemonicParsing="true" text="%nl.nlcode.m.engine.ChannelMatrix" />
+                        <MenuItem fx:id="echo" mnemonicParsing="true" text="%nl.nlcode.m.engine.Echo" />
+                        <MenuItem fx:id="layerAndSplit" mnemonicParsing="true" text="%nl.nlcode.m.engine.LayerAndSplit" />
+                        <MenuItem onAction="#createMessageTypeFilter" mnemonicParsing="true" text="%nl.nlcode.m.engine.MessageTypeFilter" />
                         <MenuItem fx:id="midiClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
                         <MenuItem fx:id="noteGate" mnemonicParsing="true" text="%nl.nlcode.m.engine.NoteGate" />
                         <MenuItem fx:id="noteHolder" mnemonicParsing="true" text="%nl.nlcode.m.engine.NoteHolder" />
                         <MenuItem onAction="#createProgramChanger" mnemonicParsing="true" text="%nl.nlcode.m.engine.ProgramChanger" />
-                        <MenuItem fx:id="test" text="test" />
+                        <SeparatorMenuItem/>
+                        <MenuItem fx:id="keyboardKeyboard" mnemonicParsing="true" text="%nl.nlcode.m.engine.KeyboardKeyboard" />
+                        <MenuItem fx:id="midiMessageDump" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiMessageDump" />
+                        <MenuItem fx:id="lights" mnemonicParsing="true" text="%nl.nlcode.m.engine.Lights" />
+                        <MenuItem onAction="#createA42" mnemonicParsing="true" text="%nl.nlcode.m.engine.A42" />
                     </items>
                 </Menu>
                 <Menu fx:id="windowMenu" mnemonicParsing="true" text="%_window">

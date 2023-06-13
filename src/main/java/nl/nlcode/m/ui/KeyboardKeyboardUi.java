@@ -1,11 +1,16 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import javafx.beans.binding.IntegerBinding;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -17,9 +22,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author lmekenkamp
  */
-public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> {
+public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements KeyboardKeyboard.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KeyboardKeyboardUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Map<KeyCode, Button> keyCodeToButton = new HashMap<>();
 
@@ -85,21 +90,24 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> {
 
     @FXML
     private Spinner<Integer> velocity;
+    private IntegerProperty velocityBackend;
 
     @FXML
     private Spinner<Integer> channel;
+    private IntUpdatePropertyBridge channelBackend;
 
     @FXML
     private Spinner<Integer> octave;
+    private IntegerProperty octaveBackend;
 
     @FXML
     private GridPane keyGrid;
-    
+
     public KeyboardKeyboardUi(ProjectUi projectUi, KeyboardKeyboard keyboardKeyboard, MenuItem menuItem) {
         super(projectUi, keyboardKeyboard, menuItem);
         loadFxml(KeyboardKeyboardUi.class, App.MESSAGES);
     }
-    
+
     protected void handleInitialize() {
         super.handleInitialize();
         KeyboardKeyboard midiInOut = getMidiInOut();
@@ -139,23 +147,20 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> {
             }
         });
 
-        velocity.getValueFactory().setValue(getMidiInOut().getVelocity());
-        velocity.valueProperty().addListener((ov, oldValue, newValue) -> {
-            getMidiInOut().setVelocity(newValue);
-            setDirty();
-        });
-        channel.getValueFactory().setValue(getMidiInOut().getOneBasedChannel());
-        channel.valueProperty().addListener((ov, oldValue, newValue) -> {
-            getMidiInOut().setOneBasedChannel(newValue);
-            setDirty();
-        });
-        octave.getValueFactory().setValue(getMidiInOut().getOctave());
-        octave.valueProperty().addListener((ov, oldValue, newValue) -> {
-            getMidiInOut().setOctave(newValue);
-            setDirty();
+        velocityBackend = IntUpdatePropertyBridge.create(getMidiInOut().velocity(), velocity.getValueFactory().valueProperty());
+        channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
+        octaveBackend = IntUpdatePropertyBridge.create(getMidiInOut().octave(), octave.getValueFactory().valueProperty());
+        channel.getValueFactory().setConverter(getChannelStringConverter());
+
+        getChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
+            channelBackend.refresh(); // TODO should not be necessary
         });
     }
-    
+
+    private IntegerOffsetStringConverter getChannelStringConverter() {
+        return getProjectUi().getControlUi().getMidiChannelStringConverter();
+    }
+
     private void bind(KeyCode keyCode, Button button, int note, KeyboardKeyboard midiInOut) {
         LOGGER.debug("keyCodeToButton: <{}>", keyCodeToButton);
         keyCodeToButton.put(keyCode, button);

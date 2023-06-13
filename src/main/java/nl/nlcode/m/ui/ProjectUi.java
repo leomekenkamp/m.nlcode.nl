@@ -3,6 +3,7 @@ package nl.nlcode.m.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -52,15 +53,18 @@ import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import nl.nlcode.javafxutil.CtorParamControllerFactory;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.MidiInOut;
 import static nl.nlcode.m.engine.Control.FILE_EXTENTION_FILTER;
 import nl.nlcode.m.engine.KeyboardKeyboard;
-import nl.nlcode.m.engine.MidiChannelMatrix;
+import nl.nlcode.m.engine.ChannelMatrix;
+import nl.nlcode.m.engine.Echo;
 import nl.nlcode.m.engine.MidiClock;
 import nl.nlcode.m.engine.MidiDeviceLink;
-import nl.nlcode.m.engine.MidiLayerAndSplit;
-import nl.nlcode.m.engine.MidiLights;
+import nl.nlcode.m.engine.LayerAndSplit;
+import nl.nlcode.m.engine.Lights;
+import nl.nlcode.m.engine.MessageTypeFilter;
 import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.MidiSequencer;
 import nl.nlcode.m.engine.NoteGate;
@@ -77,7 +81,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ProjectUi extends BorderPane implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final FileChooser.ExtensionFilter M_FILTER
             = new FileChooser.ExtensionFilter(App.MESSAGES.getString("m.nlcode.nl.files"), FILE_EXTENTION_FILTER);
@@ -96,19 +100,16 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private MenuItem keyboardKeyboard;
 
     @FXML
-    private MenuItem midiDeviceLink;
-
-    @FXML
     private MenuItem midiMessageDump;
 
     @FXML
-    private MenuItem midiChannelMatrix;
+    private MenuItem channelMatrix;
 
     @FXML
-    private MenuItem midiLayerAndSplit;
+    private MenuItem layerAndSplit;
 
     @FXML
-    private MenuItem midiLights;
+    private MenuItem lights;
 
     @FXML
     private MenuItem midiSequencer;
@@ -121,6 +122,9 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     @FXML
     private MenuItem noteHolder;
+    
+    @FXML
+    private MenuItem echo;
 
     @FXML
     private MenuItem test;
@@ -236,22 +240,19 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             }
 
         });
-        midiDeviceLink.setOnAction(eh -> {
-            activateAndCreateStage(new MidiDeviceLink());
-        });
         midiMessageDump.setOnAction(eh -> {
             Stage stage = activateAndCreateStage(new MidiMessageDump());
             stage.setResizable(true);
         });
-        midiChannelMatrix.setOnAction(eh -> {
-            activateAndCreateStage(new MidiChannelMatrix());
+        channelMatrix.setOnAction(eh -> {
+            activateAndCreateStage(new ChannelMatrix());
         });
-        midiLayerAndSplit.setOnAction(eh -> {
-            Stage stage = activateAndCreateStage(new MidiLayerAndSplit());
+        layerAndSplit.setOnAction(eh -> {
+            Stage stage = activateAndCreateStage(LayerAndSplit.createWithDefaultSettings());
             stage.setResizable(true);
         });
-        midiLights.setOnAction(eh -> {
-            activateAndCreateStage(new MidiLights());
+        lights.setOnAction(eh -> {
+            activateAndCreateStage(new Lights());
         });
         midiSequencer.setOnAction(eh -> {
             activateAndCreateStage(new MidiSequencer());
@@ -264,6 +265,9 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         });
         noteHolder.setOnAction(eh -> {
             activateAndCreateStage(new NoteHolder());
+        });
+        echo.setOnAction(eh -> {
+            activateAndCreateStage(new Echo());
         });
         windowMenu.setDisable(windowMenu.getItems().size() <= 3);
         windowMenu.getItems().addListener(new ListChangeListener() {
@@ -283,9 +287,25 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     @FXML
+    public void createMessageTypeFilter(ActionEvent event) {
+        activateAndCreateStage(new MessageTypeFilter());
+    }
+
+    @FXML
+    public void createMidiDeviceLink(ActionEvent event) {
+        activateAndCreateStage(new MidiDeviceLink());
+    }
+
+    @FXML
     public void createProgramChanger(ActionEvent event) {
         activateAndCreateStage(new ProgramChanger());
     }
+
+    @FXML
+    public void createA42(ActionEvent event) {
+        activateAndCreateStage(new A42());
+    }
+
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {
         return (change) -> {
@@ -355,6 +375,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     public void setDirty() {
+        project.setDirty();
         dirtyProperty.set(true);
     }
 

@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ErrorUi extends BorderPane implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
     private Label errorMessage;

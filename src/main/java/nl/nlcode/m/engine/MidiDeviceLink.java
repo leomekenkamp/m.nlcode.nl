@@ -1,8 +1,7 @@
 package nl.nlcode.m.engine;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.lang.invoke.MethodHandles;
+import nl.nlcode.m.linkui.ObjectUpdateProperty;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiUnavailableException;
@@ -27,17 +26,27 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public final class MidiDeviceLink extends MidiInOut {
+public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut<U> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static record MidiDeviceChanged(MidiInOut source, MidiDevice newDevice) implements Event {
 
     }
 
-    private static final long serialVersionUID = 0L;
+    public static interface Ui extends MidiInOut.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiDeviceLink.class);
+        void midiDeviceChanged();
 
-    private String midiDeviceName;
+    }
+
+    private final ObjectUpdateProperty<MidiDevice, U, MidiDeviceLink<U>> midiDevice = new ObjectUpdateProperty<>(null);
+
+    private transient SendReceiver sendReceiver;
+
+    private transient Transmitter transmitter;
+
+    private transient Receiver receiver;
 
     public static record SaveData0(
             int id,
@@ -45,10 +54,24 @@ public final class MidiDeviceLink extends MidiInOut {
             Marshalled<MidiInOut> s) implements Marshalled<MidiDeviceLink> {
 
         @Override
-        public void unmarshalInternal(Context context, MidiDeviceLink target) {
-            target.midiDeviceName = midiDeviceName();
-            s.unmarshalInternal(context, target);
-            target.afterUnmarshal();
+        public void unmarshalInto(Context context, MidiDeviceLink target) {
+            if (midiDeviceName() == null) {
+                LOGGER.debug("no midiDevice name, so not trying to find matching midiDevice");
+            } else {
+                // FIXME: is there an other way than through a static?
+                for (MidiDevice search : MidiDeviceMgr.getInstance().getMidiDevices()) {
+                    if (midiDeviceName().equals(MidiDeviceMgr.getDisplayName(search))) {
+                        target.setMidiDevice(search);
+                        LOGGER.debug("found match for <{}> in <{}>", midiDeviceName(), search);
+                        break;
+                    }
+                }
+                if (target.getMidiDevice() == null) {
+                    LOGGER.warn("could not match <{}> to any of the open system midi devices", midiDeviceName());
+                }
+            }
+
+            s.unmarshalInto(context, target);
         }
 
         @Override
@@ -62,7 +85,7 @@ public final class MidiDeviceLink extends MidiInOut {
     public Marshalled marshalInternal(int id, Context context) {
         return new SaveData0(
                 id,
-                midiDeviceName,
+                midiDevice.get() == null ? null : MidiDeviceMgr.getDisplayName(midiDevice.get()),
                 super.marshalInternal(-1, context)
         );
     }
@@ -87,44 +110,17 @@ public final class MidiDeviceLink extends MidiInOut {
         }
     };
 
-    private transient SendReceiver sendReceiver;
-
-    private transient MidiDevice midiDevice;
-
-    private transient Transmitter transmitter;
-
-    private transient Receiver receiver;
-
     public MidiDeviceLink() {
         sendReceiver = new SendReceiver();
-    }
-
-    private void afterUnmarshal() {
-        if (midiDeviceName == null) {
-            LOGGER.debug("no midiDeviceName, so not trying to find matching midiDevice");
-        } else {
-            // FIXME: is there an other way than through a static?
-            for (MidiDevice search : MidiDeviceMgr.getInstance().getMidiDevices()) {
-                if (midiDeviceName.equals(MidiDeviceMgr.getDisplayName(search))) {
-                    setMidiDevice(search);
-                    LOGGER.debug("found match for <{}> in <{}>", midiDeviceName, midiDevice);
-                    break;
-                }
-            }
-            if (midiDevice == null) {
-                LOGGER.warn("could not match <{}> to any of the open system midi devices", midiDeviceName);
-            }
-        }
+        midiDevice.setAfterChange(this, ui -> ui.midiDeviceChanged());
     }
 
     public MidiDevice getMidiDevice() {
-        return midiDevice;
+        return midiDevice.get();
     }
 
     public void setMidiDevice(MidiDevice midiDevice) {
         LOGGER.debug("setting midi device <{}>", MidiDeviceMgr.getDisplayName(midiDevice));
-        if (this.midiDevice != null) {
-        }
         if (receiver != null) {
             LOGGER.debug("closing <{}> on <{}>", receiver, MidiDeviceMgr.getDisplayName(midiDevice));
             receiver.close();
@@ -135,11 +131,7 @@ public final class MidiDeviceLink extends MidiInOut {
             transmitter.close();
             transmitter = null;
         }
-        this.midiDevice = midiDevice;
-        if (this.midiDevice == null) {
-            midiDeviceName = null;
-        } else {
-            midiDeviceName = MidiDeviceMgr.getDisplayName(midiDevice);
+        if (midiDevice != null) {
             try {
                 if (midiDevice.getMaxReceivers() != 0) {
                     LOGGER.debug("opening receiver for <{}>", MidiDeviceMgr.getDisplayName(midiDevice));
@@ -151,11 +143,20 @@ public final class MidiDeviceLink extends MidiInOut {
                     transmitter.setReceiver(sendReceiver);
                 }
             } catch (MidiUnavailableException e) {
-                // FIXME: must be refactored, because this is too late
-                // exception must be thrown earlier in this method, before the internal state has been
-                // changed; it is now fubar when this exception occurs
-                throw new IllegalStateException("this object is now fubar, please close the application without saving", e);
+                this.midiDevice.set(null);
+                if (transmitter != null) {
+                    transmitter.close();
+                    transmitter = null;
+                }
+                if (receiver != null) {
+                    receiver.close();
+                    receiver = null;
+                }
+                throw new IllegalStateException(e);
             }
+        }
+        this.midiDevice.set(midiDevice);
+        if (midiDevice != null) {
             toSendersRecursive(new MidiDeviceChanged(this, midiDevice));
         }
     }

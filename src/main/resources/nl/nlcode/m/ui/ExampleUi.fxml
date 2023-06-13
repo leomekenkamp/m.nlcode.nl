@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToolBar?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
+<?import nl.nlcode.m.ui.MidiDeviceSelector?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.ExampleUi?>
+<?import nl.nlcode.m.ui.I0through127Spinner?>
+
+
+<fx:root 
+    xmlns="http://javafx.com/javafx" 
+    xmlns:fx="http://javafx.com/fxml/1"
+    type="ExampleUi"  
+    styleClass="example"
+>
+    <instrument>
+        <VBox>
+        </VBox>
+    </instrument>
+</fx:root>

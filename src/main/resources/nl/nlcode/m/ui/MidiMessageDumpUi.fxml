@@ -35,10 +35,10 @@
             <center>
                 <TableView fx:id="midiMessageTable">
                     <columns>
-                        <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="100"/>
+                        <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="175"/>
                         <TableColumn fx:id="messageHexColumn" text="%messageHex" prefWidth="100"/>
-                        <TableColumn fx:id="messageDecColumn" text="%messageDec" prefWidth="100"/>
-                        <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="375"/>
+                        <TableColumn fx:id="timestampColumn" text="%timestamp" prefWidth="80"/>
+                        <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="250"/>
                     </columns>
                     <prefHeight>
                         <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>

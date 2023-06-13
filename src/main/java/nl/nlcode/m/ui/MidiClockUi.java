@@ -1,10 +1,14 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.javafxutil.FxmlController;
@@ -19,27 +23,44 @@ import org.slf4j.LoggerFactory;
  */
 public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlController, MidiClock.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiClockUi.class);
-
-    private IntegerProperty barProperty = new SimpleIntegerProperty();
-    private IntegerProperty beatProperty = new SimpleIntegerProperty();
-    private IntegerProperty tickProperty = new SimpleIntegerProperty();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
-    private Spinner<Integer> beatsPerMinute;
+    private Spinner<Double> beatsPerMinute;
+    private DoubleProperty beatsPerMinuteBridge;
 
     @FXML
     private Spinner<Integer> beatsPerBar;
+    private IntegerProperty beatsPerBarBridge;
 
     @FXML
     private EnumChoiceBox<ClockSource> clockChoice;
 
+    @FXML
+    private Label barLabel;
+
+    @FXML
+    private Label beatLabel;
+
+    @FXML
+    private Label tickLabel;
+
+    public static void threadBind(Property otherThreadProp, Property fxThreadProp) {
+        otherThreadProp.addListener((ov, oldValue, newValue) -> {
+            if (Platform.isFxApplicationThread()) {
+                fxThreadProp.setValue(newValue);
+            } else {
+                Platform.runLater(() -> fxThreadProp.setValue(newValue));
+            }
+        });
+        fxThreadProp.addListener((ov, oldValue, newValue) -> {
+            otherThreadProp.setValue(newValue);
+        });
+    }
+
     public MidiClockUi(ProjectUi projectUi, MidiClock midiClock, MenuItem menuItem) {
         super(projectUi, midiClock, menuItem);
         loadFxml(MidiClockUi.class, App.MESSAGES);
-        barProperty.set(midiClock.getBar());
-        beatProperty.set(midiClock.getBeat());
-        tickProperty.set(midiClock.getTick());
     }
 
     @Override
@@ -56,55 +77,26 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
                     break;
             }
         });
-        clockSourceProperty().set(getMidiInOut().getClockSource());
-        beatsPerMinute.getValueFactory().setValue(Math.round(getMidiInOut().getBeatsPerMinute()));
+
+        clockSourceProperty().set(getMidiInOut().getClockSource()); // TODO bridge
+        beatsPerMinute.editorProperty().get().setAlignment(Pos.CENTER_RIGHT);
+        beatsPerMinute.getValueFactory().setConverter(ControlUi.BPM_CONVERTER);
+        beatsPerMinute.getValueFactory().setValue(getMidiInOut().getBeatsPerMinute());
         beatsPerMinute.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setBeatsPerMinute(newValue);
         });
+        beatsPerMinuteBridge = DoubleUpdatePropertyBridge.create(getMidiInOut().beatsPerMinute(), beatsPerMinute.getValueFactory().valueProperty());
+
+        beatsPerBar.editorProperty().get().setAlignment(Pos.CENTER_RIGHT);
         beatsPerBar.getValueFactory().setValue(getMidiInOut().getBeatsPerBar());
         beatsPerBar.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setBeatsPerBar(newValue);
         });
+        beatsPerBarBridge = IntUpdatePropertyBridge.create(getMidiInOut().beatsPerBar(), beatsPerBar.getValueFactory().valueProperty());
     }
 
     public ObjectProperty<ClockSource> clockSourceProperty() {
         return clockChoice.valueProperty();
-    }
-
-    public Integer getBar() {
-        return barProperty.get();
-    }
-
-    public void setBar(Integer bar) {
-        barProperty.set(bar);
-    }
-
-    public IntegerProperty barProperty() {
-        return barProperty;
-    }
-
-    public Integer getBeat() {
-        return beatProperty.get();
-    }
-
-    public void setBeat(Integer beat) {
-        beatProperty.set(beat);
-    }
-
-    public IntegerProperty beatProperty() {
-        return beatProperty;
-    }
-
-    public Integer getTick() {
-        return tickProperty.get();
-    }
-
-    public void setTick(Integer tick) {
-        tickProperty.set(tick);
-    }
-
-    public IntegerProperty tickProperty() {
-        return tickProperty;
     }
 
     @FXML
@@ -123,21 +115,22 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
     }
 
     @Override
-    public void timingClock(int tick) {
-        Platform.runLater(() -> setTick(tick));
+    public void timingClock() {
+        Platform.runLater(() -> tickLabel.textProperty().set(Integer.toString(getMidiInOut().getTick())));
     }
 
     @Override
-    public void beat(int beat) {
-        Platform.runLater(() -> setBeat(beat));
+    public void beatChanged() {
+        Platform.runLater(() -> beatLabel.textProperty().set(Integer.toString(getMidiInOut().getBeat())));
     }
 
     @Override
-    public void bar(int bar) {
-        Platform.runLater(() -> setBar(bar));
+    public void barChanged() {
+        Platform.runLater(() -> barLabel.textProperty().set(Integer.toString(getMidiInOut().getBar())));
     }
 
     @Override
-    public void bpm(float bmp) {
+    public void bpmChanged() {
     }
+
 }

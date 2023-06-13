@@ -1,5 +1,6 @@
 package nl.nlcode.m.engine;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Lookup<T extends Lookup.Named> implements Iterable<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Lookup.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static Comparator<Lookup.Named> NAME_COMPARATOR = new Comparator<>() {
         @Override

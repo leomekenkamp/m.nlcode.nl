@@ -15,8 +15,10 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import org.controlsfx.control.ToggleSwitch?>
-<?import nl.nlcode.m.ui.SettingsUi?>
 <?import nl.nlcode.m.ui.App?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.SettingsUi?>
 
 <fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
          type="SettingsUi" tabClosingPolicy="UNAVAILABLE">
@@ -40,6 +42,19 @@
             <Button text="%extractDefaultCss" onAction="#extractDefaultCss"/>
             <Button text="%selectCssFile" onAction="#selectCssFile"/>
             <Button text="%reloadCssFile" onAction="#replaceStyleSheetOnAllWindows"/>
+        </VBox>
+    </Tab>
+    <Tab text="%midiValuesDisplay">
+        <VBox>       
+            <Field labelText="%noteNumber">
+                <EnumChoiceBox enumClass="nl.nlcode.m.ui.ZeroOrOneBased" fx:id="noteZeroOne"/>
+            </Field>    
+            <Field labelText="%channelNumber">
+                <EnumChoiceBox enumClass="nl.nlcode.m.ui.ZeroOrOneBased" fx:id="channelZeroOne"/>
+            </Field>    
+            <Field labelText="%noteName">
+                <EnumChoiceBox enumClass="nl.nlcode.m.ui.NoteNamingConvention" fx:id="noteNamingConvention"/>
+            </Field>    
         </VBox>
     </Tab>
 </fx:root>

@@ -2,6 +2,7 @@ package nl.nlcode.m.engine;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -19,56 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class Control {
 
-    static {
-        AllowedClassesObjectInputStream.allow("[B");
-        AllowedClassesObjectInputStream.allow("[I");
-        AllowedClassesObjectInputStream.allow("[I;");
-        AllowedClassesObjectInputStream.allow("[Ljava.lang.Integer;");
-        AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.ConcurrentHashMap$Segment;");
-        AllowedClassesObjectInputStream.allow("[Ljava.util.concurrent.atomic.AtomicBoolean;");
-        AllowedClassesObjectInputStream.allow("[Z");
-        AllowedClassesObjectInputStream.allow("[[Ljava.util.concurrent.atomic.AtomicBoolean;");
-        AllowedClassesObjectInputStream.allow("java.lang.Boolean");
-        AllowedClassesObjectInputStream.allow("java.lang.Double");
-        AllowedClassesObjectInputStream.allow("java.lang.Enum");
-        AllowedClassesObjectInputStream.allow("java.lang.Number");
-        AllowedClassesObjectInputStream.allow("java.util.ArrayList");
-        AllowedClassesObjectInputStream.allow("java.util.Collections$SynchronizedCollection");
-        AllowedClassesObjectInputStream.allow("java.util.Collections$SynchronizedList");
-        AllowedClassesObjectInputStream.allow("java.util.HashMap");
-        AllowedClassesObjectInputStream.allow("java.util.HashSet");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$CollectionView");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$KeySetView");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.ConcurrentHashMap$Segment");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.atomic.AtomicBoolean");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.AbstractOwnableSynchronizer");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.AbstractQueuedSynchronizer");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$NonfairSync");
-        AllowedClassesObjectInputStream.allow("java.util.concurrent.locks.ReentrantLock$Sync");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.IntInterval");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.IntervalClosure");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.KeyboardKeyboard");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiChannelMatrix");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiClock");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiDelay");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiDeviceLink");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiGate");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiInOut");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLayerAndSplit");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLayerAndSplit$Layer");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiLights");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiMessageDump");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.MidiSequencer");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.NoteGate");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.NoteHolder");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.ProgramChanger");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.Project");
-        AllowedClassesObjectInputStream.allow("nl.nlcode.m.engine.ShowTicks");
-    }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Control.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String FILE_EXTENTION = ".m";
 
@@ -99,7 +51,7 @@ public final class Control {
     private final ObservableList<MidiDevice> openMidiDevices;
 
     // only used to write to, so if we really want to use this, then refactor
-    public Lookup<MidiInOut> lookup = Lookup.create();
+//    public Lookup<MidiInOut> lookup = Lookup.create();
 
     private Control() {
         midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());

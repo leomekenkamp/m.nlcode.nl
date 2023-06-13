@@ -35,7 +35,7 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
     }
 
     @Override
-    public void notesHeldCount(int channel, int nrOfNotes) {
+    public void notesHeldChanged(int channel, int nrOfNotes) {
         LOGGER.info("ch: {}; notes: {}", channel, nrOfNotes);
         Platform.runLater(() -> {
             notesHeldCountProperty[channel].set(nrOfNotes);

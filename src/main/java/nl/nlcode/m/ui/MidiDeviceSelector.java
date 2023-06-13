@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MidiDeviceSelector extends Pane implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiDeviceSelector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static class DefaultItem implements MidiDevice {
 

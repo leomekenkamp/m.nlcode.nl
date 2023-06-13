@@ -1,7 +1,9 @@
 package nl.nlcode.m.engine;
 
+import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.BooleanUpdateProperty;
 import java.lang.invoke.MethodHandles;
-import java.util.function.Consumer;
+import java.lang.reflect.Array;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
@@ -14,9 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
-
-    private static final long serialVersionUID = 0L;
+public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -28,36 +28,39 @@ public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
 
         void updateDropIncomingChanges(int channel, boolean drop);
 
-        void updateAutoSendOnConnect(boolean newValue);
+        void updateResendOnConnect(boolean newValue);
 
-        void updateAutoSendOnMidiDeviceChange(boolean newValue);
+        void updateResendOnMidiDeviceChange(boolean newValue);
 
     }
 
-    private volatile int[] program = new int[CHANNEL_COUNT];
-    private transient Consumer<U>[] updateProgram;
+    //private final IntUpdateProperty<U, ProgramChanger<U>>[] program = new IntUpdateProperty[CHANNEL_COUNT];
+    // TODO: find out why we need Array.newInstance instead of line above
+    private final IntUpdateProperty<U, ProgramChanger<U>>[] program = (IntUpdateProperty[]) Array.newInstance(IntUpdateProperty.class, CHANNEL_COUNT);
 
-    private volatile boolean[] dropIncomingChanges = new boolean[CHANNEL_COUNT];
-    private transient Consumer<U>[] updateDropIncomingChanges;
+    // private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = new BooleanUpdateProperty[CHANNEL_COUNT];
+    // TODO: find out why we need Array.newInstance instead of line above
+    private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = (BooleanUpdateProperty[]) Array.newInstance(BooleanUpdateProperty.class, CHANNEL_COUNT);
 
-    private volatile boolean autoSendOnMidiDeviceChange = true;
-    private transient Consumer<U> updateAutoSendOnMidiDeviceChange;
+    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnMidiDeviceChange = new BooleanUpdateProperty(true);
 
-    private BooleanUpdateProperty autoSendOnConnect = new BooleanUpdateProperty();
+    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnConnect = new BooleanUpdateProperty(true);
 
-        public static record SaveData0(
+    public static record SaveData0(
             int id,
-            boolean autoSendOnConnect,
+            boolean resendOnConnect,
+            boolean resendOnMidiDeviceChange,
             int[] program,
             boolean[] dropIncomingChanges,
             Marshalled<MidiInOut> s) implements Marshalled<ProgramChanger> {
 
         @Override
-        public void unmarshalInternal(Context context, ProgramChanger target) {
-            target.autoSendOnConnect.set(autoSendOnConnect());
-            target.program = program();
-            target.dropIncomingChanges = dropIncomingChanges();
-            s.unmarshalInternal(context, target);
+        public void unmarshalInto(Context context, ProgramChanger target) {
+            target.setResendOnConnect(resendOnConnect());
+            target.setResendOnMidiDeviceChange(resendOnMidiDeviceChange());
+            forAllChannels(channel -> target.setProgram(channel, program[channel]));
+            forAllChannels(channel -> target.setDropIncomingChanges(channel, dropIncomingChanges()[channel]));
+            s.unmarshalInto(context, target);
         }
 
         @Override
@@ -71,35 +74,30 @@ public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
     public Marshalled marshalInternal(int id, Context context) {
         return new SaveData0(
                 id,
-                autoSendOnConnect.get(),
-                program,
-                dropIncomingChanges,
+                getResendOnConnect(),
+                getResendOnMidiDeviceChange(),
+                IntUpdateProperty.toIntArray(program),
+                BooleanUpdateProperty.toBooleanArray(dropIncomingChanges),
                 super.marshalInternal(-1, context)
         );
     }
 
-
     public ProgramChanger() {
-        forAllChannels(channel -> program[channel] = PROGRAM_NONE);
-        updateProgram = new Consumer[CHANNEL_COUNT];
         forAllChannels(channel -> {
-            updateProgram[channel] = ui -> ui.updateProgram(channel, getProgram(channel));
-            addUiUpdate(updateProgram[channel]);
-
+            program[channel] = new IntUpdateProperty(PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
+            program[channel].setAfterChange(this, ui -> {
+                ui.updateProgram(channel, getProgram(channel));
+            });
         });
 
-        updateDropIncomingChanges = new Consumer[CHANNEL_COUNT];
         forAllChannels(channel -> {
-            updateDropIncomingChanges[channel] = () -> getUi().updateDropIncomingChanges(channel, getDropIncomingChanges(channel));
-            addUiUpdate(updateDropIncomingChanges[channel]);
+            dropIncomingChanges[channel] = new BooleanUpdateProperty(false);
+            dropIncomingChanges[channel].setAfterChange(this, ui -> ui.updateDropIncomingChanges(channel, getDropIncomingChanges(channel)));
         });
 
-        updateAutoSendOnMidiDeviceChange = () -> getUi().updateAutoSendOnMidiDeviceChange(getAutoSendOnMidiDeviceChange());
-        addUiUpdate(updateAutoSendOnMidiDeviceChange);
-        
-        autoSendOnConnect.setAfterSet(()
-                -> getUi().updateAutoSendOnConnect(autoSendOnConnect.get())
-        );
+        resendOnMidiDeviceChange.setAfterChange(this, ui -> ui.updateResendOnMidiDeviceChange(getResendOnMidiDeviceChange()));
+
+        resendOnConnect.setAfterChange(this, ui -> ui.updateResendOnConnect(getResendOnConnect()));
     }
 
     @Override
@@ -119,12 +117,11 @@ public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
                 case ShortMessage.PROGRAM_CHANGE -> {
                     int channel = shortMessage.getChannel();
                     int program = shortMessage.getData1();
-                    if (dropIncomingChanges[channel]) {
+                    if (dropIncomingChanges[channel].get()) {
                         LOGGER.debug("dropping incoming change <{}> for channel <{}>", program, channel);
                     } else {
-                        this.program[channel] = program;
                         send(message, timestamp);
-                        uiUpdate(updateProgram[channel]);
+                        setProgram(channel, program);
                     }
                 }
                 default -> {
@@ -143,11 +140,11 @@ public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
     }
 
     public void resend(int channel) {
-        verifyChannelZeroBased(channel);
+        verifyChannel(channel);
         if (program != null) {
-            int program = this.program[channel];
+            int program = getProgram(channel);
             if (program != PROGRAM_NONE) {
-                programChange(channel, program, true);
+                programChange(channel, program);
                 uiUpdate(ui -> ui.updateProgram(channel, program));
             }
         }
@@ -156,76 +153,68 @@ public class ProgramChanger extends MidiInOut<ProgramChanger.Ui> {
     @Override
     public void startSendingTo(MidiInOut receiver) {
         super.startSendingTo(receiver);
-        if (autoSendOnConnect().get()) {
-            forAllChannels(channel -> resend(channel));
+        if (getResendOnConnect()) {
+            resend();
         }
     }
 
     @Override
     public void fromReceiver(Event event) {
-        if (getAutoSendOnMidiDeviceChange() && event instanceof MidiDeviceLink.MidiDeviceChanged midiDeviceChanged) {
+        if (getResendOnMidiDeviceChange() && event instanceof MidiDeviceLink.MidiDeviceChanged midiDeviceChanged) {
             if (midiDeviceChanged != null) {
                 resend();
             }
         }
     }
 
-
-    public int getProgram(int channel) {
-        verifyChannelZeroBased(channel);
-        return program[channel];
-    }
-
-    public void setProgram(int channel, int prog) {
-        programChange(channel, prog, false);
-    }
-
-    private void programChange(int channel, int prog, boolean forceResend) {
-        verifyChannelZeroBased(channel);
-        verify7BitPlusNone(prog);
-        boolean newValue = this.program[channel] != prog;
-        if (forceResend || newValue) {
-            try {
-                this.program[channel] = prog;
-                if (prog != PROGRAM_NONE) {
-                    ShortMessage programChange = new ShortMessage(ShortMessage.PROGRAM_CHANGE, channel, prog, 0);
-                    send(programChange);
-                }
-                if (newValue) {
-                    uiUpdate(updateProgram[channel]);
-                }
-            } catch (InvalidMidiDataException e) {
-                throw new IllegalStateException(e);
+    private void programChange(int channel, int prog) {
+        try {
+            if (prog != PROGRAM_NONE) {
+                ShortMessage programChange = new ShortMessage(ShortMessage.PROGRAM_CHANGE, channel, prog, 0);
+                send(programChange);
             }
+        } catch (InvalidMidiDataException e) {
+            throw new IllegalStateException(e);
         }
+    }
+    
+    public int getProgram(int channel) {
+        verifyChannel(channel);
+        return program[channel].get();
+    }
+    
+    public void setProgram(int channel, int prog) {
+        verifyChannel(channel);
+        MidiInOut.verify7BitPlusNone(prog);
+        if (getProgram(channel) != prog) {
+            programChange(channel, prog);
+        }
+        program[channel].set(prog);
     }
 
     public boolean getDropIncomingChanges(int channel) {
-        return dropIncomingChanges[channel];
+        verifyChannel(channel);
+        return dropIncomingChanges[channel].get();
     }
-
+    
     public void setDropIncomingChanges(int channel, boolean drop) {
-        boolean update = dropIncomingChanges[channel] != drop;
-        dropIncomingChanges[channel] = drop;
-        if (update) {
-            uiUpdate(updateDropIncomingChanges[channel]);
-        }
+        verifyChannel(channel);
+        dropIncomingChanges[channel].set(drop);
+    }
+    
+    public boolean getResendOnMidiDeviceChange() {
+        return resendOnMidiDeviceChange.get();
     }
 
-    public BooleanUpdateProperty autoSendOnConnect() {
-        return autoSendOnConnect;
+    public void setResendOnMidiDeviceChange(boolean resend) {
+        resendOnMidiDeviceChange.set(resend);
+    }
+    
+    public boolean getResendOnConnect() {
+        return resendOnConnect.get();
     }
 
-    public void setAutoSendOnMidiDeviceChange(boolean autoSendOnMidiDeviceChange) {
-        boolean update = this.autoSendOnMidiDeviceChange != autoSendOnMidiDeviceChange;
-        this.autoSendOnMidiDeviceChange = autoSendOnMidiDeviceChange;
-        if (update) {
-            uiUpdate(updateAutoSendOnMidiDeviceChange);
-        }
+    public void setResendOnConnect(boolean resend) {
+        resendOnConnect.set(resend);
     }
-
-    public boolean getAutoSendOnMidiDeviceChange() {
-        return autoSendOnMidiDeviceChange;
-    }
-
 }

@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MidiSequencerUi extends MidiInOutUi<MidiSequencer> implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiSequencerUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final Color TRANSPARENT = Color.rgb(0, 0, 0, 0);
 

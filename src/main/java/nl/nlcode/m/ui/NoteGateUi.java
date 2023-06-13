@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
@@ -11,16 +12,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteGateUi extends MidiInOutUi<NoteGate> {
+public class NoteGateUi extends MidiInOutUi<NoteGate> implements NoteGate.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoteGateUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
     private Spinner<Integer> fromVelocity;
-    
+    private IntUpdatePropertyBridge fromVelocityBacking;
+
     @FXML
     private Spinner<Integer> toVelocity;
-    
+    private IntUpdatePropertyBridge toVelocityBacking;
+
     public NoteGateUi(ProjectUi projectUi, NoteGate noteGate, MenuItem menuItem) {
         super(projectUi, noteGate, menuItem);
         loadFxml(NoteGateUi.class, App.MESSAGES);
@@ -28,14 +31,7 @@ public class NoteGateUi extends MidiInOutUi<NoteGate> {
 
     protected void handleInitialize() {
         super.handleInitialize();
-        fromVelocity.getValueFactory().setValue(getMidiInOut().getFromVelocity());
-        fromVelocity.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
-            getMidiInOut().setFromVelocity(newValue);
-        });
-        toVelocity.getValueFactory().setValue(getMidiInOut().getToVelocity());
-        toVelocity.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
-            getMidiInOut().setToVelocity(newValue);
-        });
-
+        fromVelocityBacking = IntUpdatePropertyBridge.create(getMidiInOut().fromVelocity(), fromVelocity.getValueFactory().valueProperty());
+        toVelocityBacking = IntUpdatePropertyBridge.create(getMidiInOut().toVelocity(), toVelocity.getValueFactory().valueProperty());
     }
 }

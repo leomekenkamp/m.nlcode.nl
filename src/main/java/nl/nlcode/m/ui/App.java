@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ForkJoinPool;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class App extends Application {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static ResourceBundle MESSAGES = ResourceBundle.getBundle("nl.nlcode.m.Messages");
 

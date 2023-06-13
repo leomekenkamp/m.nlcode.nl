@@ -1,21 +1,22 @@
 package nl.nlcode.m.engine;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.ClockSource.EXTERNAL;
 import static nl.nlcode.m.engine.ClockSource.INTERNAL;
+import nl.nlcode.m.linkui.DoubleUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.LongUpdateProperty;
+import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,38 +24,81 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class MidiClock extends MidiInOut<MidiClock.Ui> {
+public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
 
     public static interface Ui extends MidiInOut.Ui {
 
-        void timingClock(int tick);
+        void timingClock();
 
-        void beat(int beat);
+        void beatChanged();
 
-        void bar(int bar);
+        void barChanged();
 
-        void bpm(float bmp);
+        void bpmChanged();
     }
 
-    private static final long serialVersionUID = 0L;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiClock.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private volatile ClockSource clockSource;
 
-    private AtomicInteger bar;
+    private IntUpdateProperty<U, MidiClock<U>> bar = new IntUpdateProperty<>(0);
 
-    private AtomicInteger beat;
+    private IntUpdateProperty<U, MidiClock<U>> beat = new IntUpdateProperty<>(0);
 
-    private AtomicInteger tick;
+    private IntUpdateProperty<U, MidiClock<U>> tick = new IntUpdateProperty<>(0);
 
-    private AtomicInteger beatsPerBar;
+    private IntUpdateProperty<U, MidiClock<U>> beatsPerBar = new IntUpdateProperty<>(4);
 
-    private AtomicInteger ticksPerBeat;
+    private IntUpdateProperty<U, MidiClock<U>> ticksPerBeat = new IntUpdateProperty<>(24);
 
-    private AtomicInteger beats100PerMinute;
+    private DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute = new DoubleUpdateProperty<>(120.00f);
 
-    private transient AtomicLong timerStartedWithTickTimeMicroseconds;
+    public static record SaveData0(
+            int id,
+            ClockSource clockSource,
+            int bar,
+            int beat,
+            int tick,
+            int beatsPerBar,
+            int ticksPerBeat,
+            double beatsPerMinute,
+            Marshalled<MidiInOut> s) implements Marshalled<MidiClock> {
+
+        @Override
+        public void unmarshalInto(Marshalled.Context context, MidiClock target) {
+            target.clockSource = clockSource();
+            target.bar.set(bar());
+            target.beat.set(beat());
+            target.tick.set(tick());
+            target.beatsPerBar.set(beatsPerBar());
+            target.ticksPerBeat.set(ticksPerBeat());
+            target.beatsPerMinute.set(beatsPerMinute());
+            s.unmarshalInto(context, target);
+        }
+
+        @Override
+        public MidiClock createMarshallable() {
+            return new MidiClock();
+        }
+
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new MidiClock.SaveData0(
+                id,
+                clockSource,
+                bar.get(),
+                beat.get(),
+                tick.get(),
+                beatsPerBar.get(),
+                ticksPerBeat.get(),
+                beatsPerMinute.get(),
+                super.marshalInternal(-1, context)
+        );
+    }
+
+    private transient LongUpdateProperty<U, MidiClock<U>> timerStartedWithTickTimeMicroseconds = new LongUpdateProperty<>(0);
 
     private transient ScheduledExecutorService tickScheduler;
 
@@ -64,39 +108,22 @@ public class MidiClock extends MidiInOut<MidiClock.Ui> {
 
     public MidiClock() {
         clockSource = ClockSource.INTERNAL;
-        bar = new AtomicInteger();
-        beat = new AtomicInteger();
-        tick = new AtomicInteger();
-        beatsPerBar = new AtomicInteger(4);
-        ticksPerBeat = new AtomicInteger(24);
-        beats100PerMinute = new AtomicInteger(12000);
+        bar.setAfterChange(this, (ui) -> ui.barChanged());
+        beat.setAfterChange(this, ui -> ui.beatChanged());
+        tick.setAfterChange(this, ui -> ui.timingClock());
+        ticksPerBeat.setAfterChange(this, ui -> {
+        });
         tickScheduler = Executors.newSingleThreadScheduledExecutor();
-        timerStartedWithTickTimeMicroseconds = new AtomicLong();
+        timerStartedWithTickTimeMicroseconds.setAfterChange(this, ui -> {
+        });
         tickTimerRunning = new AtomicBoolean(false);
-        resetPosition(false);
+        resetPosition();
     }
 
-    private void barChanged(int bar) {
-        getUi().bar(bar);
-    }
-
-    private void beatChanged(int beat) {
-        getUi().beat(beat);
-    }
-
-    private void tickChanged(int tick) {
-        getUi().timingClock(tick);
-    }
-
-    public void resetPosition(boolean informUi) {
+    public void resetPosition() {
         tick.set(0);
-        beat.set(1);
-        bar.set(1);
-        if (informUi) {
-            tickChanged(0);
-            beatChanged(1);
-            barChanged(1);
-        }
+        beat.set(0);
+        bar.set(0);
     }
 
     public int getTick() {
@@ -111,6 +138,10 @@ public class MidiClock extends MidiInOut<MidiClock.Ui> {
         return bar.get();
     }
 
+    public void setBar(int bar) {
+        throw new UnsupportedOperationException();
+    }
+
     public void setBeatsPerBar(int beatsPerBar) {
         this.beatsPerBar.set(beatsPerBar);
     }
@@ -119,35 +150,49 @@ public class MidiClock extends MidiInOut<MidiClock.Ui> {
         return beatsPerBar.get();
     }
 
-    public float getBeatsPerMinute() {
-        return beats100PerMinute.get() / 100;
+    public IntUpdateProperty<U, MidiClock<U>> beatsPerBar() {
+        return beatsPerBar;
     }
 
-    public void setBeatsPerMinute(float beatsPerMinute) {
-        this.setBeats100PerMinute(Math.round(beatsPerMinute * 100));
+    public double getBeatsPerMinute() {
+        return beatsPerMinute.get();
     }
 
-    public int getBeats100PerMinute() {
-        return beats100PerMinute.get();
+    public void setBeatsPerMinute(double beatsPerMinute) {
+        this.beatsPerMinute.set(beatsPerMinute);
     }
 
-    public void setBeats100PerMinute(int b100pm) {
-        LOGGER.info("setting bmp to <{}> / 100", b100pm);
-        beats100PerMinute.set(b100pm);
-
+    public DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute() {
+        return beatsPerMinute;
     }
 
     protected void clockTick() {
-        if (tick.incrementAndGet() > ticksPerBeat.get()) {
-            tick.set(1);
-            if (beat.incrementAndGet() > beatsPerBar.get()) {
-                beat.set(1);
-                bar.incrementAndGet();
-                barChanged(bar.incrementAndGet());
+        int newTick = tick.withReference(ref -> {
+            return ref.accumulateAndGet(1, (current, add) -> {
+                if (current >= ticksPerBeat.get()) {
+                    return 1;
+                } else {
+                    return current + add;
+                }
+            });
+        });
+
+        if (newTick == 1) {
+            int newBeat = beat.withReference(ref -> {
+                return ref.accumulateAndGet(1, (current, add) -> {
+                    if (current >= beatsPerBar.get()) {
+                        return 1;
+                    } else {
+                        return current + add;
+                    }
+                });
+            });
+
+            if (newBeat == 1 && bar.get() < 100000) {
+                bar.withReference((AtomicInteger ref) -> ref.incrementAndGet());
             }
-            beatChanged(beat.get());
         }
-        tickChanged(tick.get());
+
         send(createMidiClock());
     }
 
@@ -177,7 +222,7 @@ public class MidiClock extends MidiInOut<MidiClock.Ui> {
 
     public void start() {
         stopTimer();
-        resetPosition(true);
+        resetPosition();
         if (clockSource == INTERNAL) {
             startTimer();
         }
@@ -238,7 +283,7 @@ public class MidiClock extends MidiInOut<MidiClock.Ui> {
         // -> (1_000_000 * 60) / ((b / min) * (tick / b)
 
         // (b / min) * (sec / tick)
-        return (1_000_000L * 60L * 100L) / (beats100PerMinute.get() * ticksPerBeat.get());
+        return (1_000_000L * 60L * 100L) / ((long) (beatsPerMinute.get() * 100L) * ticksPerBeat.get());
     }
 
     @Override

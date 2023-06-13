@@ -28,23 +28,23 @@
         <VBox>
             <HBox styleClass="fields">
                 <Field labelText="%velocity">
-                    <Spinner fx:id="velocity">
+                    <Spinner fx:id="velocity" editable="true">
                         <valueFactory>
-                            <SpinnerValueFactory.IntegerSpinnerValueFactory max="127" min="0" />
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
                         </valueFactory>
                     </Spinner>
                 </Field>
                 <Field labelText="%channel">
-                    <Spinner fx:id="channel">
+                    <Spinner fx:id="channel" editable="true">
                         <valueFactory>
-                            <SpinnerValueFactory.IntegerSpinnerValueFactory max="16" min="1" />
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="15"/>
                         </valueFactory>
                     </Spinner>
                 </Field>
                 <Field labelText="%octave">
-                    <Spinner fx:id="octave">
+                    <Spinner fx:id="octave" editable="true">
                         <valueFactory>
-                            <SpinnerValueFactory.IntegerSpinnerValueFactory max="9" min="0" />
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="9"/>
                         </valueFactory>
                     </Spinner>
                 </Field>

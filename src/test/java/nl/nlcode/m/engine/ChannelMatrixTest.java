@@ -12,16 +12,13 @@ import static nl.nlcode.m.engine.ExceptChannelEqualToShortMessage.exceptChannelE
  *
  * @author leo
  */
-public class MidiChannelMatrixTest extends DefaultMidiInOutTest<MidiChannelMatrix> {
+public class ChannelMatrixTest extends DefaultMidiInOutTest<ChannelMatrix> {
         
     @Override
-    protected MidiChannelMatrix createInstance() {
-        return new MidiChannelMatrix();
+    protected ChannelMatrix createInstance() {
+        return new ChannelMatrix();
     }
 
-    /**
-     * Test of isActiveReceiver method, of class MidiChannelMatrix.
-     */
     @Test
     public void by_default_map_one_on_one() throws InvalidMidiDataException {
         ShortMessage noteOn1 = new ShortMessage(ShortMessage.NOTE_ON, 0, randomData1(), randomData2());
@@ -63,9 +60,9 @@ public class MidiChannelMatrixTest extends DefaultMidiInOutTest<MidiChannelMatri
     @Test
     public void one_channel_to_multiple_channels() throws InvalidMidiDataException {
         instance.clearFromTo();
-        instance.zeroBasedFromTo(1, 0, true);
-        instance.zeroBasedFromTo(1, 4, true);
-        instance.zeroBasedFromTo(1, 5, true);
+        instance.setFromTo(1, 0, true);
+        instance.setFromTo(1, 4, true);
+        instance.setFromTo(1, 5, true);
         ShortMessage noteOn1 = new ShortMessage(ShortMessage.NOTE_ON, 1, randomData1(), randomData2());
         defaultTestIn.processReceive(noteOn1);
         ShortMessage noteOff1 = new ShortMessage(ShortMessage.NOTE_OFF, 1, randomData1(), randomData2());
@@ -92,9 +89,9 @@ public class MidiChannelMatrixTest extends DefaultMidiInOutTest<MidiChannelMatri
         @Test
     public void multiple_channels_to_one_channels() throws InvalidMidiDataException {
         instance.clearFromTo();
-        instance.zeroBasedFromTo(3, 5, true);
-        instance.zeroBasedFromTo(4, 5, true);
-        instance.zeroBasedFromTo(5, 5, true);
+        instance.setFromTo(3, 5, true);
+        instance.setFromTo(4, 5, true);
+        instance.setFromTo(5, 5, true);
         ShortMessage noteOn3 = new ShortMessage(ShortMessage.NOTE_ON, 3, randomData1(), randomData2());
         defaultTestIn.processReceive(noteOn3);
         ShortMessage noteOff3 = new ShortMessage(ShortMessage.NOTE_OFF, 3, randomData1(), randomData2());

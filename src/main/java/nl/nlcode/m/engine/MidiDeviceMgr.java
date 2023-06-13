@@ -1,5 +1,6 @@
 package nl.nlcode.m.engine;
 
+import java.lang.invoke.MethodHandles;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ import java.util.*;
  */
 public final class MidiDeviceMgr {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiDeviceMgr.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final Comparator<? super MidiDevice> COMPARE_BY_DISPLAY_NAME = new Comparator<>() {
         @Override

@@ -20,52 +20,16 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
-    private Spinner<Integer> programSpinner0;
+    private Spinner<Integer> programSpinner0, programSpinner1, programSpinner2, programSpinner3,
+            programSpinner4, programSpinner5, programSpinner6, programSpinner7,
+            programSpinner8, programSpinner9, programSpinner10, programSpinner11,
+            programSpinner12, programSpinner13, programSpinner14, programSpinner15;
 
     @FXML
-    private Spinner<Integer> programSpinner1;
-
-    @FXML
-    private Spinner<Integer> programSpinner2;
-
-    @FXML
-    private Spinner<Integer> programSpinner3;
-
-    @FXML
-    private Spinner<Integer> programSpinner4;
-
-    @FXML
-    private Spinner<Integer> programSpinner5;
-
-    @FXML
-    private Spinner<Integer> programSpinner6;
-
-    @FXML
-    private Spinner<Integer> programSpinner7;
-
-    @FXML
-    private Spinner<Integer> programSpinner8;
-
-    @FXML
-    private Spinner<Integer> programSpinner9;
-
-    @FXML
-    private Spinner<Integer> programSpinner10;
-
-    @FXML
-    private Spinner<Integer> programSpinner11;
-
-    @FXML
-    private Spinner<Integer> programSpinner12;
-
-    @FXML
-    private Spinner<Integer> programSpinner13;
-
-    @FXML
-    private Spinner<Integer> programSpinner14;
-
-    @FXML
-    private Spinner<Integer> programSpinner15;
+    private CheckBox dropIncoming0, dropIncoming1, dropIncoming2, dropIncoming3,
+            dropIncoming4, dropIncoming5, dropIncoming6, dropIncoming7,
+            dropIncoming8, dropIncoming9, dropIncoming10, dropIncoming11,
+            dropIncoming12, dropIncoming13, dropIncoming14, dropIncoming15;
 
     @FXML
     private CheckBox resendOnConnect;
@@ -74,6 +38,7 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
     private CheckBox resendOnMidiDeviceChange;
 
     private volatile Spinner<Integer>[] programSpinners;
+    private volatile CheckBox[] dropIncomings;
 
     public ProgramChangerUi(ProjectUi projectUi, ProgramChanger programChanger, MenuItem menuItem) {
         super(projectUi, programChanger, menuItem);
@@ -91,49 +56,48 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
         super.handleInitialize();
 
         programSpinners = new Spinner[]{
-            programSpinner0,
-            programSpinner1,
-            programSpinner2,
-            programSpinner3,
-            programSpinner4,
-            programSpinner5,
-            programSpinner6,
-            programSpinner7,
-            programSpinner8,
-            programSpinner9,
-            programSpinner10,
-            programSpinner11,
-            programSpinner12,
-            programSpinner13,
-            programSpinner14,
-            programSpinner15,};
-
+            programSpinner0, programSpinner1, programSpinner2, programSpinner3,
+            programSpinner4, programSpinner5, programSpinner6, programSpinner7,
+            programSpinner8, programSpinner9, programSpinner10, programSpinner11,
+            programSpinner12, programSpinner13, programSpinner14, programSpinner15
+        };
         forAllChannels(channel -> {
             programSpinners[channel].getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
                 getMidiInOut().setProgram(channel, newValue);
             });
         });
-        resendOnConnect.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().autoSendOnConnect().set(newValue));
-        resendOnMidiDeviceChange.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().setAutoSendOnMidiDeviceChange(newValue));
+
+        dropIncomings = new CheckBox[]{
+            dropIncoming0, dropIncoming1, dropIncoming2, dropIncoming3,
+            dropIncoming4, dropIncoming5, dropIncoming6, dropIncoming7,
+            dropIncoming8, dropIncoming9, dropIncoming10, dropIncoming11,
+            dropIncoming12, dropIncoming13, dropIncoming14, dropIncoming15
+        };
+        forAllChannels(channel -> {
+            dropIncomings[channel].selectedProperty().addListener((ov, oldValue, newValue)
+                    -> getMidiInOut().setDropIncomingChanges(channel, newValue));
+        });
+
+        resendOnConnect.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().setResendOnConnect(newValue));
+        resendOnMidiDeviceChange.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().setResendOnMidiDeviceChange(newValue));
     }
 
     @Override
     public void updateProgram(int channel, int program) {
-        LOGGER.info("ch: {}; program: {}", channel, program);
         Platform.runLater(() -> {
             programSpinners[channel].getValueFactory().setValue(program);
         });
     }
 
     @Override
-    public void updateAutoSendOnConnect(boolean newValue) {
+    public void updateResendOnConnect(boolean newValue) {
         Platform.runLater(() -> {
             resendOnConnect.selectedProperty().set(newValue);
         });
     }
 
     @Override
-    public void updateAutoSendOnMidiDeviceChange(boolean newValue) {
+    public void updateResendOnMidiDeviceChange(boolean newValue) {
         Platform.runLater(() -> {
             resendOnMidiDeviceChange.selectedProperty().set(newValue);
         });
@@ -142,6 +106,7 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
     @Override
     public void updateDropIncomingChanges(int channel, boolean drop) {
         Platform.runLater(() -> {
+            dropIncomings[channel].selectedProperty().setValue(drop);
         });
     }
 

@@ -15,6 +15,9 @@ public class EnumChoiceBox<E extends Enum<E>> extends ChoiceBox<E> {
 
         @Override
         public String toString(E t) {
+            if (t == null) {
+                return "<null>";
+            }
             return App.MESSAGES.getString(t.getClass().getName() + "." + t.name());
         }
 
@@ -26,6 +29,9 @@ public class EnumChoiceBox<E extends Enum<E>> extends ChoiceBox<E> {
     }
     
     public EnumChoiceBox(@NamedArg("enumClass") String enumClass) throws Exception {
+        if (enumClass == null || enumClass.strip().length() == 0) {
+            throw new IllegalArgumentException();
+        }
         Class<E> e = (Class<E>) Class.forName(enumClass);
         getItems().setAll(e.getEnumConstants());
         setConverter(new DefaultConverter());

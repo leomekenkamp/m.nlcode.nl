@@ -1,13 +1,7 @@
 package nl.nlcode.marshalling;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  *
@@ -15,23 +9,29 @@ import java.util.function.Function;
  */
 public interface Marshalled<T extends Marshallable> {
 
+    public static final Marshalled[] EMPTY_ARRAY = new Marshalled[]{};
+
     int id();
 
     /**
-     * NOT thread safe.
+     * NOT thread safe. 
      */
     public static class Context {
 
         private Map<Integer, Marshallable> idToMarchallable = new HashMap<>();
 
         /**
-         * Do NOT call this method yourself. Use {@code Marshalled#unmarshal(Context)} instead.
+         * Should only be called internally by {@code Marshalled}. DO NOT CALL THIS METHOD YOURSELF!
+         * <p>
+         * Use {@code MarshalHelper.unmarshal(Marshalled.Context, Marshalled) to make it easy on yourself.
+         * One could also call {@code Marshallable.marshal(context, Marshallable)}, but the helper is preferred.
+         *
          * @param marshalled
-         * @param target 
+         * @param target
          */
         public void unmarshal(Marshalled marshalled, Marshallable target) {
             idToMarchallable.put(marshalled.id(), target);
-            marshalled.unmarshalInternal(this, target);
+            marshalled.unmarshalInto(this, target);
         }
 
         Marshallable alreadyUnmarshalled(Marshallable.Reference reference) {
@@ -40,16 +40,32 @@ public interface Marshalled<T extends Marshallable> {
 
     }
 
+    /**
+     * Use of {@code MarshalHelper.unmarshal(Marshalled.Context, Marshalled) is preferred.
+     */
     default T unmarshal(Context context) {
         T result = createMarshallable();
         context.unmarshal(this, result);
         return result;
     }
-    
-    void unmarshalInternal(Context context, T target);
-    
-    default T createMarshallable() {
-        throw new IllegalStateException("override createMarshallable() (in the record class that implements Marshalled) to return a new instance");
-    }
+
+    /**
+     * Should ONLY be called from within sub classes to unmarshal their super class marshalled data
+     * into{@code target}
+     * 
+     * @param context
+     * @param target target for writing this instance marshalled data into
+     */
+    void unmarshalInto(Context context, T target);
+
+    /**
+     * Factory method for when this instance is asked to unmarshal itself into a new {@code T} instance.
+     * 
+     * @return newly created object as target for unmarshalling data.
+     */
+//    default T createMarshallable() {
+//        throw new IllegalStateException("override createMarshallable() (in record class " + this.getClass().getName());
+//    }
+    T createMarshallable();
 
 }

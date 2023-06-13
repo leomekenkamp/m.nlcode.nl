@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import nl.nlcode.javafxutil.FxmlController;
-import nl.nlcode.m.engine.MidiLights;
+import nl.nlcode.m.engine.Lights;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author lmekenkamp
  */
-public class MidiLightsUi extends MidiInOutUi<MidiLights> implements FxmlController, MidiLights.Ui {
+public class LightsUi extends MidiInOutUi<Lights> implements FxmlController, Lights.Ui {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -29,9 +29,9 @@ public class MidiLightsUi extends MidiInOutUi<MidiLights> implements FxmlControl
     
     private GraphicsContext ctx;
 
-    public MidiLightsUi(ProjectUi projectUi, MidiLights midiLights, MenuItem menuItem) {
-        super(projectUi, midiLights, menuItem);
-        loadFxml(MidiLightsUi.class, App.MESSAGES);
+    public LightsUi(ProjectUi projectUi, Lights lights, MenuItem menuItem) {
+        super(projectUi, lights, menuItem);
+        loadFxml(LightsUi.class, App.MESSAGES);
     }
 
     @Override

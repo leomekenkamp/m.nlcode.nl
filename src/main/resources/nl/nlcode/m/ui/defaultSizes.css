@@ -24,7 +24,7 @@ ControlUi .logo {
     -fx-padding: 1em 2em;
 }
 
-MidiChannelMatrixUi .buttons {
+ChannelMatrixUi .buttons {
 }
 
 .tab {
@@ -90,13 +90,13 @@ MidiSequencerUi .stepIndicator.active {
 KeyboardKeyboardUi Spinner {
     -fx-max-width: 7em;
 }
-MidiChannelMatrixUi .checkboxes {
+ChannelMatrixUi .checkboxes {
     -fx-font-size: 75%;
 }
-MidiChannelMatrixUi .checkboxes .check-box > .box {
+ChannelMatrixUi .checkboxes .check-box > .box {
     -fx-padding: 0.15em;
 }
-MidiChannelMatrixUi .checkboxes .check-box > .box > .mark {
+ChannelMatrixUi .checkboxes .check-box > .box > .mark {
     -fx-padding: 0.3em;
 }
 MidiClockUi Field.clockSource EnumChoiceBox {
@@ -151,7 +151,7 @@ GridPane.channels {
     -fx-background-insets: 0,0.15em,0.3em,0.4em;
     -fx-background-radius: 0.3em;
 }
-I0through127Spinner {
+I0through127Spinner,Spinner {
     -fx-pref-width: 6em;
     -fx-max-width: 6em;
     -fx-min-width: 6em;

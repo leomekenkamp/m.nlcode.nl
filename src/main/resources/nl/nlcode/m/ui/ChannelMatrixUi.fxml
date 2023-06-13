@@ -10,14 +10,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
-<?import nl.nlcode.m.ui.MidiChannelMatrixUi?>
+<?import nl.nlcode.m.ui.ChannelMatrixUi?>
 <?import javafx.scene.control.TextField?>
 
 <fx:root 
     xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiChannelMatrixUi"
-    styleClass="midiChannelMatrix"
+    type="ChannelMatrixUi"
+    styleClass="channelMatrix"
 >
     <instrument>
         <HBox>

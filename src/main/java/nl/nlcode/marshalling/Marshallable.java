@@ -1,10 +1,8 @@
 package nl.nlcode.marshalling;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -27,11 +25,18 @@ public interface Marshallable {
         }
 
         @Override
-        public void unmarshalInternal(Context context, Marshallable target) {
+        public void unmarshalInto(Context context, Marshallable target) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public Marshallable createMarshallable() {
+            throw new UnsupportedOperationException(); 
+        }
+
     }
+    
+//    public static record KV()
 
     /**
      * NOT thread safe.
@@ -42,11 +47,14 @@ public interface Marshallable {
 
         private IdentityHashMap<Marshallable, Integer> originalToId = new IdentityHashMap<>();
 
+        /**
+         * Use of {@code MarshalHelper.marshal(Marshallable.Context, Marshallable) is preferred.
+         */
         public Marshalled marshal(Marshallable object) {
             id += 1;
             Marshalled result;
             if (originalToId.containsKey(object)) {
-                result =  new Reference(id, originalToId.get(object));
+                result = new Reference(id, originalToId.get(object));
             } else {
                 originalToId.put(object, id);
                 result = object.marshalInternal(id, this);
@@ -59,21 +67,19 @@ public interface Marshallable {
                     .map(toRecord -> marshal(toRecord))
                     .collect(Collectors.toList());
         }
+
     }
 
     /**
-     * Should only be called internally by {@code Context}.DO NOT CALL YOURSELF! Use
-     * {@code Marshallable.Context.marshal(Marshallable)} instead, or {@code Marshallable.marshalComposite}
-     * TODO: explain why
+     * Should only be called internally by {@code Context}. DO NOT CALL THIS METHOD YOURSELF!
+     * <p>
+     * Use {@code MarshalHelper.marshal(Marshallable.Context, Marshallable) to make it easy on yourself.
+     * One could also call {@code Marshallable.MarshalHelper.marshal(context, Marshallable)}, but the helper is preferred.
      *
      * @param id - the id to use for the return object
      * @param context
      * @return marshalled i.e. original object
      */
     Marshalled marshalInternal(int id, Context context);
-    
-//    default Marshalled marshalComposite(Context context) {
-//        return marshalInternal( -1, context);
-//    }
-    
+
 }

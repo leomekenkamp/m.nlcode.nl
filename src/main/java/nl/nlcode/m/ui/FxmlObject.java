@@ -1,6 +1,7 @@
 package nl.nlcode.m.ui;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.LinkedList;
 import javafx.collections.ObservableList;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public interface FxmlObject {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(FxmlObject.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     default void loadFxmlObject() {
         LinkedList<URL> toBeLoaded = new LinkedList<>();

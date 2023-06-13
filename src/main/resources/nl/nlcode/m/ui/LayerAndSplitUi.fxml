@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
-<?import nl.nlcode.m.ui.MidiLayerAndSplitUi?>
+<?import nl.nlcode.m.ui.LayerAndSplitUi?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.cell.TextFieldTableCell?>
 <?import javafx.util.converter.IntegerStringConverter?>
@@ -28,7 +28,7 @@
 
 <fx:root
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiLayerAndSplitUi">
+    type="LayerAndSplitUi">
     <instrument>
         <HBox>
             <VBox styleClass="buttons">

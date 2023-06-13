@@ -9,10 +9,10 @@
         </encoder>
     </appender>
 
-    <logger name="nl.nlcode.m.engine.NoteHolder" level="debug"/>
-    <logger name="nl.nlcode.m.engine.MidiInOut" level="debug"/>
+    <logger name="nl.nlcode.m.engine.NoteHolder" level="info"/>
+    <logger name="nl.nlcode.m.engine.MidiInOut" level="info"/>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

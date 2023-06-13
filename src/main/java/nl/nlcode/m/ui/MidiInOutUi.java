@@ -1,12 +1,16 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.StringProperty;
+import javafx.beans.property.adapter.JavaBeanIntegerProperty;
+import javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -32,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlController, MidiInOut.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiInOutUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final boolean SHORT_NAMES = true;
 
@@ -178,6 +182,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         });
 
         getStyleClass().add(MIDI_IN_OUT);
+        
     }
 
     private ListChangeListener<MidiInOutUi> inputSelectionChangeListener = new ListChangeListener<>() {
@@ -462,5 +467,12 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             return getMidiInOut().getName() + ": " + super.toString();
         }
     }
-
+    
+    protected JavaBeanIntegerProperty createBeanIntegerProperty(String propertyName) {
+        try {
+            return JavaBeanIntegerPropertyBuilder.create().bean(getMidiInOut()).name(propertyName).build();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 }

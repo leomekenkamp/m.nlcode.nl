@@ -19,11 +19,11 @@
 <?import javafx.scene.layout.Region?>
 <?import nl.nlcode.m.ui.ControlUi?>
 <?import javafx.scene.control.TextField?>
-<?import nl.nlcode.m.ui.MidiLightsUi?>
+<?import nl.nlcode.m.ui.LightsUi?>
 
 <fx:root
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiLightsUi"
+    type="LightsUi"
     tabClosingPolicy="UNAVAILABLE">
     <instrument>
         <HBox styleClass="lights">

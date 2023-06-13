@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiInOutUiListView.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ObjectProperty<MidiInOutUi> ownerProperty = new SimpleObjectProperty();
 

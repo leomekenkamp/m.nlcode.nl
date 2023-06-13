@@ -6,9 +6,7 @@ import java.io.Serializable;
  *
  * @author leo
  */
-public class IntInterval implements Serializable {
-
-    private static final long serialVersionUID = 0L;
+public class IntInterval {
 
     private int low = 0;
 

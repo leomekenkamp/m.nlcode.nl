@@ -1,6 +1,7 @@
 package nl.nlcode.javafxutil;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.ObservableList;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
  * @author leo
  */
 public interface FxmlController<T> {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static class RunOnce {
 
@@ -38,8 +41,6 @@ public interface FxmlController<T> {
             }
         }
     }
-
-    static final Logger LOGGER = LoggerFactory.getLogger(FxmlController.class);
 
     default T loadFxml(URL from, CtorParamControllerFactory factory, ResourceBundle bundle) {
         LOGGER.debug("loading {}", from);

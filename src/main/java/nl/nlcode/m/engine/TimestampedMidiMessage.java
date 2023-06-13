@@ -6,5 +6,5 @@ import javax.sound.midi.MidiMessage;
  *
  * @author leo
  */
-public record TimestampedMessage (MidiMessage midiMessage, long timestamp) {
+public record TimestampedMidiMessage (MidiMessage midiMessage, long timestamp) {
 }

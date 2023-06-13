@@ -1,12 +1,19 @@
 package nl.nlcode.m.engine;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import nl.nlcode.m.linkui.UpdateProperty;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.NANO_OF_SECOND;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -16,13 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.marshalling.MarshalHelper;
 import nl.nlcode.marshalling.Marshallable;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
@@ -50,7 +56,19 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable, Lookup.Named<MidiInOut>, Marshallable {
+public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<MidiInOut>, Marshallable, UpdateProperty.Holder<U> {
+
+    public static void verify7Bit(int data) {
+        if (data < 0 || data > 127) {
+            throw new IllegalArgumentException("value must be range [0,127]");
+        }
+    }
+
+    public static void verify7BitPlusNone(int data) {
+        if (data < -1 || data > 127) {
+            throw new IllegalArgumentException("value must be range [-1,127]");
+        }
+    }
 
     public static interface Event {
 
@@ -64,7 +82,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
      * interface: the user interface knows <code>MidiInOut</code>, but not the other way around.
      * <code>MidiInOut</code> only knows about the interface it should use to 'talk to'.
      */
-    public static interface Ui {
+    public interface Ui {
 
         default void midiInOutConnected() {
         }
@@ -78,126 +96,75 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         default void sent(MidiMessage message, long timestamp) {
         }
 
-        default void name(String name) {
+        default void nameChanged(String name) {
         }
     }
 
-    public class UpdateProperty implements Serializable {
+    public static final DateTimeFormatter LOCAL_TIME = new DateTimeFormatterBuilder()
+            .appendValue(HOUR_OF_DAY, 2)
+            .appendLiteral(':')
+            .appendValue(MINUTE_OF_HOUR, 2)
+            .optionalStart()
+            .appendLiteral(':')
+            .appendValue(SECOND_OF_MINUTE, 2)
+            .optionalStart()
+            .appendFraction(NANO_OF_SECOND, 3, 3, true)
+            .toFormatter();
 
-        private static final long serialVersionUID = 0L;
-
-        private transient Runnable afterSet;
-
-        public final void setAfterSet(Runnable afterSet) {
-            register(this);
-            this.afterSet = afterSet;
-        }
-
-        public final void runAfterSet(boolean change) {
-            if (change) {
-                runAfterSet();
-            }
-        }
-
-        public final void runAfterSet() {
-            if (getUi() != null && afterSet != null) {
-                afterSet.run();
-            }
-        }
-    }
-
-    public class IntUpdateProperty extends UpdateProperty {
-
-        private static final long serialVersionUID = 0L;
-
-        private AtomicInteger value = new AtomicInteger();
-
-        public int get() {
-            return value.get();
-        }
-
-        public void set(int newValue) {
-            int oldValue = value.getAndSet(newValue);
-            runAfterSet(oldValue != newValue);
-        }
-    }
-
-    public class BooleanUpdateProperty extends UpdateProperty {
-
-        private static final long serialVersionUID = 0L;
-
-        private AtomicBoolean value = new AtomicBoolean();
-
-        public BooleanUpdateProperty(boolean v) {
-            value.set(v);
-        }
-        
-        public boolean get() {
-            return value.get();
-        }
-
-        public void set(boolean newValue) {
-            boolean oldValue = value.getAndSet(newValue);
-            runAfterSet(oldValue != newValue);
-        }
-    }
-
-    public class ObjectUpdateProperty<T> extends UpdateProperty {
-
-        private static final long serialVersionUID = 0L;
-
-        private AtomicReference<T> value = new AtomicReference<>();
-
-        public T get() {
-            return value.get();
-        }
-
-        public void set(T newValue) {
-            T oldValue = value.getAndSet(newValue);
-            runAfterSet(!Objects.equals(value, newValue));
-        }
-    }
-
-    private static final long serialVersionUID = 0L;
+    public static final DateTimeFormatter LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral('T')
+            .append(LOCAL_TIME)
+            .toFormatter();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     protected static final int NONE_FOR_7_BIT_INT = -1;
 
-    public static final int CHANNEL_MIN_ZERO_BASED = 0;
+    public static final int CHANNEL_MIN = 0;
 
-    public static final int CHANNEL_MAX_ZERO_BASED = 15;
+    public static final int CHANNEL_MAX = 15;
 
-    public static final int CHANNEL_MIN_ONE_BASED = CHANNEL_MIN_ZERO_BASED + 1;
+    public static final int CHANNEL_COUNT = CHANNEL_MAX - CHANNEL_MIN + 1;
 
-    public static final int CHANNEL_MAX_ONE_BASED = CHANNEL_MAX_ZERO_BASED + 1;
+    public static final int MIDI_DATA_NONE = -1;
+    
+    public static final int MIDI_DATA_MIN = 0;
 
-    public static final int CHANNEL_COUNT = CHANNEL_MAX_ZERO_BASED - CHANNEL_MIN_ZERO_BASED + 1;
+    public static final int MIDI_DATA_MAX = 127;
 
-    public static final int NOTE_MIN = 0;
+    public static final int NOTE_MIN = MIDI_DATA_MIN;
 
-    public static final int NOTE_MAX = 127;
+    public static final int NOTE_MAX = MIDI_DATA_MAX;
 
-    private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
+    public static final int MIDI_VELOCITY_MIN = MIDI_DATA_MIN;
+
+    public static final int MIDI_VELOCITY_MAX = MIDI_DATA_MAX;
+
+    protected static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
     private transient Set sendingToReadonly;
 
     private transient Lookup<MidiInOut> lookup;
 
-    private transient BlockingQueue<TimestampedMessage> asyncReceiveQueue;
+    private transient BlockingQueue<TimestampedMidiMessage> asyncReceiveQueue;
 
     private transient AtomicBoolean processing;
 
     private transient ExecutorService executorService;
 
-    private transient List<Consumer<U>> uiUpdates;
-
-    private transient List<UpdateProperty> updateProperties;
+    private transient Set<UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>>> updateProperties;
 
     private transient U ui;
 
+    private transient Project project;
+
+    private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    public static final MidiInOut[] EMPTY_ARRAY = new MidiInOut[]{};
+
     // persisted data
-    
     private String name;
 
     private Set<MidiInOut> sendingTo;
@@ -206,26 +173,25 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
 
     private Map<Serializable, Serializable> info;
 
-
     public static record SaveData0(
             int id,
             String name,
-            List<Marshalled> sendingTo,
-            List<Marshalled> receivingFrom,
+            Marshalled<MidiInOut>[] sendingTo,
+            Marshalled<MidiInOut>[] receivingFrom,
             Map<Serializable, Serializable> info) implements Marshalled<MidiInOut> {
 
         @Override
-        public void unmarshalInternal(Context context, MidiInOut target) {
+        public void unmarshalInto(Context context, MidiInOut target) {
             target.name = name();
-            for (Marshalled midiInOutOrRef : sendingTo()) {
-                target.sendingTo.add((MidiInOut) midiInOutOrRef.unmarshal(context));
-            }
-            for (Marshalled midiInOutOrRef : receivingFrom()) {
-                target.receivingFrom.add((MidiInOut) midiInOutOrRef.unmarshal(context));
-            }
+            MarshalHelper.unmarshalAddAll(context, sendingTo(), target.sendingTo);
+            MarshalHelper.unmarshalAddAll(context, receivingFrom(), target.receivingFrom);
             target.info.putAll(info());
         }
 
+        @Override
+        public MidiInOut createMarshallable() {
+            throw new UnsupportedOperationException("class is abstract");
+        }
     }
 
     @Override
@@ -233,8 +199,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         return new SaveData0(
                 id,
                 name,
-                context.toSaveDataList(sendingTo),
-                context.toSaveDataList(receivingFrom),
+                MarshalHelper.marshallToArray(context, sendingTo),
+                MarshalHelper.marshallToArray(context, receivingFrom),
                 info
         );
     }
@@ -245,12 +211,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         info = new HashMap<>();
         asyncReceiveQueue = new LinkedBlockingQueue();
         processing = new AtomicBoolean(false);
-        uiUpdates = new ArrayList<>();
-        updateProperties = new ArrayList<>();
+        updateProperties = new HashSet<>();
         sendingToReadonly = Collections.unmodifiableSet(sendingTo);
     }
 
     public final void activate(Project project) {
+        this.project = project;
         if (this.lookup != null) {
             throw new UnsupportedOperationException("can activate only once");
         }
@@ -269,7 +235,11 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         startListening();
     }
 
-    public U getUi() {
+    protected Project getProject() {
+        return project;
+    }
+    
+    private U getUi() {
         return ui;
     }
 
@@ -280,9 +250,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         this.ui = ui;
         if (ui != null) {
             this.ui.midiInOutConnected();
-            uiUpdates.forEach(action -> action.accept(ui));
-            updateProperties.forEach(updateProperty -> updateProperty.runAfterSet());
+            syncUi();
         }
+    }
+
+    protected void syncUi() {
+        updateProperties.stream().forEach(updateProperty -> updateProperty.runAfterChange());
     }
 
     public void close() {
@@ -330,12 +303,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
      * @param timeStamp
      */
     protected void send(MidiMessage message, long timestamp) {
-        send(new TimestampedMessage(message, timestamp));
+        send(new TimestampedMidiMessage(message, timestamp));
     }
 
-    protected void send(TimestampedMessage message) {
+    protected void send(TimestampedMidiMessage message) {
         if (sendingTo.isEmpty()) {
-            LOGGER.info("eating message, no delegates for <{}>", this);
+            LOGGER.debug("eating message, no delegates for <{}>", this);
         } else {
             LOGGER.debug("iterating over <{}>", sendingTo);
             for (MidiInOut receiver : sendingTo) {
@@ -348,9 +321,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         uiUpdate(ui -> ui.sent(message.midiMessage(), message.timestamp()));
     }
 
-    protected void send(TimestampedMessage... messages) {
+    protected void send(TimestampedMidiMessage... messages) {
         if (sendingTo.isEmpty()) {
-            LOGGER.info("eating message, no delegates for <{}>", this);
+            LOGGER.debug("eating message, no delegates for <{}>", this);
         } else {
             LOGGER.debug("iterating over <{}>", sendingTo);
             for (MidiInOut receiver : sendingTo) {
@@ -360,13 +333,13 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
                 receiver.asyncReceive(messages);
             }
         }
-        for (TimestampedMessage message : messages) {
-            getUi().sent(message.midiMessage(), message.timestamp());
+        for (TimestampedMidiMessage message : messages) {
+            uiUpdate(ui -> ui.sent(message.midiMessage(), message.timestamp()));
         }
     }
 
     protected void send(MidiMessage message) {
-        LOGGER.info("default send <{}>", MIDI_FORMAT.format(message));
+        LOGGER.debug("default send <{}>", MIDI_FORMAT.format(message));
         send(message, -1);
     }
 
@@ -386,7 +359,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
             lookup.renamed(this);
         }
         if (changing) {
-            getUi().name(name);
+            uiUpdate(ui -> ui.nameChanged(name));
         }
     }
 
@@ -405,7 +378,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
     }
 
     protected void processReceive(MidiMessage message) {
-        processReceive(message, -1);
+        send(message, -1);
     }
 
     /**
@@ -415,9 +388,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
      * @param message
      * @param timeStamp
      */
-    public void asyncReceive(TimestampedMessage... messages) {
+    public void asyncReceive(TimestampedMidiMessage... messages) {
         synchronized (asyncReceiveQueue) {
-            for (TimestampedMessage message : messages) {
+            for (TimestampedMidiMessage message : messages) {
                 if (asyncReceiveQueue.offer(message)) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("<{}> on received queue <{}>", this, MIDI_FORMAT.format(message.midiMessage()));
@@ -430,11 +403,11 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
     }
 
     public void asyncReceive(MidiMessage message) {
-        asyncReceive(new TimestampedMessage(message, -1L));
+        asyncReceive(new TimestampedMidiMessage(message, -1L));
     }
 
     public void asyncReceive(MidiMessage message, long timestamp) {
-        asyncReceive(new TimestampedMessage(message, timestamp));
+        asyncReceive(new TimestampedMidiMessage(message, timestamp));
     }
 
     /**
@@ -462,7 +435,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
      *
      * @return
      */
-    protected BlockingQueue<TimestampedMessage> getAsyncReceiveQueue() {
+    protected BlockingQueue<TimestampedMidiMessage> getAsyncReceiveQueue() {
         return asyncReceiveQueue;
     }
 
@@ -487,7 +460,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         return () -> {
             try {
                 while (processing.get()) {
-                    TimestampedMessage message = getAsyncReceiveQueue().take();
+                    TimestampedMidiMessage message = getAsyncReceiveQueue().take();
                     processReceive(message.midiMessage(), message.timestamp());
                     uiUpdate(ui -> ui.received(message.midiMessage(), message.timestamp()));
                 }
@@ -498,6 +471,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
             }
             LOGGER.debug("stopped listening for incoming signals");
         };
+    }
+
+    public void setDirty() {
+        if (project != null) {
+            project.setDirty();
+        }
     }
 
     private static Set<Integer> COMMAND_NOTE_RELATED;
@@ -525,7 +504,44 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
                 result.add("\u2026 (+" + (msg.getMessage().length - maxLength) + ")");
                 break;
             }
-            result.add(Integer.toString(msg.getMessage()[i]));
+            result.add(String.format("%03d", msg.getMessage()[i]));
+        }
+        return result.toString();
+    }
+
+    public static String toDec(byte[] rawMsg, int maxLength) {
+        StringJoiner result = new StringJoiner(" ");
+        for (int i = 0; i < rawMsg.length; i++) {
+            if (i >= maxLength) {
+                result.add("\u2026 (+" + (rawMsg.length - maxLength) + ")");
+                break;
+            }
+            result.add(String.format("%03d", Byte.toUnsignedInt(rawMsg[i])));
+        }
+        return result.toString();
+    }
+
+    public static String toHex(MidiMessage msg, int maxLength) {
+        StringJoiner result = new StringJoiner(" ");
+        result.add(Integer.toHexString(msg.getStatus()));
+        for (int i = 1; i < msg.getMessage().length; i++) {
+            if (i >= maxLength) {
+                result.add("\u2026 (+" + (msg.getMessage().length - maxLength) + ")");
+                break;
+            }
+            result.add(String.format("%02x", Byte.toUnsignedInt(msg.getMessage()[i])));
+        }
+        return result.toString();
+    }
+
+    public static String toHex(byte[] rawMsg, int maxLength) {
+        StringJoiner result = new StringJoiner(" ");
+        for (int i = 0; i < rawMsg.length; i++) {
+            if (i >= maxLength) {
+                result.add("\u2026 (+" + (rawMsg.length - maxLength) + ")");
+                break;
+            }
+            result.add(String.format("%02x", rawMsg[i]));
         }
         return result.toString();
     }
@@ -534,32 +550,42 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
         try {
             return new ShortMessage(ShortMessage.TIMING_CLOCK);
         } catch (InvalidMidiDataException e) {
-            LOGGER.debug("createMidiTimeCodes", e);
             throw new IllegalStateException(e);
         }
     }
 
-    protected void verifyChannelZeroBased(int channel) {
-        if (channel < CHANNEL_MIN_ZERO_BASED || channel > CHANNEL_MAX_ZERO_BASED) {
-            throw new IllegalArgumentException("channel must be in range [0,15]");
+    public static final ShortMessage createShortMessage(int command, int channel, int note, int velocity) {
+        try {
+            return new ShortMessage(command, channel, note, velocity);
+        } catch (InvalidMidiDataException e) {
+            throw new IllegalStateException(e);
         }
     }
 
-    protected void verify7Bit(int data) {
-        if (data < 0 || data > 127) {
-            throw new IllegalArgumentException("value must be range [0,127]");
+    protected static void verifyChannel(int channel) {
+        if (channel < CHANNEL_MIN || channel > CHANNEL_MAX) {
+            throw new IllegalArgumentException("channel {" + channel + "} must be in range [0,15]");
         }
     }
 
-    protected void verify7BitPlusNone(int data) {
-        if (data < -1 || data > 127) {
-            throw new IllegalArgumentException("value must be range [0,127]");
-        }
+    protected static void verifyNote(int data) {
+        verify7Bit(data);
     }
+
+    protected static void verifyVelocity(int data) {
+        verify7Bit(data);
+    }
+
 
     public static void forAllChannels(IntConsumer intConsumer) {
-        for (int channel = CHANNEL_MIN_ZERO_BASED; channel < CHANNEL_MAX_ZERO_BASED; channel++) {
+        for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             intConsumer.accept(channel);
+        }
+    }
+
+    public static void forAllNotes(IntConsumer intConsumer) {
+        for (int note = NOTE_MIN; note <= NOTE_MAX; note++) {
+            intConsumer.accept(note);
         }
     }
 
@@ -607,26 +633,32 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Serializable,
     public void projectFullyLoaded() {
     }
 
-    protected void addUiUpdate(Consumer<U> action) {
-        uiUpdates.add(uiUpdate);
-    }
-
-    protected void uiUpdate(Runnable uiUpdate) {
-        if (getUi() != null) {
-            uiUpdate.run();
-        }
-    }
-
-    protected void uiUpdate(Consumer<U> action) {
+    public void uiUpdate(Consumer<U> action) {
         if (getUi() != null) {
             action.accept(getUi());
         }
     }
 
-    protected void register(UpdateProperty updateProperty) {
-        if (!updateProperties.contains(updateProperty)) {
-            updateProperties.add(updateProperty);
-        }
+    @Override
+    public void unregister(UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>> updateProperty) {
+        updateProperties.remove(updateProperty);
+    }
+
+    @Override
+    public void register(UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>> updateProperty) {
+        updateProperties.add(updateProperty);
+    }
+
+    public PropertyChangeSupport getPropertyChangeSupport() {
+        return propertyChangeSupport;
+    }
+    
+    public void addPropertyChangeListener(String name, PropertyChangeListener listener) {
+    propertyChangeSupport.addPropertyChangeListener(name, listener);
+    }
+
+    public void removePropertyChangeListener(String name, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(name, listener);
     }
 
     public static class SendReceiveLoopDetectedException extends RuntimeException {

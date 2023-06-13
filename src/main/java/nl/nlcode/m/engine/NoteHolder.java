@@ -1,7 +1,6 @@
 package nl.nlcode.m.engine;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,26 +16,48 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteHolder extends MidiInOut<NoteHolder.Ui> {
+public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
 
     public static interface Ui extends MidiInOut.Ui {
 
-        default void notesHeldCount(int channel, int nrOfNotes) {
+        default void notesHeldChanged(int channel, int nrOfNotes) {
         }
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoteHolder.class);
-
-    private static final long serialVersionUID = 0L;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private transient Map<Integer, ShortMessage>[] bufferedNoteOffMessages;
 
     private transient Set<Integer>[] receivedNotesOn;
 
+    public static record SaveData0(
+            int id,
+            Marshalled<MidiInOut> s) implements Marshalled<NoteHolder> {
+
+        @Override
+        public void unmarshalInto(Context context, NoteHolder target) {
+            s.unmarshalInto(context, target);
+        }
+
+        @Override
+        public NoteHolder createMarshallable() {
+            return new NoteHolder();
+        }
+        
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new SaveData0(
+        id,
+        super.marshalInternal(-1, context));
+    }
+    
+    
     public NoteHolder() {
         bufferedNoteOffMessages = new LinkedHashMap[CHANNEL_COUNT];
         receivedNotesOn = new Set[CHANNEL_COUNT];
-        for (int channel = CHANNEL_MIN_ZERO_BASED; channel <= CHANNEL_MAX_ZERO_BASED; channel++) {
+        for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             bufferedNoteOffMessages[channel] = new LinkedHashMap<>();
             receivedNotesOn[channel] = new LinkedHashSet<>();
         }
@@ -66,7 +88,7 @@ public class NoteHolder extends MidiInOut<NoteHolder.Ui> {
                         clearNotCurrentlyDownNotes(channel);
                         send(incoming);
                         noteOffBuffer.put(note, null);
-                        uiUpdate(ui -> ui.notesHeldCount(channel, noteOffBuffer.size()));
+                        uiUpdate(ui -> ui.notesHeldChanged(channel, noteOffBuffer.size()));
                     }
                 }
                 case ShortMessage.NOTE_OFF -> {
@@ -75,13 +97,13 @@ public class NoteHolder extends MidiInOut<NoteHolder.Ui> {
                     if (previousOff == null && noteOffBuffer.containsKey(note)) {
                         LOGGER.debug("adding note <{}> to noteOffBuffer", note);
                         noteOffBuffer.put(note, incoming);
-                        uiUpdate(ui -> ui.notesHeldCount(channel, noteOffBuffer.size()));
+                        uiUpdate(ui -> ui.notesHeldChanged(channel, noteOffBuffer.size()));
 
                     } else {
                         LOGGER.debug("sending note off for <{}>", note);
                         send(incoming);
                         noteOffBuffer.remove(note);
-                        uiUpdate(ui -> ui.notesHeldCount(channel, noteOffBuffer.size()));
+                        uiUpdate(ui -> ui.notesHeldChanged(channel, noteOffBuffer.size()));
                         if (receivedNotesOn[channel].isEmpty()) {
                             clearNotCurrentlyDownNotes(channel);
                         }
@@ -97,7 +119,7 @@ public class NoteHolder extends MidiInOut<NoteHolder.Ui> {
     }
 
     public void clearNotCurrentlyDownNotes(int channel) {
-        verifyChannelZeroBased(channel);
+        verifyChannel(channel);
         Map<Integer, ShortMessage> noteOffBuffer = bufferedNoteOffMessages[channel];
         for (Iterator<Map.Entry<Integer, ShortMessage>> noteOffIterator = noteOffBuffer.entrySet().iterator(); noteOffIterator.hasNext();) {
             Map.Entry<Integer, ShortMessage> entry = noteOffIterator.next();
@@ -112,17 +134,17 @@ public class NoteHolder extends MidiInOut<NoteHolder.Ui> {
             send(noteOff);
             noteOffIterator.remove();
         }
-        uiUpdate(ui -> ui.notesHeldCount(channel, noteOffBuffer.size()));
+        uiUpdate(ui -> ui.notesHeldChanged(channel, noteOffBuffer.size()));
     }
 
     public void clearNotCurrentlyDownNotes() {
-        for (int channel = CHANNEL_MIN_ZERO_BASED; channel <= CHANNEL_MAX_ZERO_BASED; channel++) {
+        for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             NoteHolder.this.clearNotCurrentlyDownNotes(channel);
         }
     }
 
     public int countCurrentlyDownNotes(int channel) {
-        verifyChannelZeroBased(channel);
+        verifyChannel(channel);
         return bufferedNoteOffMessages[channel].size();
     }
 

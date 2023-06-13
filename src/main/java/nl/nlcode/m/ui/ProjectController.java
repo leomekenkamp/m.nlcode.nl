@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import nl.nlcode.m.engine.MidiInOut;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProjectController<T extends MidiInOut> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ProjectUi projectUi;
     private T midiInOut;

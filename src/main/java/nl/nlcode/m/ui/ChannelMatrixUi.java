@@ -1,12 +1,18 @@
 package nl.nlcode.m.ui;
 
+import java.lang.invoke.MethodHandles;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
-import nl.nlcode.m.engine.MidiChannelMatrix;
+import nl.nlcode.m.engine.ChannelMatrix;
+import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
+import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,52 +20,57 @@ import org.slf4j.LoggerFactory;
  *
  * @author lmekenkamp
  */
-public class MidiChannelMatrixUi extends MidiInOutUi<MidiChannelMatrix> {
+public class ChannelMatrixUi extends MidiInOutUi<ChannelMatrix> implements ChannelMatrix.Ui {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MidiChannelMatrixUi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final int ROW_OFFSET = 1;
 
     private static final int COLUMN_OFFSET = 1;
 
-    private CheckBox[][] checkBoxes = new CheckBox[16][16];
+    private CheckBox[][] checkBoxes = new CheckBox[CHANNEL_COUNT][CHANNEL_COUNT];
 
     @FXML
     private GridPane matrix;
-    
-    public MidiChannelMatrixUi(ProjectUi projectUi, MidiChannelMatrix midiChannelMatrix, MenuItem menuItem) {
-        super(projectUi, midiChannelMatrix, menuItem);
-        loadFxml(MidiChannelMatrixUi.class, App.MESSAGES);
+
+    public ChannelMatrixUi(ProjectUi projectUi, ChannelMatrix channelMatrix, MenuItem menuItem) {
+        super(projectUi, channelMatrix, menuItem);
+        loadFxml(ChannelMatrixUi.class, App.MESSAGES);
     }
 
     @Override
     protected void handleInitialize() {
         super.handleInitialize();
 
-        for (int from = 0; from < 16; from++) {
-            Label leftLabel = new Label("" + (from + 1));
+        forAllChannels(from -> {
+            Label leftLabel = new Label();
+            IntegerProperty offsetProperty = getProjectUi().getControlUi().getMidiChannelStringConverter().offsetProperty();
+            StringBinding channelBinding = offsetProperty.add(from).asString();
+            leftLabel.textProperty().bind(channelBinding);
+            
             GridPane.setRowIndex(leftLabel, from + ROW_OFFSET);
             GridPane.setColumnIndex(leftLabel, 0);
             matrix.getChildren().add(leftLabel);
 
-            Label topLabel = new Label("" + (from + 1));
+            Label topLabel = new Label(); 
+            topLabel.textProperty().bind(channelBinding);
+            
             GridPane.setRowIndex(topLabel, 0);
             GridPane.setColumnIndex(topLabel, from + COLUMN_OFFSET);
             matrix.getChildren().add(topLabel);
 
-            for (int to = 0; to < 16; to++) {
+            forAllChannels(to -> {
                 CheckBox checkBox = new CheckBox();
                 checkBoxes[from][to] = checkBox;
                 GridPane.setRowIndex(checkBox, from + 1);
                 GridPane.setColumnIndex(checkBox, to + 1);
                 matrix.getChildren().add(checkBox);
-                checkBox.setSelected(getMidiInOut().zeroBasedFromTo(from, to));
+                checkBox.setSelected(getMidiInOut().getFromTo(from, to));
                 checkBox.selectedProperty().addListener((ov, oldValue, newValue) -> {
-                    getMidiInOut().zeroBasedFromTo(row(checkBox), column(checkBox), newValue);
-                    setDirty();
+                    getMidiInOut().setFromTo(row(checkBox), column(checkBox), newValue);
                 });
-            }
-        }
+            });
+        });
 
 //        // This is for when to put reverse, clear, reset buttons on each row (and column)
 //        for (int i = 0; i < 16; i++) {
@@ -75,6 +86,11 @@ public class MidiChannelMatrixUi extends MidiInOutUi<MidiChannelMatrix> {
 //        }
     }
 
+    @Override
+    public void matrixChanged(int from, int to, boolean value) {
+        checkBoxes[from][to].setSelected(value);
+    }
+
     private int column(CheckBox checkBox) {
         return GridPane.getColumnIndex(checkBox) - COLUMN_OFFSET;
     }
@@ -85,30 +101,17 @@ public class MidiChannelMatrixUi extends MidiInOutUi<MidiChannelMatrix> {
 
     @FXML
     private void reset(ActionEvent e) {
-        for (int from = 0; from < checkBoxes.length; from++) {
-            for (int to = 0; to < checkBoxes.length; to++) {
-                checkBoxes[from][to].setSelected(from == to);
-            }
-        }
+        forAllChannels(from -> forAllChannels(to -> checkBoxes[from][to].setSelected(from == to)));
     }
 
     @FXML
     private void clear(ActionEvent e) {
-        for (int from = 0; from < checkBoxes.length; from++) {
-            for (int to = 0; to < checkBoxes.length; to++) {
-                checkBoxes[from][to].setSelected(false);
-            }
-        }
+        forAllChannels(from -> forAllChannels(to -> checkBoxes[from][to].setSelected(false)));
     }
 
     @FXML
     private void invert(ActionEvent e) {
-        for (int from = 0; from < checkBoxes.length; from++) {
-            for (int to = 0; to < checkBoxes.length; to++) {
-                checkBoxes[from][to].setSelected(!checkBoxes[from][to].isSelected());
-            }
-        }
+        forAllChannels(from -> forAllChannels(to -> checkBoxes[from][to].setSelected(!checkBoxes[from][to].isSelected())));
     }
-
 
 }

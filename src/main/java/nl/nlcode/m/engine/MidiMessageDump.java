@@ -1,48 +1,73 @@
 package nl.nlcode.m.engine;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.time.LocalTime;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.marshalling.Marshalled;
 
 /**
  *
  * @author leo
  */
-public class MidiMessageDump extends MidiInOut {
+public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> {
 
-    private static final long serialVersionUID = 0L;
+    public static record EnhancedMessage(
+            byte[] rawSource,
+            long timestamp,
+            LocalDateTime receivedAt,
+            String description) {
 
-    private ShowTicks showTicks = ShowTicks.ALL;
+        private static EnhancedMessage[] EMPTY_ARRAY = new EnhancedMessage[]{};
+    }
+
+    public static interface Ui extends MidiInOut.Ui {
+
+        void received(EnhancedMessage message);
+
+    }
 
     private transient int tickCount = 0;
 
-    public static class MessageAndTime {
+    private List<EnhancedMessage> enhancedMessageList = Collections.synchronizedList(new ArrayList<>());
 
-        public MidiMessage message;
-        public LocalTime time;
+    private ObjectUpdateProperty<ShowTicks, U, MidiMessageDump<U>> showTicks = new ObjectUpdateProperty(ShowTicks.ALL);
 
-        public MessageAndTime(MidiMessage message) {
-            this(message, LocalTime.now());
+    public static record SaveData0(
+            int id,
+            ShowTicks showTicks,
+            EnhancedMessage[] enhancedMessageList,
+            Marshalled<MidiInOut> s) implements Marshalled<MidiMessageDump> {
+
+        @Override
+        public void unmarshalInto(Marshalled.Context context, MidiMessageDump target) {
+            target.setShowTicks(showTicks());
+            target.enhancedMessageList.addAll(Arrays.asList(enhancedMessageList()));
+            s.unmarshalInto(context, target);
         }
 
-        public MessageAndTime(MidiMessage message, LocalTime time) {
-            this.message = message;
-            this.time = time;
+        @Override
+        public MidiMessageDump createMarshallable() {
+            return new MidiMessageDump();
         }
+
     }
 
-    private transient ObservableList<MessageAndTime> midiMessageList;
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        return new MidiMessageDump.SaveData0(
+                id,
+                showTicks.get(),
+                enhancedMessageList.toArray(EnhancedMessage.EMPTY_ARRAY),
+                super.marshalInternal(-1, context)
+        );
+    }
 
     public MidiMessageDump() {
-        midiMessageList = FXCollections.observableArrayList();
-        if (showTicks == null) {
-            showTicks = ShowTicks.ALL;
-        }
     }
 
     @Override
@@ -81,18 +106,18 @@ public class MidiMessageDump extends MidiInOut {
         }
     }
 
-    private void addToList(MidiMessage message, long timeStamp) {
-        synchronized (midiMessageList) { // ugly as hell
-            midiMessageList.add(0, new MessageAndTime(message));
-            final int MAX_SIZE = 100;
-            while (midiMessageList.size() > MAX_SIZE) {
-                midiMessageList.remove(100);
-            }
+    private void addToList(MidiMessage source, long timeStamp) {
+        EnhancedMessage message = new EnhancedMessage(source.getMessage(), timeStamp, LocalDateTime.now(), MIDI_FORMAT.format(source));
+        enhancedMessageList.add(0, message);
+        uiUpdate(ui -> ui.received(message));
+        final int MAX_SIZE = 100;
+        while (enhancedMessageList.size() > MAX_SIZE) {
+            enhancedMessageList.remove(enhancedMessageList.size() - 1);
         }
     }
 
-    public ObservableList<MessageAndTime> getMidiMessageList() {
-        return midiMessageList;
+    public List<EnhancedMessage> getEnhancedMessageList() {
+        return enhancedMessageList;
     }
 
     @Override
@@ -101,12 +126,12 @@ public class MidiMessageDump extends MidiInOut {
     }
 
     public ShowTicks getShowTicks() {
-        return showTicks;
+        return showTicks.get();
     }
 
     public void setShowTicks(ShowTicks showTicks) {
         tickCount = 0;
-        this.showTicks = showTicks;
+        this.showTicks.set(showTicks);
     }
 
 }

@@ -9,6 +9,7 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory?>
 <?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
@@ -24,7 +25,7 @@
 
 <fx:root 
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiClockUi"  styleClass="midiChannelMatrix">
+    type="MidiClockUi"  styleClass="channelMatrix">
     <instrument>
         <VBox>
             <HBox styleClass="fields">
@@ -32,14 +33,14 @@
                     <EnumChoiceBox enumClass="nl.nlcode.m.engine.ClockSource" fx:id="clockChoice"/>
                 </Field>
                 <Field labelText="%beatsPerMinute" styleClass="beatsPerMinute">
-                    <Spinner fx:id="beatsPerMinute">
+                    <Spinner fx:id="beatsPerMinute" editable="true" minWidth="85">
                         <valueFactory>
-                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="10" max="500"/>
+                            <SpinnerValueFactory.DoubleSpinnerValueFactory min="10" max="500" amountToStepBy="0.1"/>
                         </valueFactory>
                     </Spinner>
                 </Field>
                 <Field labelText="%beatsPerBar" styleClass="beatsPerBar">
-                    <Spinner fx:id="beatsPerBar">
+                    <Spinner fx:id="beatsPerBar" editable="true">
                         <valueFactory>
                             <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="500"/>
                         </valueFactory>
@@ -48,13 +49,13 @@
             </HBox>
             <HBox styleClass="position">
                 <Field labelText="%bar" styleClass="bar">
-                    <Label text="${controller.bar}" styleClass="value"/>
+                    <Label fx:id="barLabel" styleClass="value"/>
                 </Field>
                 <Field labelText="%beat" styleClass="beat">
-                    <Label text="${controller.beat}" styleClass="value"/>
+                    <Label fx:id="beatLabel" styleClass="value"/>
                 </Field>
                 <Field labelText="%tick" styleClass="tick">
-                    <Label text="${controller.tick}" styleClass="value"/>
+                    <Label fx:id="tickLabel" styleClass="value"/>
                 </Field>
             </HBox>
             <Field labelText="%mediaControl">

@@ -1,7 +1,9 @@
 package nl.nlcode.m.engine;
 
+import java.lang.invoke.MethodHandles;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.m.linkui.IntUpdateProperty;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,19 +12,20 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class KeyboardKeyboard extends MidiInOut {
+public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U> {
 
-    private static final long serialVersionUID = 0L;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KeyboardKeyboard.class);
+    public static interface Ui extends MidiInOut.Ui {
+    }
 
-    private int channel;
+    private IntUpdateProperty<U, KeyboardKeyboard<U>> channel;
 
-    private int velocity;
+    private IntUpdateProperty<U, KeyboardKeyboard<U>> velocity;
 
-    private int octave;
-    
-    public static record SaveData0 (
+    private IntUpdateProperty<U, KeyboardKeyboard<U>> octave;
+
+    public static record SaveData0(
             int id,
             int channel,
             int velocity,
@@ -30,36 +33,37 @@ public class KeyboardKeyboard extends MidiInOut {
             Marshalled<MidiInOut> s) implements Marshalled<KeyboardKeyboard> {
 
         @Override
-        public void unmarshalInternal(Context context, KeyboardKeyboard target) {
-            target.channel = channel();
-            target.velocity = velocity();
-            target.octave = octave();
-            s.unmarshalInternal(context, target);
+        public void unmarshalInto(Context context, KeyboardKeyboard target) {
+            target.channel.set(channel());
+            target.velocity.set(velocity());
+            target.octave.set(octave());
+            s.unmarshalInto(context, target);
         }
 
         @Override
         public KeyboardKeyboard createMarshallable() {
             return new KeyboardKeyboard();
         }
-        
-        
     }
 
     @Override
     public Marshalled marshalInternal(int id, Context context) {
         return new SaveData0(
                 id,
-                channel,
-                velocity,
-                octave,
+                channel.get(),
+                velocity.get(),
+                octave.get(),
                 super.marshalInternal(-1, context)
         );
     }
 
     public KeyboardKeyboard() {
-        channel = 0;
-        velocity = 63;
-        octave = 4;
+        channel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
+        velocity = new IntUpdateProperty<>(63, MIDI_DATA_MIN, MIDI_DATA_MAX);
+        octave = new IntUpdateProperty<>(4);
+        channel.register(this);
+        velocity.register(this);
+        octave.register(this);
     }
 
     @Override
@@ -67,50 +71,19 @@ public class KeyboardKeyboard extends MidiInOut {
         return true;
     }
 
-    public int getOneBasedChannel() {
-        return getZeroBasedChannel() + 1;
-    }
-
-    public void setOneBasedChannel(int channel) {
-        setZeroBasedChannel(channel - 1);
-    }
-
-    public int getZeroBasedChannel() {
-        return channel;
-    }
-
-    public void setZeroBasedChannel(int channel) {
-        LOGGER.debug("octave (0-based) now <{}>", octave);
-        this.channel = channel;
-    }
-
-    public int getVelocity() {
-        return velocity;
-    }
-
-    public void setVelocity(int velocity) {
-        this.velocity = velocity;
-    }
-
-    public int getOctave() {
-        return octave;
-    }
-
-    public void setOctave(int octave) {
-        LOGGER.debug("octave now <{}>", octave);
-        this.octave = octave;
-    }
-
     public void keyChange(int note, boolean pressed) {
+        if (getVelocity() < 120) {
+            setVelocity(getVelocity() + 1);
+        }
         LOGGER.debug("note: <{}>, pressed: <{}>", note, pressed);
         int transposedNote = note + (getOctave() - 4) * 12;
         if (transposedNote >= 0 && transposedNote <= 127) {
             try {
                 ShortMessage msg = new ShortMessage();
                 if (pressed) {
-                    msg.setMessage(ShortMessage.NOTE_ON, getZeroBasedChannel(), transposedNote, getVelocity());
+                    msg.setMessage(ShortMessage.NOTE_ON, getChannel(), transposedNote, getVelocity());
                 } else {
-                    msg.setMessage(ShortMessage.NOTE_OFF, getZeroBasedChannel(), transposedNote, getVelocity());
+                    msg.setMessage(ShortMessage.NOTE_OFF, getChannel(), transposedNote, getVelocity());
                 }
                 send(msg);
             } catch (InvalidMidiDataException e) {
@@ -119,6 +92,42 @@ public class KeyboardKeyboard extends MidiInOut {
         } else {
             LOGGER.warn("key outside of reach: <{}>", transposedNote);
         }
+    }
+
+    public int getChannel() {
+        return channel.get();
+    }
+
+    public void setChannel(int channel) {
+        this.channel.set(channel);
+    }
+
+    public IntUpdateProperty<U, KeyboardKeyboard<U>> channel() {
+        return channel;
+    }
+
+    public int getVelocity() {
+        return velocity.get();
+    }
+
+    public void setVelocity(int velocity) {
+        this.velocity.set(velocity);
+    }
+
+    public IntUpdateProperty<U, KeyboardKeyboard<U>> velocity() {
+        return velocity;
+    }
+
+    public int getOctave() {
+        return octave.get();
+    }
+
+    public void setOctave(int octave) {
+        this.octave.set(octave);
+    }
+
+    public IntUpdateProperty<U, KeyboardKeyboard<U>> octave() {
+        return octave;
     }
 
 }

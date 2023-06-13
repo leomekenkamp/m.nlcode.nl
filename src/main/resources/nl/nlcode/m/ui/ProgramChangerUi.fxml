@@ -32,52 +32,68 @@
         <VBox>
             <GridPane styleClass="channels">
                 <Field GridPane.rowIndex="0" GridPane.columnIndex="0" labelText="__channel__ 1">
-                    <I0through127Spinner fx:id="programSpinner0"/>
+                    <I0through127Spinner fx:id="programSpinner0" editable="true"/>
+                    <CheckBox fx:id="dropIncoming0" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="0" GridPane.columnIndex="1" labelText="__channel__ 2">
-                    <I0through127Spinner fx:id="programSpinner1"/>
+                    <I0through127Spinner fx:id="programSpinner1" editable="true"/>
+                    <CheckBox fx:id="dropIncoming1" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="0" GridPane.columnIndex="2" labelText="__channel__ 3">
-                    <I0through127Spinner fx:id="programSpinner2"/>
+                    <I0through127Spinner fx:id="programSpinner2" editable="true"/>
+                    <CheckBox fx:id="dropIncoming2" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="0" GridPane.columnIndex="3" labelText="__channel__ 4">
-                    <I0through127Spinner fx:id="programSpinner3"/>
+                    <I0through127Spinner fx:id="programSpinner3" editable="true"/>
+                    <CheckBox fx:id="dropIncoming3" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="1" GridPane.columnIndex="0" labelText="__channel__ 5">
-                    <I0through127Spinner fx:id="programSpinner4"/>
+                    <I0through127Spinner fx:id="programSpinner4" editable="true"/>
+                    <CheckBox fx:id="dropIncoming4" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="1" GridPane.columnIndex="1" labelText="__channel__ 6">
-                    <I0through127Spinner fx:id="programSpinner5"/>
+                    <I0through127Spinner fx:id="programSpinner5" editable="true"/>
+                    <CheckBox fx:id="dropIncoming5" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="1" GridPane.columnIndex="2" labelText="__channel__ 7">
-                    <I0through127Spinner fx:id="programSpinner6"/>
+                    <I0through127Spinner fx:id="programSpinner6" editable="true"/>
+                    <CheckBox fx:id="dropIncoming6" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="1" GridPane.columnIndex="3" labelText="__channel__ 8">
-                    <I0through127Spinner fx:id="programSpinner7"/>
+                    <I0through127Spinner fx:id="programSpinner7" editable="true"/>
+                    <CheckBox fx:id="dropIncoming7" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="2" GridPane.columnIndex="0" labelText="__channel__ 9">
-                    <I0through127Spinner fx:id="programSpinner8"/>
+                    <I0through127Spinner fx:id="programSpinner8" editable="true"/>
+                    <CheckBox fx:id="dropIncoming8" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="2" GridPane.columnIndex="1" labelText="__channel__ 10">
-                    <I0through127Spinner fx:id="programSpinner9"/>
+                    <I0through127Spinner fx:id="programSpinner9" editable="true"/>
+                    <CheckBox fx:id="dropIncoming9" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="2" GridPane.columnIndex="2" labelText="__channel__ 11">
-                    <I0through127Spinner fx:id="programSpinner10"/>
+                    <I0through127Spinner fx:id="programSpinner10" editable="true"/>
+                    <CheckBox fx:id="dropIncoming10" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="2" GridPane.columnIndex="3" labelText="__channel__ 12">
-                    <I0through127Spinner fx:id="programSpinner11"/>
+                    <I0through127Spinner fx:id="programSpinner11" editable="true"/>
+                    <CheckBox fx:id="dropIncoming11" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="3" GridPane.columnIndex="0" labelText="__channel__ 13">
-                    <I0through127Spinner fx:id="programSpinner12"/>
+                    <I0through127Spinner fx:id="programSpinner12" editable="true"/>
+                    <CheckBox fx:id="dropIncoming12" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="3" GridPane.columnIndex="1" labelText="__channel__ 14">
-                    <I0through127Spinner fx:id="programSpinner13"/>
+                    <I0through127Spinner fx:id="programSpinner13" editable="true"/>
+                    <CheckBox fx:id="dropIncoming13" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="3" GridPane.columnIndex="2" labelText="__channel__ 15">
                     <I0through127Spinner fx:id="programSpinner14"/>
+                    <CheckBox fx:id="dropIncoming14" text="%drop_incoming"/>
                 </Field>
                 <Field GridPane.rowIndex="3" GridPane.columnIndex="3" labelText="__channel__ 16">
-                    <I0through127Spinner fx:id="programSpinner15"/>
+                    <I0through127Spinner fx:id="programSpinner15" editable="true"/>
+                    <CheckBox fx:id="dropIncoming15" text="%drop_incoming"/>
                 </Field>
             </GridPane>
             <HBox>

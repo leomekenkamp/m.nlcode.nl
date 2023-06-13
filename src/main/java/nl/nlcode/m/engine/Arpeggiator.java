@@ -63,7 +63,7 @@ public class Arpeggiator extends MidiInOut {
 
     public Arpeggiator() {
         notesOn = new ArrayList[CHANNEL_COUNT];
-        for (int channel = CHANNEL_MIN_ZERO_BASED; channel <= CHANNEL_MAX_ZERO_BASED; channel++) {
+        for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             notesOn[channel] = new ArrayList();
         }
     }
