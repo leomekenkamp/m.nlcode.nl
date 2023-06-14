@@ -20,8 +20,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Random;
 import nl.nlcode.m.engine.Project.SaveData0;
 import nl.nlcode.marshalling.MarshalHelper;
 import nl.nlcode.marshalling.Marshallable;
@@ -37,7 +39,7 @@ public class SaverLoader {
     private static final String VERSION = "0";
     private static final String TYPE_JSON = "json";
     private static final String TYPE_XML = "xml";
-    private static final String ENCODING_TXT = "txt";
+    private static final Random RANDOM = new Random();
 
     private static class MyTypeIdResolver extends TypeIdResolverBase {
 
@@ -161,27 +163,47 @@ public class SaverLoader {
         return result;
     }
 
+    /**
+     * Makes ugly use of UTF-8 byte encoding
+     * @param in
+     * @return
+     * @throws IOException 
+     */
+    private String readLineUgly(InputStream in) throws IOException {
+        StringBuilder result = new StringBuilder();
+        while (true) {
+            int b = in.read();
+            if (b == -1) {
+                break;
+            }
+            if (b == (char) '\n') {
+                break;
+            }
+            result.append((char) b);
+        }
+        return result.toString();
+    }
+
     public Project load(Path path) throws FileNotFoundException, IOException {
         InputStream in = Files.newInputStream(path);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        if (!reader.readLine().equals(PROGRAM_ID)) {
-            throw new IOException("incompatible file");
+        if (!PROGRAM_ID.equals(readLineUgly(in)))  {
+            throw new IOException("incompatible file type");
         }
-        if (!reader.readLine().equals(VERSION)) {
+        if (!VERSION.equals(readLineUgly(in)))  {
             throw new IOException("incompatible file version");
         }
-        String encoding = reader.readLine();
-        if (!encoding.equals(ENCODING_TXT)) {
-            throw new IOException("incompatible file encoding");
-        }
+        SaveFileEncoding encoding = SaveFileEncoding.fromDesc(readLineUgly(in));
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(encoding.wrap(in), StandardCharsets.UTF_8));
         String type = reader.readLine();
         if (type.equals(TYPE_JSON)) {
             return loadJson(reader);
         } else if (type.equals(TYPE_XML)) {
             throw new IOException("not yet...");
         } else {
-            throw new IOException("incompatible file type");
+            throw new IOException("incompatible file type <" + type + ">");
         }
+//        System.out.println(test);
     }
 
     private Project loadJson(Reader in) throws IOException {
@@ -192,12 +214,27 @@ public class SaverLoader {
         return result;
     }
 
-    public void save(Project project) throws FileNotFoundException, IOException { //TODO backup file
+    public void save(Project project) throws FileNotFoundException, IOException {
+        Path possiblyExistingFile = project.getPath();
+        Path backup = null;
+        if (Files.exists(possiblyExistingFile)) {
+            backup = possiblyExistingFile.resolveSibling(possiblyExistingFile.getFileName() + ".backup." + Long.toHexString(RANDOM.nextLong()));
+            Files.copy(possiblyExistingFile, backup);
+        }
         FileOutputStream out = new FileOutputStream(project.getPath().toFile());
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+            @Override
+            public void println() {
+                print("\n");
+            }
+
+        };
         writer.println(PROGRAM_ID);
         writer.println(VERSION);
-        writer.println(ENCODING_TXT);
+        SaveFileEncoding encoding = project.getControl().getSaveFileEncoding();
+        writer.println(encoding.toDesc());
+        writer.flush();
+        writer = new PrintWriter(new OutputStreamWriter(encoding.wrap(out), StandardCharsets.UTF_8));
         writer.println(TYPE_JSON);
         writer.flush();
         ObjectMapper objectMapper = createObjectMapper();
@@ -207,6 +244,9 @@ public class SaverLoader {
 
         objectMapper
                 .writerWithDefaultPrettyPrinter()
-                .writeValue(out, marshalled);
+                .writeValue(writer, marshalled);
+        if (backup != null) {
+            Files.deleteIfExists(backup);
+        }
     }
 }

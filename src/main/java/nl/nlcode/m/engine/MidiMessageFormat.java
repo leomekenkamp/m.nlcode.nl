@@ -1,6 +1,7 @@
 package nl.nlcode.m.engine;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringJoiner;
@@ -59,7 +60,7 @@ public class MidiMessageFormat {
     public static int descToNote(String desc) {
         desc = desc.trim();
         int octave = Integer.parseInt(desc.substring(desc.length() - 1));
-        String noteWithoutOctave = desc.substring(0, desc.length() - 1).toUpperCase();
+        String noteWithoutOctave = desc.substring(0, desc.length() - 1).toUpperCase(Locale.UK);
         if (desc.length() == 2) {
             for (int i = 0; i < NOTE_DESC.length; i++) {
                 if (NOTE_DESC[i].equals(noteWithoutOctave)) {

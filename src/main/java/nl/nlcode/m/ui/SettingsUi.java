@@ -22,6 +22,8 @@ import static nl.nlcode.m.ui.App.DEFAULT_CSS_FILENAME;
 import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
 
 import nl.nlcode.m.engine.MidiDeviceMgr;
+import nl.nlcode.m.engine.SaveFileEncoding;
+import nl.nlcode.m.engine.SaverLoader;
 import static nl.nlcode.m.ui.ZeroOrOneBased.ONE_BASED;
 import static nl.nlcode.m.ui.ZeroOrOneBased.ZERO_BASED;
 import org.controlsfx.control.ToggleSwitch;
@@ -54,6 +56,9 @@ public final class SettingsUi extends TabPane implements FxmlController {
     @FXML
     private EnumChoiceBox<NoteNamingConvention> noteNamingConvention;
     
+    @FXML
+    private EnumChoiceBox<SaveFileEncoding> saveFileEncoding;
+            
     public SettingsUi(ControlUi controlUi, MidiDeviceMgr midiDeviceMgr) {
         this.controlUi = controlUi;
         this.midiDeviceMgr = midiDeviceMgr;
@@ -94,6 +99,8 @@ public final class SettingsUi extends TabPane implements FxmlController {
         });
         noteNamingConvention.valueProperty().setValue(getControlUi().getNoteNamingConvention());
         noteNamingConvention.valueProperty().addListener((ov, oldValue, newValue) -> getControlUi().setNoteNamingConvention(newValue));
+        saveFileEncoding.setValue(getControl().getSaveFileEncoding());
+        saveFileEncoding.valueProperty().addListener((ov, oldValue, newValue) -> getControl().setSaveFileEncoding(newValue));
     }
 
     @FXML
@@ -168,4 +175,5 @@ public final class SettingsUi extends TabPane implements FxmlController {
     public String getStyleSheet() {
         return App.getStyleSheet();
     }
+
 }

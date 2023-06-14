@@ -8,9 +8,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javax.sound.midi.MidiDevice;
+import java.util.prefs.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,33 +29,19 @@ public final class Control {
     private static final String DEFAULT_DIR = System.getProperty("user.home");
 
     private static Control instance;
+    
+    public static final Preferences PREFERENCES = Preferences.userNodeForPackage(Control.class);
+
+    private static final Preferences SAVE_FILE_PREFERENCES = Control.PREFERENCES.node("saveFiles");
 
     private File projectDirectory = new File(DEFAULT_DIR);
 
     private Set<Project> projects = ConcurrentHashMap.newKeySet();
 
-//    public static final Comparator<? super MidiDevice> COMPARE_BY_DISPLAY_NAME = new Comparator<>() {
-//        @Override
-//        public int compare(MidiDevice o1, MidiDevice o2) {
-//            return getDisplayName(o1).compareTo(getDisplayName(o2));
-//        }
-//    };
-    private final ObservableList<MidiDevice> midiDevicesBacking;
-
-    private final ObservableList<MidiDevice> midiDevices;
-
-    private final ObservableList<MidiDevice> openMidiDevicesBacking;
-
-    private final ObservableList<MidiDevice> openMidiDevices;
-
     // only used to write to, so if we really want to use this, then refactor
 //    public Lookup<MidiInOut> lookup = Lookup.create();
 
     private Control() {
-        midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-        midiDevices = FXCollections.unmodifiableObservableList(midiDevicesBacking);
-        openMidiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-        openMidiDevices = FXCollections.unmodifiableObservableList(openMidiDevicesBacking);
     }
 
     public File getProjectDirectory() {
@@ -109,4 +93,17 @@ public final class Control {
         }
         return false;
     }
+    
+    public SaveFileEncoding getSaveFileEncoding() {
+        try {
+            return SaveFileEncoding.fromDesc(SAVE_FILE_PREFERENCES.get("encoding", SaveFileEncoding.GZIP.toDesc()));
+        } catch (RuntimeException ignore) {
+            return SaveFileEncoding.GZIP;
+        }
+    }
+
+    public void setSaveFileEncoding(SaveFileEncoding encoding) {
+        SAVE_FILE_PREFERENCES.put("encoding", encoding.toDesc());
+    }
+
 }

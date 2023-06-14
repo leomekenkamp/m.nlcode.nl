@@ -1,5 +1,7 @@
 package nl.nlcode.m.ui;
 
+import java.util.Locale;
+
 /**
  *
  * @author leo
@@ -26,17 +28,17 @@ public class RomanceShortNoteStringConverter extends BaseNoteStringConverter {
 
     public RomanceShortNoteStringConverter() {
         for (int i = 0; i < NOTE_DESC_SHARP.length; i++) {
-            descriptionToNoteOffset.put(NOTE_DESC_SHARP[i].toUpperCase(), i);
-            descriptionToNoteOffset.put(NOTE_DESC_FLAT[i].toUpperCase(), i);
+            descriptionToNoteOffset.put(NOTE_DESC_SHARP[i].toUpperCase(Locale.UK), i);
+            descriptionToNoteOffset.put(NOTE_DESC_FLAT[i].toUpperCase(Locale.UK), i);
 
             if (HAS_SHARP_MODIFIER[i]) {
                 for (String sharpModifier : SHARP_MODIFIERS) {
-                    descriptionToNoteOffset.put(NOTE_DESC_SHARP[i].substring(0, NOTE_DESC_SHARP[i].length() - 1).toUpperCase() + sharpModifier, i);
+                    descriptionToNoteOffset.put(NOTE_DESC_SHARP[i].substring(0, NOTE_DESC_SHARP[i].length() - 1).toUpperCase(Locale.UK) + sharpModifier, i);
                 }
             }
             if (HAS_FLAT_MODIFIER[i]) {
                 for (String flatModifier : FLAT_MODIFIERS) {
-                    descriptionToNoteOffset.put(NOTE_DESC_FLAT[i].substring(0, NOTE_DESC_FLAT[i].length() - 1).toUpperCase() + flatModifier, i);
+                    descriptionToNoteOffset.put(NOTE_DESC_FLAT[i].substring(0, NOTE_DESC_FLAT[i].length() - 1).toUpperCase(Locale.UK) + flatModifier, i);
                 }
             }
         }

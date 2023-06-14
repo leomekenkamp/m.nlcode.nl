@@ -14,8 +14,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import nl.nlcode.m.ui.ProjectUi?>
 
-<fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-         type="ProjectUi">
+<fx:root
+    xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml/1"
+    type="ProjectUi"
+>
     <top>
         <MenuBar>
             <menus>

@@ -70,7 +70,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         LOGGER.info("starting");
 
-        setStyleSheet(ControlUi.PREFERENCES.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
+        setStyleSheet(Control.PREFERENCES.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
         Thread.setDefaultUncaughtExceptionHandler(App::showError);
         ControlUi controlUi = new ControlUi(Control.getInstance(), MidiDeviceMgr.getInstance());
         Scene scene = new Scene(controlUi);
@@ -99,7 +99,7 @@ public class App extends Application {
 
     public static void setStyleSheet(String styleSheet) {
         App.styleSheet = styleSheet;
-        ControlUi.PREFERENCES.put(STYLE_SHEET_PREF, styleSheet);
+        Control.PREFERENCES.put(STYLE_SHEET_PREF, styleSheet);
     }
 
     public static void replaceStyleSheetOnAllWindows() {

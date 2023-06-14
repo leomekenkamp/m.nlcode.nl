@@ -44,8 +44,8 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
     private IntUpdateProperty echoLength = new IntUpdateProperty(20, 1, 480);
 
-    private IntUpdateProperty absoluteVelocityDecrease = new IntUpdateProperty(20, 0, 127);
-    private IntUpdateProperty relativeVelocityDecrease = new IntUpdateProperty(0, 0, 99);
+    private IntUpdateProperty absoluteVelocityDecrease = new IntUpdateProperty(0, 0, 127);
+    private IntUpdateProperty relativeVelocityDecrease = new IntUpdateProperty(15, 0, 99);
 
     private volatile Bucket futureBucket;
 
@@ -58,7 +58,7 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
     private ScheduledFuture<?> timerFuture;
 
-    private ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource = new ObjectUpdateProperty<>(TickSource.MIDI);
+    private ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource = new ObjectUpdateProperty<>(TickSource.TIME);
 
     public static record SaveData0(
             int id,

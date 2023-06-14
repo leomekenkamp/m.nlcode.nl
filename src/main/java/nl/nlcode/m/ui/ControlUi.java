@@ -11,14 +11,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.IntegerBinding;
-import javafx.beans.binding.ObjectExpression;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -34,12 +29,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.Control;
 import nl.nlcode.m.engine.MidiDeviceMgr;
-import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
 import static nl.nlcode.m.ui.ProjectUi.M_FILTER;
 import org.slf4j.Logger;
@@ -107,11 +100,9 @@ public class ControlUi extends BorderPane implements FxmlController {
 
     private final MidiDeviceMgr midiDeviceMgr;
 
-    public static final Preferences PREFERENCES = Preferences.userNodeForPackage(Control.class);
+    private static final Preferences systemMidiPrefs = Control.PREFERENCES.node("systemMidi");
 
-    private static final Preferences systemMidiPrefs = PREFERENCES.node("systemMidi");
-
-    private static final Preferences openProjectsPrefs = PREFERENCES.node("openProjects");
+    private static final Preferences openProjectsPrefs = Control.PREFERENCES.node("openProjects");
 
     private Stage settings;
 
@@ -220,7 +211,7 @@ public class ControlUi extends BorderPane implements FxmlController {
             settings = App.createStage(new SettingsUi(this, MidiDeviceMgr.getInstance()));
             settings.initOwner(this.getScene().getWindow());
             settings.setTitle(App.MESSAGES.getString("settings"));
-            restoreWindowPositionAndSetAutosave(settings, PREFERENCES.node("settings"));
+            restoreWindowPositionAndSetAutosave(settings, Control.PREFERENCES.node("settings"));
         }
         settings.show();
     }
@@ -228,12 +219,12 @@ public class ControlUi extends BorderPane implements FxmlController {
     private static final String PREF_MIDI_NOTE_ZERO_BASED = "midiNoteZeroBased";
 
     public boolean getMidiNoteZeroBased() {
-        return PREFERENCES.getBoolean(PREF_MIDI_NOTE_ZERO_BASED, true);
+        return Control.PREFERENCES.getBoolean(PREF_MIDI_NOTE_ZERO_BASED, true);
     }
 
     public void setMidiNoteZeroBased(boolean zeroBased) {
         midiNoteNumberStringConverter.setOffset(zeroBased ? 0 : 1);
-        PREFERENCES.putBoolean(PREF_MIDI_NOTE_ZERO_BASED, zeroBased);
+        Control.PREFERENCES.putBoolean(PREF_MIDI_NOTE_ZERO_BASED, zeroBased);
     }
 
     public IntegerOffsetStringConverter getMidiNoteNumberStringConverter() {
@@ -243,12 +234,12 @@ public class ControlUi extends BorderPane implements FxmlController {
     private static final String PREF_MIDI_CHANNEL_ZERO_BASED = "midiChannelZeroBased";
 
     public boolean getMidiChannelZeroBased() {
-        return PREFERENCES.getBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, false);
+        return Control.PREFERENCES.getBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, false);
     }
 
     public void setMidiChannelZeroBased(boolean zeroBased) {
         midiChannelStringConverter.setOffset(zeroBased ? 0 : 1);
-        PREFERENCES.putBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, zeroBased);
+        Control.PREFERENCES.putBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, zeroBased);
     }
 
     public IntegerOffsetStringConverter getMidiChannelStringConverter() {
@@ -259,14 +250,14 @@ public class ControlUi extends BorderPane implements FxmlController {
 
     public NoteNamingConvention getNoteNamingConvention() {
         try {
-            return NoteNamingConvention.valueOf(PREFERENCES.get(PREF_MIDI_NOTE_NAMING_CONVENTION, NoteNamingConvention.ENGLISH_SHORT.name()));
+            return NoteNamingConvention.valueOf(Control.PREFERENCES.get(PREF_MIDI_NOTE_NAMING_CONVENTION, NoteNamingConvention.ENGLISH_SHORT.name()));
         } catch (RuntimeException ignore) {
             return NoteNamingConvention.ENGLISH_SHORT;
         }
     }
 
     public void setNoteNamingConvention(NoteNamingConvention noteNamingConvention) {
-        PREFERENCES.put(PREF_MIDI_NOTE_NAMING_CONVENTION, noteNamingConvention.name());
+        Control.PREFERENCES.put(PREF_MIDI_NOTE_NAMING_CONVENTION, noteNamingConvention.name());
         midiNoteNameStringConverter.setNoteNamingConvention(noteNamingConvention);
     }
 
@@ -306,7 +297,7 @@ public class ControlUi extends BorderPane implements FxmlController {
     }
 
     public void restoreWindowPositionAndSetAutosave() {
-        restoreWindowPositionAndSetAutosave((Stage) getScene().getWindow(), PREFERENCES);
+        restoreWindowPositionAndSetAutosave((Stage) getScene().getWindow(), Control.PREFERENCES);
     }
 
     public static void restoreWindowPositionAndSetAutosave(Stage stage, Preferences preferences) {

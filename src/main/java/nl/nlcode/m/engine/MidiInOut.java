@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send'
  * method. Implementations need to decide for themselves if they keep total control over their own
- * sending of messages and thus keep their send method(s) private. A receiving instance however must
+ * sending of messages and thus keep their send method(s) to themselves. A receiving instance however must
  * be visible to the world, but there is no guarantee that the data received will actually be
  * processed. Implementations may choose to ignore incoming messages, for instance if they represent
  * something like piano keys. Of course they are free to process them and -keeping with the example-
@@ -129,7 +129,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     public static final int CHANNEL_COUNT = CHANNEL_MAX - CHANNEL_MIN + 1;
 
     public static final int MIDI_DATA_NONE = -1;
-    
+
     public static final int MIDI_DATA_MIN = 0;
 
     public static final int MIDI_DATA_MAX = 127;
@@ -238,7 +238,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     protected Project getProject() {
         return project;
     }
-    
+
     private U getUi() {
         return ui;
     }
@@ -378,7 +378,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     protected void processReceive(MidiMessage message) {
-        send(message, -1);
+//        send(message, -1);
+        processReceive(message, -1);
     }
 
     /**
@@ -576,7 +577,6 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         verify7Bit(data);
     }
 
-
     public static void forAllChannels(IntConsumer intConsumer) {
         for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             intConsumer.accept(channel);
@@ -652,9 +652,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     public PropertyChangeSupport getPropertyChangeSupport() {
         return propertyChangeSupport;
     }
-    
+
     public void addPropertyChangeListener(String name, PropertyChangeListener listener) {
-    propertyChangeSupport.addPropertyChangeListener(name, listener);
+        propertyChangeSupport.addPropertyChangeListener(name, listener);
     }
 
     public void removePropertyChangeListener(String name, PropertyChangeListener listener) {

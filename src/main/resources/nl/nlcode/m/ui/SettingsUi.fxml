@@ -57,4 +57,14 @@
             </Field>    
         </VBox>
     </Tab>
+    <Tab text="%saveFileFormat">
+        <VBox>   
+            <Field labelText="%encoding">
+                <EnumChoiceBox enumClass="nl.nlcode.m.engine.SaveFileEncoding" fx:id="saveFileEncoding"/>
+            </Field>    
+            <Field labelText="%format">
+                <Label text="json"/>
+            </Field>    
+        </VBox>    
+    </Tab>
 </fx:root>

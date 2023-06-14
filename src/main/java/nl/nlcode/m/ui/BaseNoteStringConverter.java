@@ -1,6 +1,7 @@
 package nl.nlcode.m.ui;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javafx.util.converter.IntegerStringConverter;
 
@@ -62,7 +63,7 @@ public abstract class BaseNoteStringConverter extends IntegerStringConverter {
         }
 
         int octave = Integer.parseInt(desc.substring(desc.length() - 1));
-        String noteWithoutOctave = desc.substring(0, desc.length() - 1).toUpperCase();
+        String noteWithoutOctave = desc.substring(0, desc.length() - 1).toUpperCase(Locale.UK);
         Integer noteOffset = descriptionToNoteOffset.get(noteWithoutOctave);
         if (noteOffset == null) {
             throw new IllegalArgumentException("not found: " + noteWithoutOctave);

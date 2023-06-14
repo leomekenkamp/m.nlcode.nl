@@ -17,7 +17,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -37,9 +36,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -51,7 +47,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
-import nl.nlcode.javafxutil.CtorParamControllerFactory;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
@@ -125,9 +120,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     
     @FXML
     private MenuItem echo;
-
-    @FXML
-    private MenuItem test;
 
     @FXML
     private Menu windowMenu;
@@ -220,26 +212,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             activateAndCreateStage(new KeyboardKeyboard());
             setDirty();
         });
-        test.setOnAction(eh -> {
-            //loader.setController(new Object());
-            try {
-                CtorParamControllerFactory callback = new CtorParamControllerFactory(this);
-
-                FXMLLoader loader = new FXMLLoader(App.class.getResource("CompUser.fxml"));
-                Parent base = loader.load();
-
-                Scene scene = new Scene(base);
-                Stage stage = new Stage();
-                stage.setScene(scene);
-                stage.setHeight(300);
-                stage.setWidth(300);
-                stage.setResizable(false);
-                stage.show();
-            } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        });
         midiMessageDump.setOnAction(eh -> {
             Stage stage = activateAndCreateStage(new MidiMessageDump());
             stage.setResizable(true);
@@ -305,7 +277,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     public void createA42(ActionEvent event) {
         activateAndCreateStage(new A42());
     }
-
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {
         return (change) -> {
