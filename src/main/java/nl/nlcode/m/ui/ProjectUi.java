@@ -89,39 +89,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private static final String UI_CLASS_PREFIX = ProjectUi.class.getPackage().getName() + ".";
 
     @FXML
-    private MenuItem arpeggiator;
-
-    @FXML
-    private MenuItem keyboardKeyboard;
-
-    @FXML
-    private MenuItem midiMessageDump;
-
-    @FXML
-    private MenuItem channelMatrix;
-
-    @FXML
-    private MenuItem layerAndSplit;
-
-    @FXML
-    private MenuItem lights;
-
-    @FXML
-    private MenuItem midiSequencer;
-
-    @FXML
-    private MenuItem midiClock;
-
-    @FXML
-    private MenuItem noteGate;
-
-    @FXML
-    private MenuItem noteHolder;
-    
-    @FXML
-    private MenuItem echo;
-
-    @FXML
     private Menu windowMenu;
 
     private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
@@ -204,43 +171,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             }
         });
 
-        arpeggiator.setOnAction(eh -> {
-            activateAndCreateStage(new Arpeggiator());
-            setDirty();
-        });
-        keyboardKeyboard.setOnAction(eh -> {
-            activateAndCreateStage(new KeyboardKeyboard());
-            setDirty();
-        });
-        midiMessageDump.setOnAction(eh -> {
-            Stage stage = activateAndCreateStage(new MidiMessageDump());
-            stage.setResizable(true);
-        });
-        channelMatrix.setOnAction(eh -> {
-            activateAndCreateStage(new ChannelMatrix());
-        });
-        layerAndSplit.setOnAction(eh -> {
-            Stage stage = activateAndCreateStage(LayerAndSplit.createWithDefaultSettings());
-            stage.setResizable(true);
-        });
-        lights.setOnAction(eh -> {
-            activateAndCreateStage(new Lights());
-        });
-        midiSequencer.setOnAction(eh -> {
-            activateAndCreateStage(new MidiSequencer());
-        });
-        midiClock.setOnAction(eh -> {
-            activateAndCreateStage(new MidiClock());
-        });
-        noteGate.setOnAction(eh -> {
-            activateAndCreateStage(new NoteGate());
-        });
-        noteHolder.setOnAction(eh -> {
-            activateAndCreateStage(new NoteHolder());
-        });
-        echo.setOnAction(eh -> {
-            activateAndCreateStage(new Echo());
-        });
         windowMenu.setDisable(windowMenu.getItems().size() <= 3);
         windowMenu.getItems().addListener(new ListChangeListener() {
             public void onChanged(ListChangeListener.Change c) {
@@ -276,6 +206,65 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     @FXML
     public void createA42(ActionEvent event) {
         activateAndCreateStage(new A42());
+    }
+
+    @FXML
+    public void createArpeggiator(ActionEvent event) {
+        activateAndCreateStage(new Arpeggiator());
+        setDirty();
+    }
+
+    @FXML
+    public void createKeyboardKeyboard(ActionEvent event) {
+        activateAndCreateStage(new KeyboardKeyboard());
+        setDirty();
+    }
+
+    @FXML
+    public void createMidiMessageDump(ActionEvent event) {
+        Stage stage = activateAndCreateStage(new MidiMessageDump());
+        stage.setResizable(true);
+    }
+
+    @FXML
+    public void createChannelMatrix(ActionEvent event) {
+        activateAndCreateStage(new ChannelMatrix());
+    }
+
+    @FXML
+    public void createLayerAndSplit(ActionEvent event) {
+        Stage stage = activateAndCreateStage(LayerAndSplit.createWithDefaultSettings());
+        stage.setResizable(true);
+    }
+
+    @FXML
+    public void createLights(ActionEvent event) {
+        activateAndCreateStage(new Lights());
+    }
+
+    @FXML
+    public void createMidiSequencer(ActionEvent event) {
+        activateAndCreateStage(new MidiSequencer());
+    }
+
+    @FXML
+    public void createMidiClock(ActionEvent event) {
+        activateAndCreateStage(new MidiClock());
+    }
+
+    @FXML
+    public void createNoteGate(ActionEvent event) {
+        activateAndCreateStage(new NoteGate());
+    }
+
+    @FXML
+    public void createNoteHolder(ActionEvent event) {
+        activateAndCreateStage(new NoteHolder());
+    }
+
+    @FXML
+    public void createEcho(ActionEvent event) {
+        activateAndCreateStage(new Echo());
     }
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {
