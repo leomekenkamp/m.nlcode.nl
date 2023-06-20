@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;

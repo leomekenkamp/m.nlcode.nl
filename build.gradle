@@ -1,9 +1,9 @@
 plugins {
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.openjfx.javafxplugin' version '0.0.14'
     id "org.panteleyev.jpackageplugin" version "1.5.2"
 }
-
 
 defaultTasks 'build'
 
@@ -19,8 +19,10 @@ javafx {
 }
 
 application {
-    mainClass = 'nl.nlcode.m.Launcher'
+    mainClass = 'nl.nlcode.m.JfxLauncher'
+    mainModule = 'nl.nlcode.m'
     applicationName = 'm_nlcode_nl'
+
 }
 
 test {
@@ -29,9 +31,6 @@ test {
         events "passed", "skipped", "failed"
     }
 }
-
-//mainClassName = 'nl.nlcode.m/nl.nlcode.m.ui.App'
-mainClassName = 'nl.nlcode.m.JfxLauncher'
 
 group = 'nl.nlcode'
 version = '1.0.0'
@@ -51,7 +50,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "$jacksonVersion"
 
     testImplementation "org.testfx:testfx-core:4.0.16-alpha"
-    testImplementation 'org.hamcrest:hamcrest:2.2'
+    //testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation "org.testfx:testfx-core:4.0.16-alpha"
     testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -92,6 +91,11 @@ tasks.jpackage {
     }
 }
 
+//shadowJar {
+   //archiveBaseName.set("$archiveBaseName-fatjar")
+   //archiveClassifier.set('')
+   //archiveVersion.set('')
+//}
 //mac {
 //    icon = "m.nlcode.m.icns"
 //}
@@ -137,11 +141,11 @@ jlink \
 // --mac-package-name filename of the dmg (or pgk)
 jpackage \
 --type dmg \
---dest build/install \
---input build/jars \
+--dest build/distributions \
+--input build/libs \
 --name m_nlcode_nl \
 --main-class nl/nlcode/m/JfxLauncher \
---main-jar m_nlcode_nl-1.0.0.jar \
+--main-jar m_nlcode_nl-1.0.0-all.jar \
 --java-options -Xmx2048m \
 --runtime-image build/java-runtime \
 --icon src/main/resources/m.nlcode.nl.icns \

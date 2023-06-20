@@ -2,51 +2,33 @@ package nl.nlcode.marshalling;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTypeResolverBuilder;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -225,7 +207,7 @@ public class MarshalHelperTest {
 
         Marshalled.Context marshalledContext = new Marshalled.Context();
         Trivial copy = MarshalHelper.unmarshal(marshalledContext, copyData);
-        assertThat(copy, not(is(original)));
+        MatcherAssert.assertThat(copy, CoreMatchers.not(CoreMatchers.is(original)));
     }
 
     static class SimpleTypes implements Marshallable {
@@ -283,11 +265,11 @@ public class MarshalHelperTest {
 
         Marshalled.Context marshalledContext = new Marshalled.Context();
         SimpleTypes copy = MarshalHelper.unmarshal(marshalledContext, copyData);
-        assertThat(copy, not(is(original)));
-        assertThat(copy.i, is(original.i));
-        assertThat(copy.s, is(original.s));
-        assertThat(copy.dt, is(original.dt));
-        assertThat(copy.ai, is(original.ai));
+        MatcherAssert.assertThat(copy, CoreMatchers.not(CoreMatchers.is(original)));
+        MatcherAssert.assertThat(copy.i, CoreMatchers.is(original.i));
+        MatcherAssert.assertThat(copy.s, CoreMatchers.is(original.s));
+        MatcherAssert.assertThat(copy.dt, CoreMatchers.is(original.dt));
+        MatcherAssert.assertThat(copy.ai, CoreMatchers.is(original.ai));
     }
 
     static class SuperClass implements Marshallable {
@@ -362,15 +344,15 @@ public class MarshalHelperTest {
 
         Marshalled.Context marshalledContext = new Marshalled.Context();
         SubClass copy0 = copyData0.unmarshal(marshalledContext);
-        assertThat(copy0.getClass(), is(original0.getClass()));
-        assertThat(copy0, not(is(original0)));
-        assertThat(copy0.superString, is(original0.superString));
-        assertThat(copy0.subString, is(original0.subString));
+        MatcherAssert.assertThat(copy0, CoreMatchers.instanceOf(original0.getClass()));
+        MatcherAssert.assertThat(copy0, CoreMatchers.not(CoreMatchers.is(original0)));
+        MatcherAssert.assertThat(copy0.superString, CoreMatchers.is(original0.superString));
+        MatcherAssert.assertThat(copy0.subString, CoreMatchers.is(original0.subString));
 
         SuperClass copy1 = copyData1.unmarshal(marshalledContext);
-        assertThat(copy1.getClass(), is(original1.getClass()));
-        assertThat(copy1, not(is(original1)));
-        assertThat(copy1.superString, is(original1.superString));
+        MatcherAssert.assertThat(copy1.getClass(), CoreMatchers.instanceOf(original1.getClass()));
+        MatcherAssert.assertThat(copy1, CoreMatchers.not(CoreMatchers.is(original1)));
+        MatcherAssert.assertThat(copy1.superString, CoreMatchers.is(original1.superString));
     }
 
     @Test
@@ -397,13 +379,13 @@ public class MarshalHelperTest {
 
         Marshalled.Context marshalledContext = new Marshalled.Context();
         SubClass copy0 = copyData0.unmarshal(marshalledContext);
-        assertThat(copy0.getClass(), is(original0.getClass()));
+        assertThat(copy0, instanceOf(original0.getClass()));
         assertThat(copy0, not(is(original0)));
         assertThat(copy0.superString, is(original0.superString));
         assertThat(copy0.subString, is(original0.subString));
 
         SuperClass copy1 = copyData1.unmarshal(marshalledContext);
-        assertThat(copy1.getClass(), is(original1.getClass()));
+        assertThat(copy1, instanceOf(original1.getClass()));
         assertThat(copy1, not(is(original1)));
         assertThat(copy1.superString, is(original1.superString));
     }
