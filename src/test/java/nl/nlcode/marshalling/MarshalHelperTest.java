@@ -350,7 +350,7 @@ public class MarshalHelperTest {
         MatcherAssert.assertThat(copy0.subString, CoreMatchers.is(original0.subString));
 
         SuperClass copy1 = copyData1.unmarshal(marshalledContext);
-        MatcherAssert.assertThat(copy1.getClass(), CoreMatchers.instanceOf(original1.getClass()));
+        MatcherAssert.assertThat(copy1, CoreMatchers.instanceOf(original1.getClass()));
         MatcherAssert.assertThat(copy1, CoreMatchers.not(CoreMatchers.is(original1)));
         MatcherAssert.assertThat(copy1.superString, CoreMatchers.is(original1.superString));
     }

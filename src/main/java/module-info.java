@@ -11,6 +11,9 @@ module nl.nlcode.m {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires ch.qos.logback.classic;
+    requires ch.qos.logback.core;
+    requires uk.co.xfactorylibrarians.coremidi4j;
 
     opens nl.nlcode.m to com.fasterxml.jackson.databind;
     opens nl.nlcode.m.engine to javafx.fxml, com.fasterxml.jackson.databind;

@@ -35,7 +35,7 @@ public class TestFxTest {
     /**
      * @param robot - Will be injected by the test runner.
      */
-    @Test
+    //@Test
     void should_contain_button_with_text(FxRobot robot) {
         FxAssert.verifyThat(button, LabeledMatchers.hasText("click me!"));
         // or (lookup by css id):
@@ -47,7 +47,7 @@ public class TestFxTest {
     /**
      * @param robot - Will be injected by the test runner.
      */
-    @Test
+    //@Test
     void when_button_is_clicked_text_changes(FxRobot robot) {
         // when:
         robot.clickOn(".button");

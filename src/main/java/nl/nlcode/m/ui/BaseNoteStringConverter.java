@@ -26,6 +26,7 @@ public abstract class BaseNoteStringConverter extends IntegerStringConverter {
     protected static String[] SHARP_MODIFIERS = new String[]{"+", "#"};
 
     private static final int NOTE_C0 = 12;
+    
     @Override
     public String toString(Integer note) {
         if (note < 0 || note > 127) {
