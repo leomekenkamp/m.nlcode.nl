@@ -1,20 +1,6 @@
 # https://github.com/gradle/gradle
-.macos_saas_runners:
-  tags:
-    - saas-macos-medium-m1
-  image: macos-12-xcode-14
-
-before_script:
-  - GRADLE_USER_HOME="$(pwd)/.gradle"
-  - export GRADLE_USER_HOME
-
-stages:
-  - build
-
-build:
+.build:
   stage: build
-  extends:
-    - .macos_saas_runners
   script: gradlew jpackage
   cache:
     key: "$CI_COMMIT_REF_NAME"
@@ -26,3 +12,16 @@ build:
     name: "$CI_JOB_NAME"
     paths:
       - build/jpackage/
+
+#before_script:
+#  - GRADLE_USER_HOME="$(pwd)/.gradle"
+#  - export GRADLE_USER_HOME
+
+stages:
+  - build-mac
+
+build-mac:
+  extends: .build
+  tags:
+    - saas-macos-medium-m1
+  image: macos-12-xcode-14
