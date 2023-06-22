@@ -16,6 +16,6 @@ build:
       - build
       - .gradle
   artifacts:
-  name: "$CI_JOB_NAME"
-  paths:
-    - build/jpackage/
+    name: "$CI_JOB_NAME"
+    paths:
+      - build/jpackage/
