@@ -138,6 +138,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     public static final int NOTE_MAX = MIDI_DATA_MAX;
 
+    public static final int NOTE_COUNT = MIDI_DATA_MAX - MIDI_DATA_MIN + 1;
+
     public static final int MIDI_VELOCITY_MIN = MIDI_DATA_MIN;
 
     public static final int MIDI_VELOCITY_MAX = MIDI_DATA_MAX;
@@ -190,7 +192,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
         @Override
         public MidiInOut createMarshallable() {
-            throw new UnsupportedOperationException("class is abstract");
+            throw new UnsupportedOperationException("class of <" + name + "> is abstract");
         }
     }
 
@@ -377,7 +379,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         send(message, timeStamp);
     }
 
-    protected void processReceive(MidiMessage message) {
+    protected final void processReceive(MidiMessage message) {
 //        send(message, -1);
         processReceive(message, -1);
     }

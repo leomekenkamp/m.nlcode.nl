@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import nl.nlcode.marshalling.MarshalHelper;
@@ -50,14 +53,14 @@ public final class Project implements Serializable, Marshallable {
                 id,
                 info,
                 //                MarshalHelper.toList(context, midiInOutList)
-MarshalHelper.marshallToArray(context, midiInOutList)
+                MarshalHelper.marshallToArray(context, midiInOutList)
         );
     }
 
     private static final long serialVersionUID = 0L;
 
     private static final SaverLoader SAVER_LOADER = new SaverLoader();
-    
+
     private transient Control control;
 
     private transient Path path;
@@ -67,7 +70,7 @@ MarshalHelper.marshallToArray(context, midiInOutList)
     private transient ObservableList<MidiInOut> midiInOutList;
 
     private transient ExecutorService midiInOutExecutorService;
-    
+
     private transient boolean dirty;
 
     private Map<Serializable, Serializable> info = new HashMap<>();
@@ -93,7 +96,8 @@ MarshalHelper.marshallToArray(context, midiInOutList)
     }
 
     private Project() {
-        midiInOutExecutorService = ForkJoinPool.commonPool();
+//        midiInOutExecutorService = ForkJoinPool.commonPool();
+        midiInOutExecutorService = new ThreadPoolExecutor(10, 10, 1, TimeUnit.DAYS, new LinkedBlockingQueue());
         midiInOutList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
         midiInOutLookup = Lookup.createWithSynchronizedBacking(midiInOutList);
     }
@@ -157,11 +161,11 @@ MarshalHelper.marshallToArray(context, midiInOutList)
             midiInOut.projectFullyLoaded();
         }
     }
-    
+
     public void setDirty() {
         dirty = true;
     }
-        
+
     private void dirtyReset() {
         dirty = false;
     }

@@ -4,8 +4,10 @@ import java.lang.invoke.MethodHandles;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
+import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.NoteHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,12 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
 
     private IntegerProperty[] notesHeldCountProperty;
 
+    @FXML
+    private Field channel0Field, channel1Field, channel2Field, channel3Field,
+            channel4Field, channel5Field, channel6Field, channel7Field,
+            channel8Field, channel9Field, channel10Field, channel11Field,
+            channel12Field, channel13Field, channel14Field, channel15Field;
+
     public NoteHolderUi(ProjectUi projectUi, NoteHolder noteHolder, MenuItem menuItem) {
         super(projectUi, noteHolder, menuItem);
         notesHeldCountProperty = new IntegerProperty[CHANNEL_COUNT];
@@ -32,6 +40,13 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
     @Override
     protected void handleInitialize() {
         super.handleInitialize();
+        Field[] channelFields = new Field[]{
+            channel0Field, channel1Field, channel2Field, channel3Field,
+            channel4Field, channel5Field, channel6Field, channel7Field,
+            channel8Field, channel9Field, channel10Field, channel11Field,
+            channel12Field, channel13Field, channel14Field, channel15Field
+        };
+        forAllChannels(channel -> channelFields[channel].labelTextProperty().bind(getProjectUi().channelTextProperty()[channel]));
     }
 
     @Override

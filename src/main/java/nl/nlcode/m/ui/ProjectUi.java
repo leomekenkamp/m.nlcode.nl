@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,10 +61,13 @@ import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.LayerAndSplit;
 import nl.nlcode.m.engine.Lights;
 import nl.nlcode.m.engine.MessageTypeFilter;
+import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
+import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.MidiMessageDump;
-import nl.nlcode.m.engine.MidiSequencer;
+import nl.nlcode.m.engine.Sequencer;
 import nl.nlcode.m.engine.NoteGate;
 import nl.nlcode.m.engine.NoteHolder;
+import nl.nlcode.m.engine.NoteChannelSpreader;
 import nl.nlcode.m.engine.ProgramChanger;
 import nl.nlcode.m.engine.Project;
 import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
@@ -117,6 +121,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     private MenuItem menuItem;
 
+    private StringProperty[] channelTextProperty = new StringProperty[CHANNEL_COUNT];
+    
     private ChangeListener<Boolean> midiInOutUiSenderChange = new ChangeListener<>() {
         @Override
         public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -186,8 +192,25 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         namePropertyWrapper.bind(Bindings.createStringBinding(
                 () -> pathProperty().get().getFileName().toString(), pathProperty())
         );
+
+        forAllChannels(channel -> channelTextProperty[channel] = new SimpleStringProperty());
+        updateChannelTextProperties();
+        getControlUi().getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
+            updateChannelTextProperties();
+        });
+
     }
 
+    public StringProperty[] channelTextProperty() {
+        return channelTextProperty;
+    }
+    
+    private void updateChannelTextProperties() {
+        MessageFormat messageFormat = new MessageFormat(App.MESSAGES.getString("channel%"));
+        int offset = getControlUi().getMidiChannelStringConverter().offsetProperty().get();
+        forAllChannels(channel -> channelTextProperty[channel].set(messageFormat.format(new Object[] {channel + offset})));
+    }
+            
     @FXML
     public void createMessageTypeFilter(ActionEvent event) {
         activateAndCreateStage(new MessageTypeFilter());
@@ -243,8 +266,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     @FXML
-    public void createMidiSequencer(ActionEvent event) {
-        activateAndCreateStage(new MidiSequencer());
+    public void createSequencer(ActionEvent event) {
+        activateAndCreateStage(new Sequencer());
     }
 
     @FXML
@@ -265,6 +288,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     @FXML
     public void createEcho(ActionEvent event) {
         activateAndCreateStage(new Echo());
+    }
+
+    @FXML
+    public void createNoteChannelSpreader(ActionEvent event) {
+        activateAndCreateStage(new NoteChannelSpreader());
     }
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange() {

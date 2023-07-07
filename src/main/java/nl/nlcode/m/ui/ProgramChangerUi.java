@@ -20,6 +20,12 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @FXML
+    private Field channel0Field, channel1Field, channel2Field, channel3Field,
+            channel4Field, channel5Field, channel6Field, channel7Field,
+            channel8Field, channel9Field, channel10Field, channel11Field,
+            channel12Field, channel13Field, channel14Field, channel15Field;
+
+    @FXML
     private Spinner<Integer> programSpinner0, programSpinner1, programSpinner2, programSpinner3,
             programSpinner4, programSpinner5, programSpinner6, programSpinner7,
             programSpinner8, programSpinner9, programSpinner10, programSpinner11,
@@ -80,6 +86,14 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
 
         resendOnConnect.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().setResendOnConnect(newValue));
         resendOnMidiDeviceChange.selectedProperty().addListener((ov, oldValue, newValue) -> getMidiInOut().setResendOnMidiDeviceChange(newValue));
+        
+        Field[] channelFields = new Field[]{
+            channel0Field, channel1Field, channel2Field, channel3Field,
+            channel4Field, channel5Field, channel6Field, channel7Field,
+            channel8Field, channel9Field, channel10Field, channel11Field,
+            channel12Field, channel13Field, channel14Field, channel15Field
+        };
+        forAllChannels(channel -> channelFields[channel].labelTextProperty().bind(getProjectUi().channelTextProperty()[channel]));
     }
 
     @Override

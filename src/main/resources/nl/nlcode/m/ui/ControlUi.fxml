@@ -4,7 +4,10 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import nl.nlcode.m.ui.ControlUi?>
 
@@ -27,7 +30,15 @@
         </MenuBar>
     </top>
     <center>
-        <Label styleClass="logo" text="m.nlcode.nl" >
-        </Label>
+        <BorderPane styleClass="logoWrapper">     
+            <center>
+                <ImageView styleClass="logo">
+                    <Image url="@../../../../icon.iconset/icon_128x128.png"/>
+                </ImageView>
+            </center>
+        </BorderPane>
+        <bottom>
+            <Label styleClass="version" text="1.0.0.alfa" />
+        </bottom>
     </center>
 </fx:root>

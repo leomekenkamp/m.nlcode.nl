@@ -6,7 +6,7 @@ import nl.nlcode.marshalling.Marshalled;
  *
  * @author leo
  */
-public class Lights extends MidiInOut<Lights.Ui> {
+public class Lights<U extends Lights.Ui> extends MidiInOut<U> {
 
     public static interface Ui extends MidiInOut.Ui {
     }

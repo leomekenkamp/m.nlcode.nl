@@ -72,9 +72,6 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     }
 
     public void keyChange(int note, boolean pressed) {
-        if (getVelocity() < 120) {
-            setVelocity(getVelocity() + 1);
-        }
         LOGGER.debug("note: <{}>, pressed: <{}>", note, pressed);
         int transposedNote = note + (getOctave() - 4) * 12;
         if (transposedNote >= 0 && transposedNote <= 127) {

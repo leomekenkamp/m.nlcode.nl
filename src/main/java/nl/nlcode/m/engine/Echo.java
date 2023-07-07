@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
@@ -51,8 +52,8 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
     private transient LinkedList<Bucket> buckets = new LinkedList<>();
 
-    private transient volatile int notePlayCount[][];
-    private transient volatile int notePlannedCount[][];
+    private transient volatile AtomicInteger notePlayCount[][];
+    private transient volatile AtomicInteger notePlannedCount[][];
 
     private transient ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -97,8 +98,10 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     }
 
     public Echo() {
-        notePlayCount = new int[CHANNEL_COUNT][NOTE_MAX];
-        notePlannedCount = new int[CHANNEL_COUNT][NOTE_MAX];
+        notePlayCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
+        forAllChannels(channel -> forAllNotes(note -> notePlayCount[channel][note] = new AtomicInteger()));
+        notePlannedCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
+        forAllChannels(channel -> forAllNotes(note -> notePlannedCount[channel][note] = new AtomicInteger()));
         tickSource.register(this);
         tickSource.addListener((oldValue, newValue) -> {
             timer(newValue == TickSource.TIME);
@@ -133,32 +136,21 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
-        boolean sendOriginal = false;
         if (message instanceof ShortMessage incoming) {
             synchronized (buckets) {
                 if (incoming.getStatus() == ShortMessage.TIMING_CLOCK) {
+                    send(message, timeStamp);
                     if (tickSource.get() == TickSource.MIDI) {
                         tick();
                     }
-                    sendOriginal = true;
-                } else if (incoming.getCommand() == ShortMessage.NOTE_ON) {
-                    sendAndEcho(incoming, timeStamp);
-                } else if (incoming.getCommand() == ShortMessage.NOTE_OFF) {
-                    try {
-                        incoming.setMessage(incoming.getCommand(), incoming.getChannel(), incoming.getData1(), 127);
-                    } catch (InvalidMidiDataException e) {
-                        throw new IllegalArgumentException(e);
-                    }
+                } else if (incoming.getCommand() == ShortMessage.NOTE_ON || incoming.getCommand() == ShortMessage.NOTE_OFF) {
                     sendAndEcho(incoming, timeStamp);
                 } else {
-                    sendOriginal = true;
+                    send(message, timeStamp);
                 }
             }
         } else {
-            sendOriginal = true;
-        }
-        if (sendOriginal) {
-            super.processReceive(message, timeStamp);
+            send(message, timeStamp);
         }
     }
 
@@ -189,12 +181,12 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
     private void sendAndEcho(ShortMessage message, long timeStamp) {
         if (message.getCommand() == ShortMessage.NOTE_ON) {
-            super.processReceive(message, timeStamp);
-            notePlayCount[message.getChannel()][message.getData1()] += 1;
+            send(message, timeStamp);
+            notePlayCount[message.getChannel()][message.getData1()].incrementAndGet();
         } else if (message.getCommand() == ShortMessage.NOTE_OFF) {
-            notePlayCount[message.getChannel()][message.getData1()] -= 1;
-            if (notePlayCount[message.getChannel()][message.getData1()] == 0) {
-                super.processReceive(message, timeStamp);
+            // should prevent a note off to cancel other note on events
+            if (notePlayCount[message.getChannel()][message.getData1()].decrementAndGet() == 0) {
+                send(message, timeStamp);
             }
         }
         int oldVelocity = message.getData2();
@@ -204,24 +196,27 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
         if (newVelocity == oldVelocity) {
             newVelocity -= 1;
         }
+        if (message.getCommand() == ShortMessage.NOTE_OFF && newVelocity == 0) {
+            newVelocity = 1;
+        }
         if (newVelocity > 0) {
             try {
                 ShortMessage echo = new ShortMessage(message.getCommand(), message.getChannel(), message.getData1(), newVelocity);
                 if (message.getCommand() == ShortMessage.NOTE_ON) {
-                    notePlannedCount[message.getChannel()][message.getData1()] += 1;
+                    notePlannedCount[message.getChannel()][message.getData1()].incrementAndGet();
                     getFutureBucket().messages.add(echo);
                 } else if (message.getCommand() == ShortMessage.NOTE_OFF) {
-                    if (notePlannedCount[message.getChannel()][message.getData1()] > 0) {
-                        notePlannedCount[message.getChannel()][message.getData1()] -=1;
+                    if (notePlannedCount[message.getChannel()][message.getData1()]
+                            .getAndAccumulate(-1, (current, add) -> {
+                                if (current > 0) {
+                                    return current + add;
+                                } else {
+                                    return 0;
+                                }
+                            }) > 0) {
                         getFutureBucket().messages.add(echo);
                     }
                 }
-            } catch (InvalidMidiDataException e) {
-                throw new IllegalArgumentException(e);
-            }
-        } else {
-            try {
-                ShortMessage noteOff = new ShortMessage(ShortMessage.NOTE_OFF, message.getChannel(), message.getData1(), message.getData2());
             } catch (InvalidMidiDataException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -231,7 +226,15 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     public ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource() {
         return tickSource;
     }
+    
+    public TickSource getTickSource() {
+        return tickSource.get();
+    }
 
+    public void setTickSource(TickSource tickSource) {
+        this.tickSource.set(tickSource);
+    }
+    
     public int getAbsoluteVelocityDecrease() {
         return absoluteVelocityDecrease.get();
     }

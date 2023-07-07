@@ -190,16 +190,16 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
         });
 
         inputChannelColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("inputChannel"));
-        inputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getChannelStringConverter()));
+        inputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiChannelStringConverter()));
 
         fromNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNote"));
-        fromNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getNoteStringConverter()));
+        fromNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNumberStringConverter()));
 
         fromNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNote"));
         fromNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNameStringConverter()));
 
         toNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("toNote"));
-        toNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getNoteStringConverter()));
+        toNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNumberStringConverter()));
 
         toNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, String>("toNote"));
         toNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNameStringConverter()));
@@ -207,27 +207,15 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
         transposeColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("transpose"));
         transposeColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         outputChannelColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("outputChannel"));
-        outputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getChannelStringConverter()));
+        outputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiChannelStringConverter()));
 
         TableView table = inputChannelColumn.getTableView();
-        getChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
-        getNoteStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
+        getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
+        getMidiNoteNumberStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
         getMidiNoteNameStringConverter().noteNamingConvention().addListener((ov, oldValue, newValue) -> {
             
             table.refresh();
                 });
-    }
-
-    private DynamicNoteNameStringConverter getMidiNoteNameStringConverter() {
-        return getProjectUi().getControlUi().getMidiNoteNameStringConverter();
-    }
-    
-    private IntegerOffsetStringConverter getChannelStringConverter() {
-        return getProjectUi().getControlUi().getMidiChannelStringConverter();
-    }
-
-    private IntegerOffsetStringConverter getNoteStringConverter() {
-        return getProjectUi().getControlUi().getMidiNoteNumberStringConverter();
     }
 
 }

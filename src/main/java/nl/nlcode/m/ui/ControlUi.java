@@ -126,42 +126,50 @@ public class ControlUi extends BorderPane implements FxmlController {
             throw new IllegalStateException("cannot have two ControlControllers...");
         }
         instance = this;
+
 //        final String os = System.getProperty("os.name");
-//// To use this below I need to find out how to get rid of the 'java' menu item...
 //        if (os != null && os.startsWith("Mac")) {
 //            systemMenuBar.useSystemMenuBarProperty().set(true);
 //        }
 
         this.control = control;
+
         this.midiDeviceMgr = midiDeviceMgr;
-        for (MidiDevice midiDevice : midiDeviceMgr.getMidiDevices()) {
+        for (MidiDevice midiDevice
+                : midiDeviceMgr.getMidiDevices()) {
             if (prefs(midiDevice).getBoolean(OPEN, false)) {
                 midiDeviceMgr.open(midiDevice);
             }
         }
         midiNoteNumberStringConverter = new IntegerOffsetStringConverter();
+
         midiNoteNumberStringConverter.setOffset(getMidiNoteZeroBased() ? 0 : 1);
 
         midiNoteNameStringConverter = new DynamicNoteNameStringConverter();
+
         midiNoteNameStringConverter.setNoteNamingConvention(getNoteNamingConvention());
 
         midiChannelStringConverter = new IntegerOffsetStringConverter();
+
         midiChannelStringConverter.setOffset(getMidiChannelZeroBased() ? 0 : 1);
 
-        newProject.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN));
-        Platform.runLater(() -> {
-            try {
-                for (String projectPath : openProjectsPrefs.keys()) {
+        newProject.setAccelerator(
+                new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN));
+        Platform.runLater(
+                () -> {
                     try {
-                        openProject(Paths.get(projectPath));
-                    } catch (IOException e) {
-                        LOGGER.error("cannot load project", e);
+                        for (String projectPath : openProjectsPrefs.keys()) {
+                            try {
+                                openProject(Paths.get(projectPath));
+                            } catch (IOException e) {
+                                LOGGER.error("cannot load project", e);
+                            }
+                        }
+                    } catch (BackingStoreException e) {
+                        LOGGER.error("cannot load prefs", e);
                     }
                 }
-            } catch (BackingStoreException e) {
-                LOGGER.error("cannot load prefs", e);
-            }
-        });
+        );
     }
 
     public static Preferences prefs(MidiDevice midiDevice) {

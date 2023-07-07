@@ -14,14 +14,24 @@ undelete in case of strange font problems on a mac
     -fx-alignment: "CENTER_RIGHT";
 }
 
-ControlUi .logo, ProjectUi .logo  {
+ControlUi .logoText, ProjectUi .logoText, ControlUi .version  {
     -fx-alignment: center;
     -fx-font-family: "Andale Mono";
 }
 
-ControlUi .logo {
+ControlUi .logoText {
     -fx-font-size: 2em;
-    -fx-padding: 1em 2em;
+    -fx-padding: 1em 2em 0em 2em;
+}
+
+ControlUi .logoWrapper {
+    -fx-padding: 1em 0.7em 0em 0.7em;
+}
+
+ControlUi .version {
+    -fx-font-size: 0.8em;
+    -fx-font-weight: bolder;
+    -fx-padding: 0.8em 5.5em 1.2em 5.5em;
 }
 
 ChannelMatrixUi .buttons {
@@ -51,7 +61,7 @@ ChannelMatrixUi .buttons {
     -fx-alignment: center;
 }
 
-ProjectUi .logo {
+ProjectUi .logoText {
     -fx-font-size: 1.5em;
     -fx-padding: 1em 2em;
 }
@@ -81,11 +91,11 @@ MidiMessageDumpUi .cell #messageHexColumn {
     -fx-font-family: "Andale Mono";
     -fx-font-weight: bold;
 }
-MidiSequencerUi .stepIndicator {
+SequencerUi .stepIndicator {
     -fx-font-size: 1.5em;
     -fx-alignment: top-center;
 }
-MidiSequencerUi .stepIndicator.active {
+SequencerUi .stepIndicator.active {
 }
 KeyboardKeyboardUi Spinner {
     -fx-max-width: 7em;

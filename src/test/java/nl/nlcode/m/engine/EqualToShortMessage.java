@@ -74,4 +74,8 @@ public class EqualToShortMessage extends TypeSafeDiagnosingMatcher<ShortMessage>
         return new EqualToShortMessage(actual);
     }
     
+    public static EqualToShortMessage equalToIgnoreData2(ShortMessage actual) {
+        return new EqualToShortMessage(actual, true, true, true, false);
+    }
+    
 }

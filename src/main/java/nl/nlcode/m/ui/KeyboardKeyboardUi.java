@@ -148,17 +148,13 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
         });
 
         velocityBackend = IntUpdatePropertyBridge.create(getMidiInOut().velocity(), velocity.getValueFactory().valueProperty());
-        channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
         octaveBackend = IntUpdatePropertyBridge.create(getMidiInOut().octave(), octave.getValueFactory().valueProperty());
-        channel.getValueFactory().setConverter(getChannelStringConverter());
+        channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
+        channel.getValueFactory().setConverter(getMidiChannelStringConverter());
 
-        getChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
+        getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
             channelBackend.refresh(); // TODO should not be necessary
         });
-    }
-
-    private IntegerOffsetStringConverter getChannelStringConverter() {
-        return getProjectUi().getControlUi().getMidiChannelStringConverter();
     }
 
     private void bind(KeyCode keyCode, Button button, int note, KeyboardKeyboard midiInOut) {

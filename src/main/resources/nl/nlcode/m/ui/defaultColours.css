@@ -22,18 +22,22 @@ ControlUi, ProjectUi {
     -fx-background-color: black;
 }
 
-ControlUi .logo, ProjectUi .logo  {
+ControlUi .logoText, ProjectUi .logoText {
     -fx-text-fill: aqua;
+}
+
+ControlUi .version  {
+    -fx-text-fill: #00aaaa;
 }
 
 HBox.canvasContainer {
     -fx-padding: 5px;
     -fx-border-width: 2px;
 }
-MidiSequencerUi .stepIndicator {
+SequencerUi .stepIndicator {
     -fx-text-fill: lightgrey;
 }
-MidiSequencerUi .stepIndicator.active {
+SequencerUi .stepIndicator.active {
     -fx-text-fill: red;
 }
 MidiClockUi .position {

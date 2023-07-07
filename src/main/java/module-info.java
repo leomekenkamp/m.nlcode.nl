@@ -18,7 +18,7 @@ module nl.nlcode.m {
     opens nl.nlcode.m to com.fasterxml.jackson.databind;
     opens nl.nlcode.m.engine to javafx.fxml, com.fasterxml.jackson.databind;
     opens nl.nlcode.marshalling to com.fasterxml.jackson.databind;
-    opens nl.nlcode.m.ui to javafx.fxml, org.testfx.junit5;
+    opens nl.nlcode.m.ui to javafx.fxml; //, org.testfx.junit5;
     exports nl.nlcode.m.ui;
     exports nl.nlcode.javafxutil;
 }

@@ -19,14 +19,14 @@
 <?import javafx.scene.layout.Region?>
 <?import nl.nlcode.m.ui.ControlUi?>
 <?import javafx.scene.control.TextField?>
-<?import nl.nlcode.m.ui.MidiSequencerUi?>
+<?import nl.nlcode.m.ui.SequencerUi?>
 <?import javafx.scene.control.ComboBox?>
 <?import nl.nlcode.m.ui.Field?>
 
 
 <fx:root
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
-    type="MidiSequencerUi"
+    type="SequencerUi"
     tabClosingPolicy="UNAVAILABLE">
     <instrument>
         <HBox>

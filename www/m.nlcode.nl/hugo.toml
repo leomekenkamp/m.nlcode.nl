@@ -1,0 +1,16 @@
+baseURL = 'http://nlcode.nl/'
+languageCode = 'en-us'
+title = 'm.nlcode.nl'
+theme = "hugo-theme-relearn"
+
+[outputs]
+home = ["HTML", "RSS", "PRINT", "SEARCH"]
+section = ["HTML", "RSS", "PRINT"]
+page = ["HTML", "RSS", "PRINT"]
+
+[module]
+[[module.imports]]
+  path = "github.com/McShelby/hugo-theme-relearn.git"
+
+[params]
+  themeVariant = ["relearn-bright", "relearn-light", "relearn-dark", "learn", "neon", "blue", "green", "red" ]

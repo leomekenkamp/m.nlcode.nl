@@ -65,11 +65,11 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
      */
     @FXML
     private HBox instrument;
-    
+
     public ObservableList<Node> getInstrument() {
         return instrument.getChildren();
     }
-    
+
     public String getInstrumentTypeName() {
         return App.MESSAGES.getString(getMidiInOut().getClass().getName());
     }
@@ -130,9 +130,9 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     }
 
     /**
-     * Will get called right after FXML file loading.
-     * Subclasses *must* call their superclass <code>handleInitialize()</code> method, probably as
-     * the first instruction of their overriding implementation of this method.
+     * Will get called right after FXML file loading. Subclasses *must* call their superclass
+     * <code>handleInitialize()</code> method, probably as the first instruction of their overriding
+     * implementation of this method.
      */
     protected void handleInitialize() {
         syncAll();
@@ -181,7 +181,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         });
 
         getStyleClass().add(MIDI_IN_OUT);
-        
+
     }
 
     private ListChangeListener<MidiInOutUi> inputSelectionChangeListener = new ListChangeListener<>() {
@@ -396,7 +396,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             consumer.accept(unconnected);
         }
     }
-    
+
     @FXML
     public void connectedToFront() {
         forAllConnected(midiInOutUi -> ((Stage) midiInOutUi.getScene().getWindow()).toFront());
@@ -466,7 +466,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             return getMidiInOut().getName() + ": " + super.toString();
         }
     }
-    
+
     protected JavaBeanIntegerProperty createBeanIntegerProperty(String propertyName) {
         try {
             return JavaBeanIntegerPropertyBuilder.create().bean(getMidiInOut()).name(propertyName).build();
@@ -474,4 +474,17 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             throw new IllegalArgumentException(e);
         }
     }
+
+    protected IntegerOffsetStringConverter getMidiChannelStringConverter() {
+        return getProjectUi().getControlUi().getMidiChannelStringConverter();
+    }
+
+    protected DynamicNoteNameStringConverter getMidiNoteNameStringConverter() {
+        return getProjectUi().getControlUi().getMidiNoteNameStringConverter();
+    }
+
+    protected IntegerOffsetStringConverter getMidiNoteNumberStringConverter() {
+        return getProjectUi().getControlUi().getMidiNoteNumberStringConverter();
+    }
+
 }
