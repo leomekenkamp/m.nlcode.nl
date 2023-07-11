@@ -387,7 +387,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     private Stage activateAndCreateStage(MidiInOut midiInOut) {
-        midiInOut.activate(getProject());
+        midiInOut.openWith(getProject());
         Stage result = createStage(midiInOut);
         setDirty();
         return result;

@@ -25,7 +25,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(1));
+        assertThat(defaultTestOut.receivedBufferCount(), is(1));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
     }
 
@@ -37,7 +37,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(1));
+        assertThat(defaultTestOut.receivedBufferCount(), is(1));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
 
         clearBuffers();
@@ -45,7 +45,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(1));
+        assertThat(defaultTestOut.receivedBufferCount(), is(1));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
     }
 
@@ -60,7 +60,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(3));
+        assertThat(defaultTestOut.receivedBufferCount(), is(3));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_ON));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(60));
@@ -75,7 +75,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
 
         clearBuffers();
 
@@ -83,7 +83,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(3));  // TODO which three
+        assertThat(defaultTestOut.receivedBufferCount(), is(3));  // TODO which three
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_OFF));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(64));
         assertThat(defaultTestOut.receivedShort(1).getCommand(), is(ShortMessage.NOTE_OFF));
@@ -103,7 +103,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(3));
+        assertThat(defaultTestOut.receivedBufferCount(), is(3));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_ON));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(60));
@@ -118,7 +118,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(4));
+        assertThat(defaultTestOut.receivedBufferCount(), is(4));
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_OFF));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(60));
         assertThat(defaultTestOut.receivedShort(1).getCommand(), is(ShortMessage.NOTE_OFF));
@@ -133,7 +133,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
         defaultTestIn.processReceive(new ShortMessage(ShortMessage.NOTE_OFF, 0, 80, randomData2()));
 
         settle();
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
 
     }
 
@@ -153,7 +153,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(4));
+        assertThat(defaultTestOut.receivedBufferCount(), is(4));
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_OFF));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(60));
         assertThat(defaultTestOut.receivedShort(1).getCommand(), is(ShortMessage.NOTE_OFF));
@@ -169,7 +169,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(2));
+        assertThat(defaultTestOut.receivedBufferCount(), is(2));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
         assertThat(defaultTestOut.receivedShort(1), is(equalTo(defaultTestIn.receivedShort(1))));
 
@@ -181,7 +181,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
 
         clearBuffers();
 
@@ -208,7 +208,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(3));
+        assertThat(defaultTestOut.receivedBufferCount(), is(3));
 
         assertThat(defaultTestOut.receivedShort(0).getCommand(), is(ShortMessage.NOTE_OFF));
         assertThat(defaultTestOut.receivedShort(0).getData1(), is(64));
@@ -222,7 +222,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(1));
+        assertThat(defaultTestOut.receivedBufferCount(), is(1));
         assertThat(defaultTestOut.receivedShort(0), is(equalTo(defaultTestIn.receivedShort(0))));
 
         clearBuffers();
@@ -233,7 +233,7 @@ public class NoteHolderTest extends DefaultMidiInOutTest<NoteHolder> {
 
         settle();
         
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 
 }

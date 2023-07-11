@@ -21,6 +21,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -45,11 +46,11 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send'
  * method. Implementations need to decide for themselves if they keep total control over their own
- * sending of messages and thus keep their send method(s) to themselves. A receiving instance however must
- * be visible to the world, but there is no guarantee that the data received will actually be
- * processed. Implementations may choose to ignore incoming messages, for instance if they represent
- * something like piano keys. Of course they are free to process them and -keeping with the example-
- * opt to act like a pianola.
+ * sending of messages and thus keep their send method(s) to themselves. A receiving instance
+ * however must be visible to the world, but there is no guarantee that the data received will
+ * actually be processed. Implementations may choose to ignore incoming messages, for instance if
+ * they represent something like piano keys. Of course they are free to process them and -keeping
+ * with the example- opt to act like a pianola.
  * <p>
  * Subclasses are expected to provide a {@code public static interface Ui} that extends the
  * {@code UI} interface in {@code MidiInOut}.
@@ -163,6 +164,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     private transient Project project;
 
     private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    
+    private transient Future receiveProcessTask;
 
     public static final MidiInOut[] EMPTY_ARRAY = new MidiInOut[]{};
 
@@ -217,7 +220,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         sendingToReadonly = Collections.unmodifiableSet(sendingTo);
     }
 
-    public final void activate(Project project) {
+    public final void openWith(Project project) {
         this.project = project;
         if (this.lookup != null) {
             throw new UnsupportedOperationException("can activate only once");
@@ -263,7 +266,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     public void close() {
         stopListening();
         lookup.remove(this);
-        sendingTo.clear();
+        while (!sendingTo.isEmpty()) {
+            stopSendingTo(sendingTo.iterator().next());
+        }
+        while (!receivingFrom.isEmpty()) {
+            receivingFrom.iterator().next().stopSendingTo(this);
+        }
     }
 
     public Set<MidiInOut> sendingTo() {
@@ -443,23 +451,25 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     protected void startListening() {
-        if (processing.compareAndExchange(false, true)) {
+        if (processing.getAndSet(true)) {
             LOGGER.warn("already processing");
         } else {
             LOGGER.debug("starting listening for incoming signals");
-            executorService.execute(receiveProcessTask());
+            receiveProcessTask = executorService.submit(createReceiveProcessTask());
         }
     }
 
     protected void stopListening() {
-        if (processing.compareAndExchange(true, false)) {
+        if (processing.getAndSet(false)) {
             LOGGER.debug("trying to stop listening for incoming signals");
+            receiveProcessTask.cancel(true);
+            receiveProcessTask = null;
         } else {
             LOGGER.warn("could not stop (not started?)");
         }
     }
 
-    private Runnable receiveProcessTask() {
+    private Runnable createReceiveProcessTask() {
         return () -> {
             try {
                 while (processing.get()) {
@@ -472,7 +482,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
                 Thread.interrupted();
                 processing.set(false);
             }
-            LOGGER.debug("stopped listening for incoming signals");
+            LOGGER.warn("stopped listening for incoming signals");
         };
     }
 
@@ -667,4 +677,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     }
 
+    public static String toString(ShortMessage msg) {
+        return msg == null ? "<null>" 
+                : "[cmd: " + msg.getCommand() + "; ch: " + msg.getChannel() + "; d1: " + msg.getData1() + "; d2: " + msg.getData2();
+    }
 }

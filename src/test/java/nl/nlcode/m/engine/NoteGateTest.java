@@ -27,7 +27,7 @@ public class NoteGateTest extends DefaultMidiInOutTest<NoteGate> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(defaultTestIn.receivedCount()));
+        assertThat(defaultTestOut.receivedBufferCount(), is(defaultTestIn.receivedBufferCount()));
 
         for (int velocity = 0; velocity <= 127; velocity++) {
             assertThat(defaultTestOut.receivedShort(velocity), is(equalTo(defaultTestIn.receivedShort(velocity))));
@@ -47,7 +47,7 @@ public class NoteGateTest extends DefaultMidiInOutTest<NoteGate> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(0));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 
     @Test
@@ -66,9 +66,9 @@ public class NoteGateTest extends DefaultMidiInOutTest<NoteGate> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(2));
-        assertThat(defaultTestOut.receivedShort(0), is(equalTo(noteOnLower)));
-        assertThat(defaultTestOut.receivedShort(1), is(equalTo(noteOnUpper)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOnLower)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOnUpper)));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 
     @Test
@@ -87,9 +87,9 @@ public class NoteGateTest extends DefaultMidiInOutTest<NoteGate> {
 
         settle();
 
-        assertThat(defaultTestOut.receivedCount(), is(3));
-        assertThat(defaultTestOut.receivedShort(0), is(equalTo(noteOnLower)));
-        assertThat(defaultTestOut.receivedShort(1), is(equalTo(noteOnUpper)));
-        assertThat(defaultTestOut.receivedShort(2), is(equalTo(noteOnAbove)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOnLower)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOnUpper)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOnAbove)));
+        assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 }

@@ -1,8 +1,13 @@
 package nl.nlcode.m.engine;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Random;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,12 +44,25 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
 
     @BeforeEach
     public void setUp() {
+        if (instance != null) {
+            throw new IllegalStateException();
+        }
         instance = createInstance();
-        instance.activate(project);
+        instance.openWith(project);
         defaultTestIn = new DebugMidiInOut(project);
         defaultTestOut = new DebugMidiInOut(project);
         defaultTestIn.startSendingTo(instance);
         instance.startSendingTo(defaultTestOut);
+        
+        assertThat(instance.getProject().getControl().getProjectCount(), is(1));
+        assertThat(instance.getProject().getMidiInOutLookup().size(), is(3));
+        assertThat(defaultTestIn.sendingTo().size(), is(1));
+        assertThat(defaultTestIn.sendingTo().contains(instance), is(true));
+        assertThat(instance.sendingTo().size(), is(1));
+        assertThat(instance.sendingTo().contains(defaultTestOut), is(true));
+        assertThat(defaultTestOut.sendingTo().isEmpty(), is(true));
+        assertThat(instance.getProject().getMidiInOutList().size(), is(3));
+        assertThat(instance.getProject().getMidiInOutLookup().size(), is(3));
     }
 
     @AfterEach
@@ -52,6 +70,11 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
         instance.close();
         defaultTestIn.close();
         defaultTestOut.close();
+        instance = null;
+        defaultTestIn = null;
+        defaultTestOut = null;
+        assertThat(project.getMidiInOutList().size(), is(0));
+        assertThat(project.getMidiInOutLookup().size(), is(0));
     }
 
     public DefaultMidiInOutTest() {
@@ -86,7 +109,7 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
     }
 
     public int randomNote() {
-        return random.nextInt(126) + 1;
+        return random.nextInt(127);
     }
 
     public int randomData1() {
@@ -96,10 +119,34 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
     public int randomData2() {
         return random.nextInt(127);
     }
-    
+
     public void clearBuffers() {
         defaultTestIn.clearReceived();
         defaultTestOut.clearReceived();
     }
 
+    protected Path getTestFilePath() {
+        return Path.of("deleteme_" + getClass().getName());
+    }
+
+    protected void persistAndLoad(boolean defaultAssertions) throws IOException {
+        project.saveAs(getTestFilePath());
+        project.close();
+        instance = null;
+        defaultTestIn = null;
+        defaultTestOut = null;
+        project = Control.getInstance().loadProject(getTestFilePath());
+        Files.delete(getTestFilePath());
+
+        // RISKY: order may change...
+        defaultTestIn = (DebugMidiInOut) project.getMidiInOutList().get(0);
+        defaultTestOut = (DebugMidiInOut) project.getMidiInOutList().get(1);
+        instance = (T) project.getMidiInOutList().get(2);
+
+        if (defaultAssertions) {
+            assertThat(instance.sendingTo().size(), is(1));
+            assertThat(defaultTestIn.sendingTo().size(), is(1));
+            assertThat(defaultTestOut.sendingTo().size(), is(0));
+        }
+    }
 }

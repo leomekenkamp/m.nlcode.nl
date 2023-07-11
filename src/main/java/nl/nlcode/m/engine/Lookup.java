@@ -173,4 +173,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         return synchronizedBackingList.iterator();
     }
 
+    public int size() {
+        return synchronizedBackingList.size();
+    }
 }

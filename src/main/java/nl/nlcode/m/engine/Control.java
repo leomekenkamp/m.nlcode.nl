@@ -106,4 +106,7 @@ public final class Control {
         SAVE_FILE_PREFERENCES.put("encoding", encoding.toDesc());
     }
 
+    public int getProjectCount() {
+        return projects.size();
+    }
 }

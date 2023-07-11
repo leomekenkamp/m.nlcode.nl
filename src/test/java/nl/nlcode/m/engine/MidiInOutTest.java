@@ -56,8 +56,8 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
 
         settle(150);
 
-        assertThat(defaultTestOut.receivedCount(), is(defaultTestIn.receivedCount()));
-        for (int i = 0; i < defaultTestIn.receivedCount(); i++) {
+        assertThat(defaultTestOut.receivedBufferCount(), is(defaultTestIn.receivedBufferCount()));
+        for (int i = 0; i < defaultTestIn.receivedBufferCount(); i++) {
             assertThat("comparing short message " + i, defaultTestOut.receivedShort(i), is(equalTo(defaultTestIn.receivedShort(i))));
             assertThat("comparing timestamp " + i, defaultTestOut.receivedTimeStamp(i), is(defaultTestIn.receivedTimeStamp(i)));
         }
@@ -77,9 +77,9 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
 
             settle(200);
 
-            assertThat(notConnected.receivedCount(), is(0));
-            assertThat(defaultTestOut.receivedCount(), is(defaultTestIn.receivedCount()));
-            for (int i = 0; i < defaultTestIn.receivedCount(); i++) {
+            assertThat(notConnected.receivedBufferCount(), is(0));
+            assertThat(defaultTestOut.receivedBufferCount(), is(defaultTestIn.receivedBufferCount()));
+            for (int i = 0; i < defaultTestIn.receivedBufferCount(); i++) {
                 assertThat("comparing short message for default" + i, defaultTestOut.receivedShort(i), is(equalTo(defaultTestIn.receivedShort(i))));
                 assertThat("comparing timestamp for default" + i, defaultTestOut.receivedTimeStamp(i), is(defaultTestIn.receivedTimeStamp(i)));
                 assertThat("comparing short message for extra1" + i, extra1.receivedShort(i), is(equalTo(defaultTestIn.receivedShort(i))));

@@ -10,18 +10,16 @@ import org.hamcrest.TypeSafeDiagnosingMatcher;
  */
 public class EqualToShortMessage extends TypeSafeDiagnosingMatcher<ShortMessage> {
 
-    private ShortMessage actual;
-    private boolean command;
-    private boolean channel;
-    private boolean data1;
-    private boolean data2;
+    private Integer command;
+    private Integer channel;
+    private Integer data1;
+    private Integer data2;
     
-    public EqualToShortMessage(ShortMessage actual) {
-        this(actual, true, true, true, true);
+    public EqualToShortMessage(ShortMessage expected) {
+        this(expected.getCommand(), expected.getChannel(), expected.getData1(), expected.getData2());
     }
     
-    public EqualToShortMessage(ShortMessage actual, boolean command, boolean channel, boolean data1, boolean data2) {
-        this.actual = actual;
+    public EqualToShortMessage(Integer command, Integer channel, Integer data1, Integer data2) {
         this.command = command;
         this.channel = channel;
         this.data1 = data1;
@@ -30,52 +28,64 @@ public class EqualToShortMessage extends TypeSafeDiagnosingMatcher<ShortMessage>
     
     @Override
     public void describeTo(Description description) {
-        if (command) {
-            description.appendText(" command ").appendValue(actual.getCommand());
+        if (command != null) {
+            description.appendText(" command ").appendValue(command);
         }
-        if (channel) {
-            description.appendText(" channel ").appendValue(actual.getChannel());
+        if (channel != null) {
+            description.appendText(" channel ").appendValue(channel);
         }
-        if (data1) {
-            description.appendText(" data1 ").appendValue(actual.getChannel());
+        if (data1 != null) {
+            description.appendText(" data1 ").appendValue(data1);
         }
-        if (data2) {
-            description.appendText(" data2 ").appendValue(actual.getChannel());
+        if (data2 != null) {
+            description.appendText(" data2 ").appendValue(data2);
         }
     }
 
     @Override
-    protected boolean matchesSafely(ShortMessage expected, Description description) {
+    protected boolean matchesSafely(ShortMessage actual, Description description) {
         boolean result = true;
-        if (command && actual.getCommand()!= expected.getCommand()) {
+        if (command != null && command != actual.getCommand()) {
             result = false;
             description.appendText(" command ")
-               .appendValue(expected.getCommand());
+               .appendValue(actual.getCommand());
         }
-        if (channel && actual.getChannel() != expected.getChannel()) {
+        if (channel != null && channel != actual.getChannel()) {
             result = false;
             description.appendText(" channel ")
-               .appendValue(expected.getChannel());
+               .appendValue(actual.getChannel());
         }
-        if (data1 && actual.getData1() != expected.getData1()) {
+        if (data1 != null && data1 != actual.getData1()) {
             result = false;
             description.appendText(" data1 ")
-               .appendValue(expected.getData1());
+               .appendValue(actual.getData1());
         }
-        if (data2 && actual.getData2() != expected.getData2()) {
+        if (data2 != null && data2 != actual.getData2()) {
             result = false;
             description.appendText(" data2 ")
-               .appendValue(expected.getData2());
+               .appendValue(actual.getData2());
         }
        return result;
     }
     
-    public static EqualToShortMessage equalTo(ShortMessage actual) {
-        return new EqualToShortMessage(actual);
+    public static EqualToShortMessage equalTo(ShortMessage expected) {
+        return new EqualToShortMessage(expected);
     }
     
-    public static EqualToShortMessage equalToIgnoreData2(ShortMessage actual) {
-        return new EqualToShortMessage(actual, true, true, true, false);
+    public static EqualToShortMessage equalToIgnoreData2(ShortMessage expected) {
+        return new EqualToShortMessage(expected.getCommand(), expected.getChannel(), expected.getData1(), null);
+    }
+
+    public static EqualToShortMessage equalToButData2(ShortMessage expected, int data2) {
+        return new EqualToShortMessage(expected.getCommand(), expected.getChannel(), expected.getData1(), data2);
+    }
+
+    public static EqualToShortMessage equalToIgnoreChannel(ShortMessage expected) {
+        return new EqualToShortMessage(expected.getCommand(), null, expected.getData1(), expected.getData2());
+    }
+    
+    public static EqualToShortMessage equalToButChannel(ShortMessage expected, int channel) {
+        return new EqualToShortMessage(expected.getCommand(), channel, expected.getData1(), expected.getData2());
     }
     
 }

@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +35,7 @@ public final class Project implements Serializable, Marshallable {
             target.getInfo().putAll(info);
             for (Marshalled<? extends MidiInOut> marshalled : midiInOutList()) {
                 MidiInOut midiInOut = MarshalHelper.unmarshal(context, marshalled);
-                midiInOut.activate(target);
+                midiInOut.openWith(target);
             }
         }
 
@@ -56,8 +55,6 @@ public final class Project implements Serializable, Marshallable {
                 MarshalHelper.marshallToArray(context, midiInOutList)
         );
     }
-
-    private static final long serialVersionUID = 0L;
 
     private static final SaverLoader SAVER_LOADER = new SaverLoader();
 

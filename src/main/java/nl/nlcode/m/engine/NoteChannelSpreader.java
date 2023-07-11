@@ -19,21 +19,21 @@ import org.slf4j.LoggerFactory;
  */
 public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiInOut<U> {
 
-    private volatile Set<Integer>[] channelToKeyDown = new Set[CHANNEL_COUNT];
+    private volatile Set<Integer>[] channelToKeyDown;
 
     private IntUpdateProperty<U, NoteChannelSpreader<U>> inputChannel;
 
     private transient int prevChannelIndex = CHANNEL_MAX;
 
-    private transient Map<Integer, Integer> playingNoteToChannel = new HashMap<>();
+    private transient Map<Integer, Integer> playingNoteToChannel;
 
     private transient Object mutex = new Object();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static interface Ui extends MidiInOut.Ui {
 
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static record SaveData0(
             int id,
@@ -68,7 +68,10 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
     }
 
     public NoteChannelSpreader() {
+        playingNoteToChannel = new HashMap<>();
         inputChannel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
+        channelToKeyDown = new Set[CHANNEL_COUNT];
+        setOutputChannel(0, true);
     }
 
     @Override
@@ -81,7 +84,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
         return true;
     }
 
-    private Integer nextChannelForNoteOn() {
+    protected Integer nextChannelForNoteOn() {
         int newChannelIndex = prevChannelIndex;
         do {
             newChannelIndex = newChannelIndex == CHANNEL_MAX ? CHANNEL_MIN : newChannelIndex + 1;
@@ -125,20 +128,23 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
+        LOGGER.warn("HI!");
         synchronized (mutex) {
             if (message instanceof ShortMessage incoming) {
                 if (incoming.getCommand() == ShortMessage.NOTE_ON) {
                     if (incoming.getChannel() == inputChannel.get()) {
                         Integer channel = nextChannelForNoteOn();
                         if (channel == null) {
-                            LOGGER.warn("no channel to send to, received {}", incoming);
+                            LOGGER.warn("no channel to send to, received on ch {} but ", incoming);
                         } else {
                             if (playingNoteToChannel.put(incoming.getData1(), channel) != null) {
-                                LOGGER.warn("received on note {}, but that note was already on ", incoming);
+                                LOGGER.warn("received on note {}, but that note was already on ", toString(incoming));
                             } else {
-                                send(createShortMessage(incoming.getCommand(), channel, incoming.getData1(), incoming.getData2()));
-                                playingNoteToChannel.put(incoming.getData1(), channel);
-                                channelToKeyDown[channel].add(incoming.getData1());
+                                ShortMessage otherChannel = createShortMessage(incoming.getCommand(), channel, incoming.getData1(), incoming.getData2());
+                                LOGGER.warn("sending on {}", toString(otherChannel));
+                                send(otherChannel);
+                                playingNoteToChannel.put(otherChannel.getData1(), channel);
+                                channelToKeyDown[channel].add(otherChannel.getData1());
                             }
                         }
                     }
@@ -146,10 +152,12 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
                     if (incoming.getChannel() == inputChannel.get()) {
                         Integer channel = playingNoteToChannel.remove(incoming.getData1());
                         if (channel == null) {
-                            LOGGER.warn("received off note {}, but there was no on on note", incoming);
+                            LOGGER.warn("received off note {}, but there was no on on note; perhaps there was no output channel active when the on note was processed", toString(incoming));
                         } else {
-                            send(createShortMessage(ShortMessage.NOTE_OFF, channel, incoming.getData1(), incoming.getData2()));
-                            channelToKeyDown[channel].remove(incoming.getData1());
+                            ShortMessage otherChannel = createShortMessage(ShortMessage.NOTE_OFF, channel, incoming.getData1(), incoming.getData2());
+                            LOGGER.warn("sending off {}", toString(otherChannel));
+                            send(otherChannel);
+                            channelToKeyDown[channel].remove(otherChannel.getData1());
                         }
                     }
                 }

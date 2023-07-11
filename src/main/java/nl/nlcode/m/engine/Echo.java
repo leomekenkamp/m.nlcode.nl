@@ -196,29 +196,25 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
         if (newVelocity == oldVelocity) {
             newVelocity -= 1;
         }
-        if (message.getCommand() == ShortMessage.NOTE_OFF && newVelocity == 0) {
+        if (message.getCommand() == ShortMessage.NOTE_OFF && newVelocity <= 0) {
             newVelocity = 1;
         }
         if (newVelocity > 0) {
-            try {
-                ShortMessage echo = new ShortMessage(message.getCommand(), message.getChannel(), message.getData1(), newVelocity);
-                if (message.getCommand() == ShortMessage.NOTE_ON) {
-                    notePlannedCount[message.getChannel()][message.getData1()].incrementAndGet();
+            ShortMessage echo = createShortMessage(message.getCommand(), message.getChannel(), message.getData1(), newVelocity);
+            if (message.getCommand() == ShortMessage.NOTE_ON) {
+                notePlannedCount[message.getChannel()][message.getData1()].incrementAndGet();
+                getFutureBucket().messages.add(echo);
+            } else if (message.getCommand() == ShortMessage.NOTE_OFF) {
+                if (notePlannedCount[message.getChannel()][message.getData1()]
+                        .getAndAccumulate(-1, (current, add) -> {
+                            if (current > 0) {
+                                return current + add;
+                            } else {
+                                return 0;
+                            }
+                        }) > 0) {
                     getFutureBucket().messages.add(echo);
-                } else if (message.getCommand() == ShortMessage.NOTE_OFF) {
-                    if (notePlannedCount[message.getChannel()][message.getData1()]
-                            .getAndAccumulate(-1, (current, add) -> {
-                                if (current > 0) {
-                                    return current + add;
-                                } else {
-                                    return 0;
-                                }
-                            }) > 0) {
-                        getFutureBucket().messages.add(echo);
-                    }
                 }
-            } catch (InvalidMidiDataException e) {
-                throw new IllegalArgumentException(e);
             }
         }
     }
@@ -226,7 +222,7 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     public ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource() {
         return tickSource;
     }
-    
+
     public TickSource getTickSource() {
         return tickSource.get();
     }
@@ -234,7 +230,7 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     public void setTickSource(TickSource tickSource) {
         this.tickSource.set(tickSource);
     }
-    
+
     public int getAbsoluteVelocityDecrease() {
         return absoluteVelocityDecrease.get();
     }
