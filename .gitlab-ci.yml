@@ -21,8 +21,7 @@ stages:
 #  - export GRADLE_USER_HOME
 
 java-build:
-  # select the most appropriate image for your project
-  image: gradle:latest-alpine
+  image: gradle:8.2.0-jdk17-alpine
   stage: build
   script:
     - ./gradlew jpackage
