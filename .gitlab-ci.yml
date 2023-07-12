@@ -1,4 +1,7 @@
-# https://github.com/gradle/gradle
+stages:
+  - build
+  
+  # https://github.com/gradle/gradle
 .build:
   stage: build
   script: gradlew jpackage
@@ -17,6 +20,13 @@
 #  - GRADLE_USER_HOME="$(pwd)/.gradle"
 #  - export GRADLE_USER_HOME
 
+java-build:
+  # select the most appropriate image for your project
+  image: gradle:latest-alpine
+  stage: build
+  script:
+    - ./gradlew jpackage
+    
 build-mac:
   extends: .build
   tags:
