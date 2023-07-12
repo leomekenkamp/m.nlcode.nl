@@ -9,6 +9,14 @@ This project is in early alfa stage. Which means that if you eventually succeed 
 application to run, it will have cost you your sanity, marriage and what have you not.
 {{% /notice %}}
 
+## What does one need to know before using **m.nlcode.nl**?
+A requirement for use of this application is some basic knowledge on the *Musical Instrument Digital
+Interface* or MIDI. You should know about MIDI messages like *note on*, *note off* and others.
+You should also know about MIDI ports, both in hardware and software, and how every port supports
+sixteen distinct MIDI channels.
+
+Some knowledge on how to make music would also be handy.
+
 ## So what is this **m.nlcode.nl** thing anyway? 
 The application **m.nlcode.nl** is a collection of relatively simple parts that are focussed on doing 
 one thing with MIDI data. The basic thought behind this component strategy is to create something
