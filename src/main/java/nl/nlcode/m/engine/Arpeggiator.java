@@ -1,16 +1,52 @@
 package nl.nlcode.m.engine;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
+import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
+import nl.nlcode.marshalling.Marshalled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author leo
  */
-public class Arpeggiator extends MidiInOut {
+public class Arpeggiator<U extends Arpeggiator.Ui> extends MidiInOut<U> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    public static interface Ui extends MidiInOut.Ui {
+    }
+
+    public static record SaveData0(
+            int id,
+            Marshalled<MidiInOut> s) implements Marshalled<Arpeggiator> {
+
+        @Override
+        public void unmarshalInto(Context context, Arpeggiator target) {
+            s.unmarshalInto(context, target);
+        }
+
+        @Override
+        public Arpeggiator createMarshallable() {
+            return new Arpeggiator();
+        }
+    }
+
+    @Override
+    public Marshalled marshalInternal(int id, Context context) {
+        SaveData0 result = new SaveData0(
+                id,
+                super.marshalInternal(-1, context)
+        );
+        return result;
+    }
+
     
     interface Algorithm {
         public int clockTicksUntilNextAction();
@@ -25,9 +61,7 @@ public class Arpeggiator extends MidiInOut {
         }
    
     }
-    
-    private static final long serialVersionUID = 0L;
-    
+        
     public enum LengthPer {
         NOTE,
         CHORD,

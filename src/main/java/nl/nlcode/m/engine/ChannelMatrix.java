@@ -23,8 +23,6 @@ public class ChannelMatrix<U extends ChannelMatrix.Ui> extends MidiInOut<U> {
         void matrixChanged(int from, int to, boolean linked);
     }
 
-    private BooleanUpdateProperty<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdateProperty[CHANNEL_COUNT][CHANNEL_COUNT];
-
     public static record SaveData0(
             int id,
             boolean[][] fromTo,
@@ -52,6 +50,8 @@ public class ChannelMatrix<U extends ChannelMatrix.Ui> extends MidiInOut<U> {
         forAllChannels(from -> forAllChannels(to -> result.fromTo()[from][to] = fromTo[from][to].get()));
         return result;
     }
+
+    private BooleanUpdateProperty<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdateProperty[CHANNEL_COUNT][CHANNEL_COUNT];
 
     public ChannelMatrix() {
         forAllChannels(from -> forAllChannels(to -> {

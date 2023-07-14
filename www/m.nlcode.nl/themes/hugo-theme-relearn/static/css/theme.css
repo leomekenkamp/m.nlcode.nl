@@ -274,7 +274,6 @@ dd {
     margin: 1.2rem 0 .8rem 0;
     padding-inline-start: 1rem;
     text-rendering: optimizeLegibility;
-    text-transform: uppercase;
 }
 
 #sidebar .footermargin {
@@ -424,7 +423,6 @@ h1 {
     overflow-x: hidden;
     text-align: center;
     text-rendering: optimizeLegibility;
-    text-transform: uppercase;
 }
 
 body:not(.print) #body-inner.narrow h1 {

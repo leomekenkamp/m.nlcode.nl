@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import nl.nlcode.m.linkui.IntUpdateProperty;
