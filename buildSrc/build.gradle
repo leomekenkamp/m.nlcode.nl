@@ -1,0 +1,47 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+//buildScan {
+//    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
+//    termsOfServiceAgree = 'yes'
+//}
+
+group 'org.openjfx'
+version '0.0.15-SNAPSHOT'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+
+    implementation 'com.google.gradle:osdetector-gradle-plugin:1.7.3'
+    implementation 'org.javamodularity:moduleplugin:1.8.12'
+
+    testImplementation gradleTestKit()
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+    plugins {
+        javafxPlugin {
+            id = 'nl.nlcode.javafxplugin'
+            displayName = 'JavaFX Gradle Plugin'
+            description = 'Plugin that makes it easy to work with JavaFX'
+            implementationClass = 'org.openjfx.gradle.JavaFXPlugin'
+        }
+    }
+}

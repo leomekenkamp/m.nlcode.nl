@@ -1,7 +1,7 @@
 plugins {
     id 'application'
-    id 'org.javamodularity.moduleplugin' version '1.8.9'
-    id 'org.openjfx.javafxplugin' version '0.0.14'
+//    id 'org.javamodularity.moduleplugin' version '1.8.9'
+    //id 'org.openjfx.javafxplugin' version '0.0.14'
     id "org.beryx.jlink" version "2.24.1"
 }
 
@@ -10,6 +10,8 @@ defaultTasks 'build'
 repositories {
     mavenCentral()
 }
+
+apply plugin: 'nl.nlcode.javafxplugin'
 
 javafx {
     version = '20.0.1'
@@ -54,14 +56,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "$jacksonVersion"
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "$jacksonVersion"
-    implementation group: 'org.openjfx', name: 'javafx-graphics', version: '20.0.1'
-    implementation group: 'org.openjfx', name: 'javafx-controls', version: '20.0.1'
-    implementation group: 'org.openjfx', name: 'javafx-fxml', version: '20.0.1'
 
-//    runtimeOnly group: 'org.openjfx', name: 'javafx-base', version: '20.0.1', classifier: "win"
-//    runtimeOnly group: 'org.openjfx', name: 'javafx-graphics', version: "20.0.1", classifier: "win"
-//    runtimeOnly group: 'org.openjfx', name: 'javafx-controls', version: "20.0.1", classifier: "win"
-//    runtimeOnly group: 'org.openjfx', name: 'javafx-fxml', version: '20.0.1', classifier: "win"
     //testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation "org.testfx:testfx-core:4.0.16-alpha"
     testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"

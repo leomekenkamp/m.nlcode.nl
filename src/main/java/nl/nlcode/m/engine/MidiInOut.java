@@ -164,7 +164,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     private transient Project project;
 
     private final transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    
+
     private transient Future receiveProcessTask;
 
     public static final MidiInOut[] EMPTY_ARRAY = new MidiInOut[]{};
@@ -471,16 +471,14 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     private Runnable createReceiveProcessTask() {
         return () -> {
-            try {
-                while (processing.get()) {
+            while (processing.get()) {
+                try {
                     TimestampedMidiMessage message = getAsyncReceiveQueue().take();
                     processReceive(message.midiMessage(), message.timestamp());
                     uiUpdate(ui -> ui.received(message.midiMessage(), message.timestamp()));
+                } catch (InterruptedException e) {
+                    Thread.interrupted();
                 }
-            } catch (InterruptedException e) {
-                LOGGER.warn("interrupted", e);
-                Thread.interrupted();
-                processing.set(false);
             }
             LOGGER.warn("stopped listening for incoming signals");
         };
@@ -678,7 +676,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     public static String toString(ShortMessage msg) {
-        return msg == null ? "<null>" 
+        return msg == null ? "<null>"
                 : "[cmd: " + msg.getCommand() + "; ch: " + msg.getChannel() + "; d1: " + msg.getData1() + "; d2: " + msg.getData2();
     }
 }
