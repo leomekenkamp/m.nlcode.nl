@@ -41,7 +41,7 @@ public enum JavaFXPlatform {
     LINUX("linux", "linux-x86_64"),
     LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
     WINDOWS("win", "windows-x86_64"),
-    WIN32("win32", "windows-x86_32"),
+    WIN32("win", "windows-x86_32"),
     OSX("mac", "osx-x86_64"),
     OSX_AARCH64("mac-aarch64", "osx-aarch_64");
 
