@@ -173,7 +173,7 @@ public class ControlUi extends BorderPane implements FxmlController {
     }
 
     public static Preferences prefs(MidiDevice midiDevice) {
-        Preferences result = systemMidiPrefs.node(MidiDeviceMgr.getDisplayName(midiDevice));
+        Preferences result = systemMidiPrefs.node(MidiDeviceMgr.getPrefsName(midiDevice));
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             result.exportNode(stream);

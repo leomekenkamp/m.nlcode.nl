@@ -69,16 +69,21 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         LOGGER.info("starting");
-
-        setStyleSheet(Control.PREFERENCES.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
-        Thread.setDefaultUncaughtExceptionHandler(App::showError);
-        ControlUi controlUi = new ControlUi(Control.getInstance(), MidiDeviceMgr.getInstance());
-        Scene scene = new Scene(controlUi);
-        addStyleSheet(scene);
-        stage.setScene(scene);
-        stage.setOnCloseRequest(onCloseRequest(controlUi));
-        controlUi.restoreWindowPositionAndSetAutosave();
-        stage.show();
+        try {
+            setStyleSheet(Control.PREFERENCES.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
+            Thread.setDefaultUncaughtExceptionHandler(App::showError);
+            ControlUi controlUi = new ControlUi(Control.getInstance(), MidiDeviceMgr.getInstance());
+            Scene scene = new Scene(controlUi);
+            addStyleSheet(scene);
+            stage.setScene(scene);
+            stage.setOnCloseRequest(onCloseRequest(controlUi));
+            controlUi.restoreWindowPositionAndSetAutosave();
+            stage.show();
+        } catch (RuntimeException e) {
+            LOGGER.error("cannot start", e);
+            e.printStackTrace(System.out);
+            throw e;
+        }
     }
 
     @Override

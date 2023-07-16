@@ -39,6 +39,8 @@ public final class MidiDeviceMgr {
 
     private static final MidiDeviceMgr instance = new MidiDeviceMgr();
 
+    private static final int MAX_PREFS_KEY_AND_NAME_LENGTH = 80;
+
     private MidiDeviceMgr() {
         midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
         midiDevices = FXCollections.unmodifiableObservableList(midiDevicesBacking);
@@ -167,6 +169,19 @@ public final class MidiDeviceMgr {
         }
     }
 
+    public static String getPrefsName(MidiDevice device) {
+        if (device == null) {
+            throw new IllegalArgumentException("device cannot be null");
+        } else {
+            String result = getDisplayName(device.getDeviceInfo()) + getCapabilitiesDecription(device);
+            if (result.length() > MAX_PREFS_KEY_AND_NAME_LENGTH) {
+                return result.substring(0, MAX_PREFS_KEY_AND_NAME_LENGTH);
+            } else {
+                return result;
+            }
+        }
+    }
+    
     public static String getDisplayName(MidiDevice.Info info) {
         StringBuilder result = new StringBuilder(info.getName());
         if (info.getDescription() != null) {
