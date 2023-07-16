@@ -42,12 +42,16 @@
             <Field labelText="%relativeVelocityDecrease">
                 <Spinner fx:id="relativeVelocityDecrease" editable="true">
                     <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="99"/>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="100"/>
                     </valueFactory>
                 </Spinner>
             </Field>
             <Field labelText="%absoluteVelocityDecrease">
-                <I0through127Spinner fx:id="absoluteVelocityDecrease" editable="true"/>
+                <Spinner fx:id="%absoluteVelocityDecrease" editable="true">
+                    <valueFactory>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
+                    </valueFactory>
+                </Spinner>
             </Field>
         </VBox>
     </instrument>
