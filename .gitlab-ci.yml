@@ -1,11 +1,15 @@
 stages:
   - build
-  
-  # https://github.com/gradle/gradle
+
+install-rpm-build:
+  script:
+    - rpm -Uvh "rpm-build"
+    
+# https://github.com/gradle/gradle
 .build:
   stage: build
   script: gradlew jpackage
-  cache:
+  cache:ja
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
