@@ -1,7 +1,8 @@
 stages:
   - build
 
-.pre:
+build install-rpm-build:
+  stage: build
   script:
     - rpm -Uvh "rpm-build"
 
