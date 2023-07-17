@@ -37,9 +37,10 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public enum JavaFXPlatform {
-
+// see https://stackoverflow.com/questions/75006480/javafx-maven-platform-specific-build-mac-aarm64-qualifier
     LINUX("linux", "linux-x86_64"),
     LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
+    LINUX_ARM32("linux-arm32-monocle", "linux-arm32"),
     WINDOWS("win", "windows-x86_64"),
     WIN_x86_32("win-x86", "windows-x86_32"),
     OSX("mac", "osx-x86_64"),

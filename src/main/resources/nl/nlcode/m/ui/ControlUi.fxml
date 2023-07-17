@@ -38,7 +38,7 @@
             </center>
         </BorderPane>
         <bottom>
-            <Label styleClass="version" text="1.0.0.alfa" />
+            <Label styleClass="version" text="1.0.0 ALPHA" />
         </bottom>
     </center>
 </fx:root>

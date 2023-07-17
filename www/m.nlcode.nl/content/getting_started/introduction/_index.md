@@ -7,6 +7,10 @@ weight = "1"
 {{% notice style="primary" title="WARNING: early alpha" icon="skull-crossbones" %}}
 This project is in early alfa stage. Which means that if you eventually succeed in getting this
 application to run, it will have cost you your sanity, marriage and what have you not.
+
+Please note that although the version may be something like 1.0.*x*, with *x* being some digit,
+this does not mean that **m.nlcode.nl** is out of alpha/beta stage. The first golden release will
+have version *1.1.0*. This is due to limitations of the build system.
 {{% /notice %}}
 
 ## What does one need to know before using **m.nlcode.nl**?

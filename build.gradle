@@ -42,7 +42,7 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 group = 'nl.nlcode'
-version = '1.0.0.alfa'
+version = '1.0.0'
 
 ext {
     jacksonVersion = '2.14.2'
