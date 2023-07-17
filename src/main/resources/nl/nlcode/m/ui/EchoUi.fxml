@@ -47,7 +47,7 @@
                 </Spinner>
             </Field>
             <Field labelText="%absoluteVelocityDecrease">
-                <Spinner fx:id="%absoluteVelocityDecrease" editable="true">
+                <Spinner fx:id="absoluteVelocityDecrease" editable="true">
                     <valueFactory>
                         <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
                     </valueFactory>
