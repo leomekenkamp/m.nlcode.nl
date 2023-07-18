@@ -1,8 +1,9 @@
 plugins {
     id 'application'
-//    id 'org.javamodularity.moduleplugin' version '1.8.9'
+    // next plugin in buildSrc because of limited platforms
     //id 'org.openjfx.javafxplugin' version '0.0.14'
-    id "org.beryx.jlink" version "2.24.1"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+  id "org.beryx.jlink" version "2.24.1"
 }
 
 defaultTasks 'build'

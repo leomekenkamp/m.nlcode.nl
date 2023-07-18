@@ -24,13 +24,25 @@ environment needed to create a Windows distribution. For the time being, see **O
 Although **m.nlcode.nl** is a Java application, I currently have no access to a Linux build
 environment needed to create a Linux distribution. For the time being, see **Other** below.
 
-## Other (Java required)
-1. First install a JDK version 17 or higher from https://adoptium.net/en-GB/.
-1. Install JavaFX for your system, version 17 or higher, from https://openjfx.io/openjfx-docs/#install-javafx.
+## Other (Java SDK required, at least)
+There are several options available from this point. The are described below, in order of complexity
+with the simplest first.
+
+### Run the JAR
+1. First install a JDK version 17 or higher ('Temurin') from https://adoptium.net/ .
+1. Download the latest so called 'shadow JAR' *m_nlcode_nl-<version>-all.jar* from Gitlab.
+1. Execute the shadow JAR file by e.g. 'double clicking' on it.
+
+### Run from source
+1. First install a JDK version 17 or higher ('Temurin') from https://adoptium.net/ .
 1. Clone the Gitlab repo, by e.g. git clone https://gitlab.com/nlcode.nl/m.nlcode.nl.git 
-1. Go into that directory and execute **./gradlew run** or **gradlew run** if you are on Windows.
+1. Go into that directory and execute **./gradlew run** (or **gradlew run** if you are on Windows).
 The first time will take a while; consecutive runs will be a lot faster.
 
-## Build installer from source (Java required)
-Follow the steps from "**Other (Java required)**" above, but execute **gradlew jpackage**" in the
-last step. You can find the installer in *./build/jpackage*.
+## Build installer from source (Java required, heavy other requirements)
+1. First install a JDK version 17 or higher ('Temurin') from https://adoptium.net/ .
+1. Clone the Gitlab repo, by e.g. git clone https://gitlab.com/nlcode.nl/m.nlcode.nl.git 
+1. Go into that directory and execute **./gradlew jpackage** (or **gradlew jpackage** if you are on
+Windows).
+1. Step above may fail due to missing software on your machine. If it does not fail, you can find
+the installer in *./build/jpackage*.
