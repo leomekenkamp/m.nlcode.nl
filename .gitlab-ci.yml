@@ -12,7 +12,8 @@ stages:
       - .gradle/
 
 build-jar:
-  image: eclipse-temurin:20.0.1_9-jdk-alpine
+  #image: eclipse-temurin:20.0.1_9-jdk-alpine
+  image: eclipse-temurin:17.0.7_7-jdk-alpine
   stage: build
   script:
     - ./gradlew -version --no-daemon
@@ -37,7 +38,8 @@ build-jar:
 #    - ./gradlew jpackage
 
 build-windows:
-  image: eclipse-temurin:20.0.1_9-jdk-windowsservercore-1809
+  #image: eclipse-temurin:20.0.1_9-jdk-windowsservercore-1809
+  image: 17.0.7_7-jdk-windowsservercore
   extends: .build
   tags:
     - shared-windows
