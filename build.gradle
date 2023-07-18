@@ -3,7 +3,7 @@ plugins {
     // next plugin in buildSrc because of limited platforms
     //id 'org.openjfx.javafxplugin' version '0.0.14'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-  id "org.beryx.jlink" version "2.24.1"
+  id "org.beryx.jlink" version "2.26.0"
 }
 
 defaultTasks 'build'

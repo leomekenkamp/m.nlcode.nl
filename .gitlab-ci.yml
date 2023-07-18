@@ -8,13 +8,14 @@ stages:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
-      - .gradle
+      - build/
+      - .gradle/
 
 build-jar:
   image: eclipse-temurin:17.0.7_7-jdk-alpine
   stage: build
   script:
+    - ./gradlew -version --no-daemon
     - ./gradlew clean build --no-daemon
   artifacts:
     name: "$CI_JOB_NAME-jar"
@@ -43,6 +44,7 @@ build-windows:
     - windows
     - windows-1809
   script:
+    - ./gradlew -version --no-daemon
     - ./gradlew jpackage --no-daemon
   artifacts:
     name: "$CI_JOB_NAME-win_x64"
