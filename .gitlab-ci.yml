@@ -28,11 +28,20 @@ build-jar:
     reports:
       junit: build/test-results/**/*.xml
     
-build-mac:
+#build-mac:
+#  extends: .build
+#  tags:
+#    - saas-macos-medium-m1
+#  script:
+#    - ./gradlew jpackage
+
+build-windows:
+  image: eclipse-temurin:17.0.7_7-jdk
   extends: .build
   tags:
-    - saas-macos-medium-m1
+    - shared-windows
+    - windows
+    - windows-1809
   script:
     - ./gradlew jpackage
     
-#  image: macos-12-xcode-14
