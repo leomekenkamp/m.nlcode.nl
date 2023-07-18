@@ -12,6 +12,8 @@ weight = "4"
 ## Software
 ### Runtime stack
 **m.nlcode.nl** is written in Java and JavaFX.
+Special thanks to the people from https://github.com/DerekCook/CoreMidi4J for their Mac Java Core
+MIDI SPI.
 
 ### Development and build tooling
 - IDE: http://netbeans.org

@@ -35,13 +35,6 @@ test {
     }
 }
 
-// higher than 17 yields an error during build on Temurin 20 (or some lower):
-// * What went wrong:
-// Execution failed for task ':prepareModulesDir'.
-// > Unsupported class file major version 62
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 group = 'nl.nlcode'
 version = '1.0.0'
 
