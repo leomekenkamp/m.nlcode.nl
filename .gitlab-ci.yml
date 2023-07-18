@@ -30,14 +30,22 @@ build-jar:
     reports:
       junit: build/test-results/**/*.xml
     
-#build-mac:
-#  extends: .build
-#  tags:
-#    - saas-macos-medium-m1
-#  script:
-#    - ./gradlew jpackage
+build-mac:
+  extends: .build
+  tags:
+    - saas-macos-medium-m1
+    - macos-12-xcode-14
+  script:
+    - ./gradlew jpackage
+  artifacts:
+    name: "$CI_JOB_NAME-mac"
+    paths:
+      # tar, zip
+      - build/jpackage/
 
-build-windows:
+.build-windows:
+  # Gitlab docs make no mention of Docker running on their Windows machines. Seems to match the
+  # behaviour: 'image:' has no effect.
   #image: eclipse-temurin:20.0.1_9-jdk-windowsservercore-1809
   image: 17.0.7_7-jdk-windowsservercore
   extends: .build
