@@ -44,4 +44,9 @@ build-windows:
     - windows-1809
   script:
     - ./gradlew jpackage
+  artifacts:
+    name: "$CI_JOB_NAME-win_x64"
+    paths:
+      # tar, zip
+      - build/jpackage/
     
