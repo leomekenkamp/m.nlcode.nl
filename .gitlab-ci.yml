@@ -1,11 +1,6 @@
 stages:
   - build
 
-build install-rpm-build:
-  stage: build
-  script:
-    - rpm -Uvh "rpm-build"
-
   # https://github.com/gradle/gradle
 .build:
   stage: build
@@ -21,18 +16,32 @@ build install-rpm-build:
     paths:
       - build/jpackage/
 
-#before_script:
-#  - GRADLE_USER_HOME="$(pwd)/.gradle"
-#  - export GRADLE_USER_HOME
-
-java-build:
-  image: gradle:latest
+build-jar:
+  image: eclipse-temurin:17.0.7_7-jdk-alpine
   stage: build
   script:
-    - ./gradlew jpackage
+    - ./gradlew clean build
+  artifacts:
+    name: "jar"
+    paths:
+      # tar, zip
+      - build/distributions/
+      # main jar
+      - build/libs/
+      - build/reports/
+      - build/test-results/
+    reports:
+      junit: build/test-results/**/*.xml
+    cache:
+      paths:
+        - build/
+      policy: push
     
 build-mac:
   extends: .build
   tags:
     - saas-macos-medium-m1
+  script:
+    - ./gradlew jpackage
+    
 #  image: macos-12-xcode-14
