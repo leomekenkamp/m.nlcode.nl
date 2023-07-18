@@ -37,7 +37,7 @@ build-jar:
 #    - ./gradlew jpackage
 
 build-windows:
-  image: eclipse-temurin:20.0.1_9-jdk
+  image: eclipse-temurin:20.0.1_9-jdk-windowsservercore-1809
   extends: .build
   tags:
     - shared-windows
