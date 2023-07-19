@@ -478,9 +478,12 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
                     uiUpdate(ui -> ui.received(message.midiMessage(), message.timestamp()));
                 } catch (InterruptedException e) {
                     Thread.interrupted();
+                    if (!processing.get()) {
+                        LOGGER.warn("weird: interrupted, but processing is still true");
+                    }
                 }
             }
-            LOGGER.warn("stopped listening for incoming signals");
+            LOGGER.debug("stopped listening for incoming signals");
         };
     }
 
