@@ -36,7 +36,7 @@ I have seen sound issues (as in: no sound at all) when running with JDK 20 on Wi
 ### Run the JAR
 1. First install a JDK version 17 (or higher) 'Temurin' from https://adoptium.net/ .
 1. Download the latest so called 'shadow JAR' *m_nlcode_nl-<version>-all.jar* from Gitlab.
-1. Execute the shadow JAR file by e.g. 'double clicking' on it.
+1. Execute the shadow JAR file: *java -jar *m_nlcode_nl-<version>-all.jar*
 
 ### Run from source
 1. First install a JDK version 17 (or higher) 'Temurin' from https://adoptium.net/ .

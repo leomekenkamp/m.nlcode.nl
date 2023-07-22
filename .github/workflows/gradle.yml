@@ -1,0 +1,50 @@
+name: Gradle
+
+# see https://repo1.maven.org/maven2/org/openjfx/javafx-base/17.0.7/ for classifiers to use for JavaFX libs
+
+on:
+  workflow_call:
+    inputs:
+      prerelease:
+        type: boolean
+        required: false
+        default: true
+      versionNumber:
+        type: string
+        description: must be in form 'x.y.z' with x >= 1, y >= 0 and z >= 0
+        required: false
+        default: 1.0.0
+
+permissions:
+  contents: read
+    
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform:
+          [ 
+            {runs-on: "ubuntu-22.04", name: "linux-aarch64", overrideJavaFxPlatform: "linux-aarch64"},
+            {runs-on: "ubuntu-22.04", name: "linux_x86", overrideJavaFxPlatform: "linux"},
+            {runs-on: "macos-12", name: "osx_x86", overrideJavaFxPlatform: "mac"},
+            {runs-on: "macos-12", name: "osx_aarch64", overrideJavaFxPlatform: "mac-aarch64"},
+            {runs-on: "windows-2019", name: "windows_x86", overrideJavaFxPlatform: "win-x86"},
+            {runs-on: "windows-2019", name: "windows_x64", overrideJavaFxPlatform: "win"},
+          ]
+    runs-on: ${{matrix.platform.runs-on}}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '17.0.8'
+    - name: Execute Gradle build
+      run: ./gradlew artifacts --no-daemon -PoverrideJavaFxPlatform="${{matrix.platform.overrideJavaFxPlatform}}" -PoverridePlatform="${{matrix.platform.name}}" -PversionNumber="${{inputs.versionNumber}}"
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.platform.name}}
+        path: |
+          ./build/artifacts/*
+

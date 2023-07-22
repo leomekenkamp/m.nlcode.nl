@@ -1,0 +1,50 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        type: boolean
+        required: true
+        default: true
+      versionNumber:
+        type: string
+        description: version number; must be in form 'x.y.z' with x >= 1, y >= 0 and z >= 0
+        required: true
+      versionNotes:
+        type: string
+        description: Github release notes
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.prerelease && 'pre' || '' }}release/v${{ github.event.inputs.versionNumber }}${{ github.event.inputs.prerelease && '-PRERELEASE' || '' }}
+  RELEASE_TITLE: v${{ github.event.inputs.versionNumber }}${{ github.event.inputs.prerelease && ' pre-release' || '' }}
+      
+jobs:
+  build:
+    name: Gradle
+    uses: ./.github/workflows/gradle.yml
+    with:
+      versionNumber: ${{ github.event.inputs.versionNumber }}
+  release:
+    needs: build
+    name: create release
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: create release
+        run: gh release create $RELEASE_TAG --title "$RELEASE_TITLE" --notes "${{github.event.inputs.versionNotes}}" ${{ github.event.inputs.prerelease && '--prerelease' || '' }}
+      - run: find artifacts/
+      - name: upload artifacts to release
+        run: find ./artifacts -mindepth 2 -maxdepth 2 -type f -exec gh release upload $RELEASE_TAG {} \;
+        

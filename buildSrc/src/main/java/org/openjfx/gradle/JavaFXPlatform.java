@@ -89,6 +89,9 @@ public enum JavaFXPlatform {
             case "win":
             case "windows":
                 return JavaFXPlatform.WINDOWS;
+            case "win-x86":
+            case "win-x86_32":
+                return JavaFXPlatform.WIN_x86_32;
             case "osx":
             case "mac":
             case "macos":
