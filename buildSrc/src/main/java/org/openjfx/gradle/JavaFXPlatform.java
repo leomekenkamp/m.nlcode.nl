@@ -33,18 +33,36 @@ import com.google.gradle.osdetector.OsDetector;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public enum JavaFXPlatform {
-// see https://stackoverflow.com/questions/75006480/javafx-maven-platform-specific-build-mac-aarm64-qualifier
-    LINUX("linux", "linux-x86_64"),
-    LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
-    LINUX_ARM32("linux-arm32-monocle", "linux-arm32"),
-    WINDOWS("win", "windows-x86_64"),
-    WIN_x86_32("win-x86", "windows-x86_32"),
-    OSX("mac", "osx-x86_64"),
-    OSX_AARCH64("mac-aarch64", "osx-aarch_64");
+public class JavaFXPlatform {
+
+    public static enum Predefined {
+        // see https://stackoverflow.com/questions/75006480/javafx-maven-platform-specific-build-mac-aarm64-qualifier
+        LINUX("linux", "linux-x86_64"),
+        LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
+        LINUX_ARM32("linux-arm32-monocle", "linux-arm32"),
+        WINDOWS("win", "windows-x86_64"),
+        WIN_x86_32("win-x86", "windows-x86_32"),
+        OSX("mac", "osx-x86_64"),
+        OSX_AARCH64("mac-aarch64", "osx-aarch_64");
+        
+        public final JavaFXPlatform platform;
+        
+        Predefined(String classifier, String osDetectorClassifier) {
+            platform = predefine(classifier, osDetectorClassifier);
+        }
+    }
+
+    private static final Set<JavaFXPlatform> predefined;
+    
+    static {
+        predefined = new HashSet<>();
+        Predefined.values(); // force initialization
+    }
+    
 
     private final String classifier;
     private final String osDetectorClassifier;
@@ -54,53 +72,62 @@ public enum JavaFXPlatform {
         this.osDetectorClassifier = osDetectorClassifier;
     }
 
+    private static JavaFXPlatform predefine(String classifier, String osDetectorClassifier) {
+        JavaFXPlatform result = new JavaFXPlatform(classifier, osDetectorClassifier);
+        predefined.add(result);
+        return result;
+    }
+
     public String getClassifier() {
         return classifier;
     }
 
-    public static JavaFXPlatform detect(Project project) {
+    public static JavaFXPlatform withClassifier(String classifier) {
+        return new JavaFXPlatform(classifier, "<custom>");
+    }
 
+    public static JavaFXPlatform detect(Project project) {
         final String osClassifier = project.getExtensions().getByType(OsDetector.class).getClassifier();
 
-        for (JavaFXPlatform platform: values()) {
+        for (JavaFXPlatform platform : predefined) {
             if (platform.osDetectorClassifier.equals(osClassifier)) {
                 return platform;
             }
         }
 
-        String supportedPlatforms = Arrays.stream(values())
+        String supportedPlatforms = predefined.stream()
                 .map(p -> p.osDetectorClassifier)
                 .collect(Collectors.joining("', '", "'", "'"));
 
         throw new GradleException(
-            String.format(
-                    "Unsupported JavaFX platform found: '%s'! " +
-                    "This plugin is designed to work on supported platforms only." +
-                    "Current supported platforms are %s.", osClassifier, supportedPlatforms )
+                String.format(
+                        "Unsupported JavaFX platform found: '%s'! "
+                        + "This plugin is designed to work on supported platforms only."
+                        + "Current supported platforms are %s.", osClassifier, supportedPlatforms)
         );
     }
 
-    public static JavaFXPlatform fromString(String platform) {
-        switch (platform) {
+    public static JavaFXPlatform fromString(String platformId) {
+        switch (platformId) {
             case "linux":
-                return JavaFXPlatform.LINUX;
+                return Predefined.LINUX.platform;
             case "linux-aarch64":
-                return JavaFXPlatform.LINUX_AARCH64;
+                return Predefined.LINUX_AARCH64.platform;
             case "win":
             case "windows":
-                return JavaFXPlatform.WINDOWS;
+                return Predefined.WINDOWS.platform;
             case "win-x86":
             case "win-x86_32":
-                return JavaFXPlatform.WIN_x86_32;
+                return Predefined.WIN_x86_32.platform;
             case "osx":
             case "mac":
             case "macos":
-                return JavaFXPlatform.OSX;
+                return Predefined.OSX.platform;
             case "osx-aarch64":
             case "mac-aarch64":
             case "macos-aarch64":
-                return JavaFXPlatform.OSX_AARCH64;
+                return Predefined.OSX_AARCH64.platform;
         }
-        return valueOf(platform);
+        return Predefined.valueOf(platformId).platform;
     }
 }

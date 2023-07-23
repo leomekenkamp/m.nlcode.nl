@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.gradle.api.GradleException;
+
 
 import static org.openjfx.gradle.JavaFXModule.PREFIX_MODULE;
 
@@ -45,7 +47,8 @@ public class JavaFXOptions {
     private static final String MAVEN_JAVAFX_ARTIFACT_GROUP_ID = "org.openjfx";
     private static final String JAVAFX_SDK_LIB_FOLDER = "lib";
 
-    private final Project project;
+    private Project project;
+    private String classifier;
     private JavaFXPlatform platform;
 
     private String version = "17";
@@ -57,10 +60,24 @@ public class JavaFXOptions {
 
     public JavaFXOptions(Project project) {
         this.project = project;
-        this.platform = JavaFXPlatform.detect(project);
     }
 
+    public void setClassifier(String classifier) {
+        if (platform != null) {
+            throw new GradleException("either 'platform' or 'classifier' can be specified, not both");
+        }
+        platform = JavaFXPlatform.withClassifier(classifier);
+        this.classifier = classifier;
+    }
+    
+    public String getClassifier() {
+        return classifier;
+    }
+    
     public JavaFXPlatform getPlatform() {
+        if (platform == null) {
+            platform = JavaFXPlatform.detect(project);
+        }
         return platform;
     }
 
@@ -70,6 +87,9 @@ public class JavaFXOptions {
      * Supported classifiers are linux, linux-aarch64, win/windows, osx/mac/macos or osx-aarch64/mac-aarch64/macos-aarch64.
      */
     public void setPlatform(String platform) {
+        if (platform != null) {
+            throw new GradleException("either 'platform' or 'classifier' can be specified, not both");
+        }
         this.platform = JavaFXPlatform.fromString(platform);
         updateJavaFXDependencies();
     }
