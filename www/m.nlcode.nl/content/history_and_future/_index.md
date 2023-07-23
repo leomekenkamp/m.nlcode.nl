@@ -12,9 +12,9 @@ first stable version.
 ### release 1.1.0
 Open tasks that need to be completed before the first release:
 1. MUST: Website must be ready; all TODO's resolved.
-1. SHOULD: Gitlab CI must be able to build a Windows distribution. 
-1. WOULD: Gitlab CI must be able to build a Mac distribution.
-1. WOULD: Gitlab CI must be able to build a Linux distribution.
+1. SHOULD: Github must be able to build a Windows distribution. 
+1. WOULD: Github CI must be able to build a Mac distribution.
+1. WOULD: Github CI must be able to build a Linux distribution.
 
 ### next releases
 1. Register as Apple developer, so I can sign binaries to run on OS X machines without any nagging.

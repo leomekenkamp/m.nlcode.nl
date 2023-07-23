@@ -15,7 +15,9 @@ have version *1.1.0*. This is due to limitations of the build system.
 
 ## Downloads
 Installers and JAR files can be downloaded from
-[Github](https://github.com/leomekenkamp/m.nlcode.nl/releases) . Look under 'Assets'.
+[Github](https://github.com/leomekenkamp/m.nlcode.nl/releases). Look under 'Assets'.
+
+So far the easy part. Unfortunately things are almost never easy. Read on.
 
 ## Supported platforms
 **m.nlcode.nl** is written in Java with JavaFX. That means that every platform that has Java/JavaFX
