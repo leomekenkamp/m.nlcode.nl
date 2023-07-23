@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    if: false
+    if: true
     name: Gradle
     uses: ./.github/workflows/gradle.yml
 
