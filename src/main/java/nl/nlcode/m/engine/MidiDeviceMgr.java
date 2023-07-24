@@ -1,8 +1,6 @@
 package nl.nlcode.m.engine;
 
 import java.lang.invoke.MethodHandles;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
@@ -12,40 +10,129 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import java.util.*;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Transmitter;
+import nl.nlcode.m.ui.App;
 
 /**
  * @author leo
  */
 public final class MidiDeviceMgr {
 
+        private static class NoneMidiDevice implements MidiDevice {
+
+        private class DefaultInfo extends MidiDevice.Info {
+
+            public DefaultInfo(String name) {
+                super(name, null, null, null);
+            }
+        }
+
+        private MidiDevice.Info info;
+
+        public NoneMidiDevice(String name) {
+            info = new DefaultInfo(name);
+        }
+
+        @Override
+        public MidiDevice.Info getDeviceInfo() {
+            return info;
+        }
+
+        @Override
+        public void open() throws MidiUnavailableException {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public void close() {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public boolean isOpen() {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public long getMicrosecondPosition() {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public int getMaxReceivers() {
+            return 0;
+        }
+
+        @Override
+        public int getMaxTransmitters() {
+            return 0;
+        }
+
+        @Override
+        public Receiver getReceiver() throws MidiUnavailableException {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public List<Receiver> getReceivers() {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public Transmitter getTransmitter() throws MidiUnavailableException {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+        @Override
+        public List<Transmitter> getTransmitters() {
+            throw new UnsupportedOperationException("This is a NULL item.");
+        }
+
+    }
+
+    public static MidiDevice NONE_MIDI_DEVICE = new NoneMidiDevice(App.MESSAGES.getString("none"));
+
+    public interface Listener {
+
+        void midiDeviceAdded(MidiDevice added);
+
+        void midiDeviceRemoved(MidiDevice added);
+
+        void midiDeviceOpened(MidiDevice added);
+
+        void midiDeviceClosed(MidiDevice added);
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final Comparator<? super MidiDevice> COMPARE_BY_DISPLAY_NAME = new Comparator<>() {
         @Override
         public int compare(MidiDevice o1, MidiDevice o2) {
+            if (o1 == o2) {
+                return 0;
+            } else if (o1 == NONE_MIDI_DEVICE) {
+                return -1;
+            } else if (o2 == NONE_MIDI_DEVICE) {
+                return 1;
+            }
             return getDisplayName(o1).compareTo(getDisplayName(o2));
         }
     };
 
-    private final boolean USE_COREMIDI4j = true;
+    private final boolean USE_COREMIDI4j = false;
 
-    private final ObservableList<MidiDevice> midiDevicesBacking;
+    private final List<MidiDevice> midiDevices = new ArrayList<>();
 
-    private final ObservableList<MidiDevice> midiDevices;
-
-    private final ObservableList<MidiDevice> openMidiDevicesBacking;
-
-    private final ObservableList<MidiDevice> openMidiDevices;
+    private final List<MidiDevice> openMidiDevices = new ArrayList<>();
 
     private static final MidiDeviceMgr instance = new MidiDeviceMgr();
 
     private static final int MAX_PREFS_KEY_AND_NAME_LENGTH = 80;
 
+    private Set<Listener> listeners = new HashSet<>();
+
     private MidiDeviceMgr() {
-        midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-        midiDevices = FXCollections.unmodifiableObservableList(midiDevicesBacking);
-        openMidiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-        openMidiDevices = FXCollections.unmodifiableObservableList(openMidiDevicesBacking);
         refreshMidiDevices();
         if (USE_COREMIDI4j) {
             try {
@@ -53,6 +140,18 @@ public final class MidiDeviceMgr {
             } catch (CoreMidiException e) {
                 LOGGER.error("Could not register listener. No auto refresh of MIDI (usb) devices.");
             }
+        }
+    }
+
+    public void addListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
         }
     }
 
@@ -92,7 +191,7 @@ public final class MidiDeviceMgr {
                 }
             }
         }
-        List<MidiDevice> oldList = new ArrayList(midiDevicesBacking);
+        List<MidiDevice> oldList = new ArrayList(midiDevices);
 
         List<MidiDevice> deltaAddList = removeByMidiDeviceInfo(oldList, newList);
 
@@ -102,13 +201,19 @@ public final class MidiDeviceMgr {
         LOGGER.debug("... by removing <{}>", deltaRemoveList);
         LOGGER.debug("... by adding <{}>", deltaAddList);
 
-        List<MidiDevice> buffer = new ArrayList(midiDevicesBacking);
+        List<MidiDevice> buffer = new ArrayList(midiDevices);
         for (MidiDevice remove : deltaRemoveList) {
             if (remove.isOpen()) {
                 remove.close();
             }
-            synchronized (openMidiDevicesBacking) {
-                openMidiDevicesBacking.remove(remove);
+            synchronized (openMidiDevices) {
+                openMidiDevices.remove(remove);
+            }
+            synchronized (listeners) {
+                listeners.forEach(listener -> {
+                    listener.midiDeviceClosed(remove);
+                    listener.midiDeviceRemoved(remove);
+                });
             }
             buffer.remove(remove);
         }
@@ -117,11 +222,22 @@ public final class MidiDeviceMgr {
         //midiDevicesBacking.clear();
         //midiDevicesBacking.addAll(buffer);
 
-        midiDevicesBacking.removeAll(deltaRemoveList);
-        midiDevicesBacking.addAll(deltaAddList);
-        midiDevicesBacking.sort(COMPARE_BY_DISPLAY_NAME);
+        midiDevices.removeAll(deltaRemoveList);
+        midiDevices.addAll(deltaAddList);
+        midiDevices.sort(COMPARE_BY_DISPLAY_NAME);
+        synchronized(listeners) {
+            listeners.forEach(listener -> {
+                for (MidiDevice removed : deltaRemoveList) {
+                    listener.midiDeviceClosed(removed);
+                    listener.midiDeviceRemoved(removed);
+                }
+                for (MidiDevice added : deltaAddList) {
+                    listener.midiDeviceRemoved(added);
+                }
+            });
+        }
 
-        LOGGER.debug("set is now <{}>", midiDevicesBacking);
+        LOGGER.debug("set is now <{}>", midiDevices);
 
         if (!errors.isEmpty()) {
             throw new FunctionalException("one or more exceptions: " + String.join(", ", errors));
@@ -181,7 +297,7 @@ public final class MidiDeviceMgr {
             }
         }
     }
-    
+
     public static String getDisplayName(MidiDevice.Info info) {
         StringBuilder result = new StringBuilder(info.getName());
         if (info.getDescription() != null) {
@@ -196,18 +312,18 @@ public final class MidiDeviceMgr {
         return result.toString();
     }
 
-    public ObservableList<MidiDevice> getMidiDevices() {
-        return midiDevices;
+    public List<MidiDevice> getMidiDevices() {
+        return new ArrayList(midiDevices);
     }
 
-    public ObservableList<MidiDevice> getOpenMidiDevices() {
-        return openMidiDevices;
+    public List<MidiDevice> getOpenMidiDevices() {
+        return new ArrayList(openMidiDevices);
     }
 
     public void close() {
         // We explicitly close ONLY the java midi devices. We want our devices to be reopened automatically
         // the next time the application starts.
-        for (MidiDevice midiDevice : midiDevicesBacking) {
+        for (MidiDevice midiDevice : midiDevices) {
             if (midiDevice.isOpen()) {
                 LOGGER.debug("closing <{}>", midiDevice);
                 midiDevice.close();
@@ -223,10 +339,13 @@ public final class MidiDeviceMgr {
             } else {
                 LOGGER.debug("opening <{}>", device);
                 device.open();
-                synchronized (openMidiDevicesBacking) {
-                    openMidiDevicesBacking.add(device);
-                    LOGGER.debug("opened <{}>", openMidiDevicesBacking);
-                    Collections.sort(openMidiDevicesBacking, COMPARE_BY_DISPLAY_NAME);
+                synchronized (openMidiDevices) {
+                    openMidiDevices.add(device);
+                    LOGGER.debug("opened <{}>", openMidiDevices);
+                    Collections.sort(openMidiDevices, COMPARE_BY_DISPLAY_NAME);
+                }
+                synchronized (listeners) {
+                    listeners.forEach(listener -> listener.midiDeviceOpened(device));
                 }
             }
         } catch (MidiUnavailableException e) {
@@ -238,11 +357,16 @@ public final class MidiDeviceMgr {
         if (device.isOpen()) {
             LOGGER.debug("closing <{}>", device);
             device.close();
-            synchronized (openMidiDevicesBacking) {
-                openMidiDevicesBacking.remove(device);
+            synchronized (openMidiDevices) {
+                openMidiDevices.remove(device);
+            }
+            synchronized (listeners) {
+                listeners.forEach(listener -> listener.midiDeviceClosed(device));
             }
         } else {
             throw new IllegalArgumentException("already closed: <" + device + ">");
         }
     }
+    
+
 }

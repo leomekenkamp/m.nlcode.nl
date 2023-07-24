@@ -55,11 +55,12 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
 
         @Override
         public void unmarshalInto(Context context, MidiDeviceLink target) {
+            s.unmarshalInto(context, target);
             if (midiDeviceName() == null) {
                 LOGGER.debug("no midiDevice name, so not trying to find matching midiDevice");
             } else {
-                // FIXME: is there an other way than through a static?
-                for (MidiDevice search : MidiDeviceMgr.getInstance().getMidiDevices()) {
+                // FIXME: is there an other way than through a static? s has been unmarshalled already...
+                for (MidiDevice search : Control.getInstance().getMidiDeviceMgr().getOpenMidiDevices()) {
                     if (midiDeviceName().equals(MidiDeviceMgr.getDisplayName(search))) {
                         target.setMidiDevice(search);
                         LOGGER.debug("found match for <{}> in <{}>", midiDeviceName(), search);
@@ -71,7 +72,6 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
                 }
             }
 
-            s.unmarshalInto(context, target);
         }
 
         @Override

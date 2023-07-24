@@ -14,7 +14,6 @@
 <?import javafx.scene.control.ToolBar?>
 <?import nl.nlcode.m.ui.Field?>
 <?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
-<?import nl.nlcode.m.ui.MidiDeviceSelector?>
 <?import javafx.scene.control.TextField?>
 <?import nl.nlcode.m.ui.NoteGateUi?>
 

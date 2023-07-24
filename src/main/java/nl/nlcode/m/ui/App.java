@@ -72,7 +72,7 @@ public class App extends Application {
         try {
             setStyleSheet(Control.PREFERENCES.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
             Thread.setDefaultUncaughtExceptionHandler(App::showError);
-            ControlUi controlUi = new ControlUi(Control.getInstance(), MidiDeviceMgr.getInstance());
+            ControlUi controlUi = ControlUi.createInstance(Control.getInstance());
             Scene scene = new Scene(controlUi);
             addStyleSheet(scene);
             stage.setScene(scene);

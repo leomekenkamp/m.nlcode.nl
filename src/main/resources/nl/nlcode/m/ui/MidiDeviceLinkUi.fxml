@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
-<?import nl.nlcode.m.ui.MidiDeviceSelector?>
 <?import javafx.scene.control.TextField?>
 <?import nl.nlcode.m.ui.MidiDeviceLinkUi?>
 
@@ -20,6 +19,6 @@
     styleClass="midiDeviceLink"
 >
     <instrument>
-        <MidiDeviceSelector fx:id="midiDeviceSelector"/>
+        <ComboBox fx:id="midiDeviceComboBox"/>
     </instrument>
 </fx:root>

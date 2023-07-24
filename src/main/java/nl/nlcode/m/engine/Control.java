@@ -37,6 +37,8 @@ public final class Control {
     private File projectDirectory = new File(DEFAULT_DIR);
 
     private Set<Project> projects = ConcurrentHashMap.newKeySet();
+    
+    private MidiDeviceMgr midiDeviceMgr = MidiDeviceMgr.getInstance();
 
     // only used to write to, so if we really want to use this, then refactor
 //    public Lookup<MidiInOut> lookup = Lookup.create();
@@ -44,6 +46,10 @@ public final class Control {
     private Control() {
     }
 
+    public MidiDeviceMgr getMidiDeviceMgr() {
+        return midiDeviceMgr;
+    }
+    
     public File getProjectDirectory() {
         return projectDirectory;
     }

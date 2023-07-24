@@ -16,6 +16,8 @@ import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
@@ -33,6 +35,7 @@ import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.Control;
 import nl.nlcode.m.engine.MidiDeviceMgr;
+import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
 import nl.nlcode.m.engine.Project;
 import static nl.nlcode.m.ui.ProjectUi.M_FILTER;
 import org.slf4j.Logger;
@@ -43,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class ControlUi extends BorderPane implements FxmlController {
+public class ControlUi extends BorderPane implements FxmlController, MidiDeviceMgr.Listener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -56,6 +59,10 @@ public class ControlUi extends BorderPane implements FxmlController {
     public static final String OPEN = "open";
 
     public static final int TABLE_VIEW_PREF_HEIGHT = 150;
+
+    private static final Preferences systemMidiPrefs = Control.PREFERENCES.node("systemMidi");
+
+    private static final Preferences openProjectsPrefs = Control.PREFERENCES.node("openProjects");
 
     public static final StringConverter<Double> BPM_CONVERTER = new StringConverter<Double>() {
         private final String format = "###.00";
@@ -98,12 +105,6 @@ public class ControlUi extends BorderPane implements FxmlController {
 
     private final Control control;
 
-    private final MidiDeviceMgr midiDeviceMgr;
-
-    private static final Preferences systemMidiPrefs = Control.PREFERENCES.node("systemMidi");
-
-    private static final Preferences openProjectsPrefs = Control.PREFERENCES.node("openProjects");
-
     private Stage settings;
 
     private Collection<ProjectUi> projectUis;
@@ -112,12 +113,32 @@ public class ControlUi extends BorderPane implements FxmlController {
 
     private DynamicNoteNameStringConverter midiNoteNameStringConverter;
 
-    public ControlUi() {
-        control = Control.getInstance();
-        midiDeviceMgr = MidiDeviceMgr.getInstance();
+    private final ObservableList<MidiDevice> midiDevicesBacking;
+
+    private final ObservableList<MidiDevice> midiDevices;
+
+    private final ObservableList<MidiDevice> openMidiDevicesBacking;
+
+    private final ObservableList<MidiDevice> openMidiDevices;
+
+    public static ControlUi createInstance(Control control) {
+        ControlUi result = new ControlUi(control);
+        control.getMidiDeviceMgr().addListener(instance);
+        for (MidiDevice midiDevice : control.getMidiDeviceMgr().getMidiDevices()) {
+            if (prefs(midiDevice).getBoolean(OPEN, false)) {
+                control.getMidiDeviceMgr().open(midiDevice);
+            }
+        }
+
+        return result;
     }
 
-    public ControlUi(Control control, MidiDeviceMgr midiDeviceMgr) {
+    private ControlUi(Control control) {
+        midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+        midiDevices = FXCollections.unmodifiableObservableList(midiDevicesBacking);
+        openMidiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+        openMidiDevices = FXCollections.unmodifiableObservableList(openMidiDevicesBacking);
+
         loadFxml(App.MESSAGES);
 
         projectUis = new CopyOnWriteArrayList<>();
@@ -131,16 +152,8 @@ public class ControlUi extends BorderPane implements FxmlController {
 //        if (os != null && os.startsWith("Mac")) {
 //            systemMenuBar.useSystemMenuBarProperty().set(true);
 //        }
-
         this.control = control;
 
-        this.midiDeviceMgr = midiDeviceMgr;
-        for (MidiDevice midiDevice
-                : midiDeviceMgr.getMidiDevices()) {
-            if (prefs(midiDevice).getBoolean(OPEN, false)) {
-                midiDeviceMgr.open(midiDevice);
-            }
-        }
         midiNoteNumberStringConverter = new IntegerOffsetStringConverter();
 
         midiNoteNumberStringConverter.setOffset(getMidiNoteZeroBased() ? 0 : 1);
@@ -189,7 +202,7 @@ public class ControlUi extends BorderPane implements FxmlController {
     }
 
     public MidiDeviceMgr getMidiDeviceMgr() {
-        return midiDeviceMgr;
+        return control.getMidiDeviceMgr();
     }
 
     @FXML
@@ -216,7 +229,7 @@ public class ControlUi extends BorderPane implements FxmlController {
     @FXML
     private void settings() {
         if (settings == null) {
-            settings = App.createStage(new SettingsUi(this, MidiDeviceMgr.getInstance()));
+            settings = App.createStage(new SettingsUi(this));
             settings.initOwner(this.getScene().getWindow());
             settings.setTitle(App.MESSAGES.getString("settings"));
             restoreWindowPositionAndSetAutosave(settings, Control.PREFERENCES.node("settings"));
@@ -349,12 +362,48 @@ public class ControlUi extends BorderPane implements FxmlController {
     public boolean closeWindow() {
         boolean result = false;
         if (canCloseWindow()) {
-            midiDeviceMgr.close();
+            control.getMidiDeviceMgr().close();
             ((Stage) getScene().getWindow()).close();
             // instance = null; no restart, so don't set to null
             result = true;
         }
         return result;
+    }
+
+    @Override
+    public void midiDeviceAdded(MidiDevice added) {
+        Platform.runLater(() -> {
+            midiDevicesBacking.add(added);
+            midiDevicesBacking.sort(COMPARE_BY_DISPLAY_NAME);
+        });
+    }
+
+    @Override
+    public void midiDeviceRemoved(MidiDevice added) {
+        Platform.runLater(() -> midiDevicesBacking.remove(added));
+    }
+
+    @Override
+    public void midiDeviceOpened(MidiDevice added) {
+        Platform.runLater(() -> {
+            openMidiDevicesBacking.add(added);
+            openMidiDevicesBacking.sort(COMPARE_BY_DISPLAY_NAME);
+        });
+    }
+
+    @Override
+    public void midiDeviceClosed(MidiDevice added) {
+        Platform.runLater(() -> {
+            openMidiDevicesBacking.remove(added);
+        });
+    }
+
+    public ObservableList<MidiDevice> getMidiDevices() {
+        return midiDevices;
+    }
+
+    public ObservableList<MidiDevice> getOpenMidiDevices() {
+        return openMidiDevices;
     }
 
 }

@@ -45,8 +45,6 @@ public final class SettingsUi extends TabPane implements FxmlController {
 
     private final ControlUi controlUi;
 
-    private final MidiDeviceMgr midiDeviceMgr;
-
     @FXML
     private EnumChoiceBox<ZeroOrOneBased> noteZeroOne;
 
@@ -59,9 +57,8 @@ public final class SettingsUi extends TabPane implements FxmlController {
     @FXML
     private EnumChoiceBox<SaveFileEncoding> saveFileEncoding;
             
-    public SettingsUi(ControlUi controlUi, MidiDeviceMgr midiDeviceMgr) {
+    public SettingsUi(ControlUi controlUi) {
         this.controlUi = controlUi;
-        this.midiDeviceMgr = midiDeviceMgr;
         loadFxml(App.MESSAGES);
     }
 
@@ -149,9 +146,10 @@ public final class SettingsUi extends TabPane implements FxmlController {
     }
 
     private void doRefresh() {
-        MidiDeviceMgr.getInstance().refreshMidiDevices();
+        MidiDeviceMgr midiDeviceMgr = getControlUi().getMidiDeviceMgr();
+        midiDeviceMgr.refreshMidiDevices();
         midiDevicesPane.getChildren().clear();
-        for (MidiDevice device : midiDeviceMgr.getMidiDevices()) {
+        for (MidiDevice device : getControlUi().getMidiDeviceMgr().getMidiDevices()) {
             LOGGER.debug("device <{}>", device);
             ToggleSwitch deviceSwitch = new ToggleSwitch();
             Label deviceLabel = new Label(MidiDeviceMgr.getDisplayName(device), deviceSwitch);
