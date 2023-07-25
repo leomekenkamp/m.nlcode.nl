@@ -31,6 +31,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -48,6 +49,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
+import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
@@ -61,6 +63,8 @@ import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.LayerAndSplit;
 import nl.nlcode.m.engine.Lights;
 import nl.nlcode.m.engine.MessageTypeFilter;
+import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
+import static nl.nlcode.m.engine.MidiDeviceMgr.NONE_MIDI_DEVICE;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.MidiMessageDump;
@@ -122,7 +126,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private MenuItem menuItem;
 
     private StringProperty[] channelTextProperty = new StringProperty[CHANNEL_COUNT];
-    
+
+    private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {
+        updateChannelTextProperties();
+    };
+
     private ChangeListener<Boolean> midiInOutUiSenderChange = new ChangeListener<>() {
         @Override
         public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -184,7 +192,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             }
         });
 
-        midiInOutUiList.addListener(midiInOutListChange());
+        midiInOutUiList.addListener(midiInOutListChange);
+
         logoProperty.bind(Bindings.createStringBinding(
                 () -> pathProperty.get() + " " + (dirtyProperty.get() ? '\u0394' : '\u2261'), dirtyProperty, pathProperty)
         );
@@ -195,22 +204,19 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
         forAllChannels(channel -> channelTextProperty[channel] = new SimpleStringProperty());
         updateChannelTextProperties();
-        getControlUi().getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
-            updateChannelTextProperties();
-        });
-
+        getControlUi().getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
     }
 
     public StringProperty[] channelTextProperty() {
         return channelTextProperty;
     }
-    
+
     private void updateChannelTextProperties() {
         MessageFormat messageFormat = new MessageFormat(App.MESSAGES.getString("channel%"));
         int offset = getControlUi().getMidiChannelStringConverter().offsetProperty().get();
-        forAllChannels(channel -> channelTextProperty[channel].set(messageFormat.format(new Object[] {channel + offset})));
+        forAllChannels(channel -> channelTextProperty[channel].set(messageFormat.format(new Object[]{channel + offset})));
     }
-            
+
     @FXML
     public void createMessageTypeFilter(ActionEvent event) {
         activateAndCreateStage(new MessageTypeFilter());
@@ -295,40 +301,38 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         activateAndCreateStage(new NoteChannelSpreader());
     }
 
-    private ListChangeListener<MidiInOutUi> midiInOutListChange() {
-        return (change) -> {
-            while (change.next()) {
-                if (change.wasRemoved()) {
-                    int localIndex = change.getFrom();
-                    for (MidiInOutUi removed : change.getRemoved()) {
-                        if (removed == null) {
-                            // change.getRemoved() is buggy, use indices instead
-                            removed = midiInOutUiList.get(localIndex);
-                        }
-                        LOGGER.debug("removed from general list: <{}>", removed);
-                        removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
-                        removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
-                        activeReceivers.remove(removed); // could call contains() first
-                        activeSenders.remove(removed); // could call contains() first
-                        localIndex++;
+    private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> {
+        while (change.next()) {
+            if (change.wasRemoved()) {
+                int localIndex = change.getFrom();
+                for (MidiInOutUi removed : change.getRemoved()) {
+                    if (removed == null) {
+                        // change.getRemoved() is buggy, use indices instead
+                        removed = midiInOutUiList.get(localIndex);
                     }
+                    LOGGER.debug("removed from general list: <{}>", removed);
+                    removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
+                    removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
+                    activeReceivers.remove(removed); // could call contains() first
+                    activeSenders.remove(removed); // could call contains() first
+                    localIndex++;
                 }
-                if (change.wasAdded()) {
-                    for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
-                        LOGGER.debug("added to general list: <{}>", midiInOutUi);
-                        midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
-                        midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
-                        if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
-                            activeReceivers.add(midiInOutUi);
-                        }
-                        if (midiInOutUi.getMidiInOut().isActiveSender()) {
-                            activeSenders.add(midiInOutUi);
-                        }
+            }
+            if (change.wasAdded()) {
+                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
+                    LOGGER.debug("added to general list: <{}>", midiInOutUi);
+                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
+                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
+                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
+                        activeReceivers.add(midiInOutUi);
+                    }
+                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
+                        activeSenders.add(midiInOutUi);
                     }
                 }
             }
-        };
-    }
+        }
+    };
 
     public void createMidiInOutUisFromProjectMidiInOuts() {
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
@@ -394,6 +398,38 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     }
 
+    private ListChangeListener<MidiInOutUi> inputListChangeWhileInFocus = (change) -> {
+        while (change.next()) {
+            if (change.wasPermutated()) {
+            } else if (change.wasUpdated()) {
+            } else if (change.wasReplaced()) {
+            } else {
+                for (MidiInOutUi removed : change.getRemoved()) {
+                    removed.getStyleClass().remove(CONNECTED_SENDER);
+                }
+                for (MidiInOutUi added : change.getAddedSubList()) {
+                    added.getStyleClass().add(CONNECTED_SENDER);
+                }
+            }
+        }
+    };
+
+    private ListChangeListener<MidiInOutUi> outputListChangeWhileInFocus = (change) -> {
+        while (change.next()) {
+            if (change.wasPermutated()) {
+            } else if (change.wasUpdated()) {
+            } else if (change.wasReplaced()) {
+            } else {
+                for (MidiInOutUi removed : change.getRemoved()) {
+                    removed.getStyleClass().remove(CONNECTED_RECEIVER);
+                }
+                for (MidiInOutUi added : change.getAddedSubList()) {
+                    added.getStyleClass().add(CONNECTED_RECEIVER);
+                }
+            }
+        }
+    };
+
     private Stage createStage(MidiInOut midiInOut) {
         LOGGER.debug("creating for <{}>", midiInOut);
         try {
@@ -410,14 +446,17 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             midiInOutUi.restoreWindowPositionAndSetAutosave();
             result.focusedProperty().addListener((ov, oldValue, newValue) -> {
                 if (newValue) {
-                    result.toFront();
                     midiInOutUi.getStyleClass().add(FOCUS);
                     addStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
                     addStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
+                    midiInOutUi.getInputListView().getSelectionModel().getSelectedItems().addListener(inputListChangeWhileInFocus);
+                    midiInOutUi.getOutputListView().getSelectionModel().getSelectedItems().addListener(outputListChangeWhileInFocus);
                 } else {
                     midiInOutUi.getStyleClass().remove(FOCUS);
                     removeStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
                     removeStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
+                    midiInOutUi.getInputListView().getSelectionModel().getSelectedItems().removeListener(inputListChangeWhileInFocus);
+                    midiInOutUi.getOutputListView().getSelectionModel().getSelectedItems().removeListener(outputListChangeWhileInFocus);
                 }
                 midiInOutUi.sizeToScene();
             });

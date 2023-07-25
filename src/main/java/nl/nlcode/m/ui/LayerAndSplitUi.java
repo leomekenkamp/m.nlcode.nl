@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
@@ -163,6 +165,11 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
     @FXML
     private TableColumn outputChannelColumn;
 
+    private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {
+        inputChannelColumn.getTableView().refresh();
+    };
+
+
     public LayerAndSplitUi(ProjectUi projectUi, LayerAndSplit layerAndSplit, MenuItem menuItem) {
         super(projectUi, layerAndSplit, menuItem);
         loadFxml(App.MESSAGES);
@@ -210,12 +217,9 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
         outputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiChannelStringConverter()));
 
         TableView table = inputChannelColumn.getTableView();
-        getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
-        getMidiNoteNumberStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> table.refresh());
-        getMidiNoteNameStringConverter().noteNamingConvention().addListener((ov, oldValue, newValue) -> {
-            
-            table.refresh();
-                });
+        getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
+        getMidiNoteNumberStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
+        getMidiNoteNameStringConverter().noteNamingConvention().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
     }
 
 }

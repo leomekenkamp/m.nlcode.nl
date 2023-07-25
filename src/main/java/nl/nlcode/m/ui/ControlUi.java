@@ -334,6 +334,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
         }
 
         stage.showingProperty().addListener(new ChangeListener<Boolean>() {
+            // weak reference not needed since there is always exactly one Control(Ui)
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
                 if (!newValue) {
@@ -364,6 +365,8 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
         if (canCloseWindow()) {
             control.getMidiDeviceMgr().close();
             ((Stage) getScene().getWindow()).close();
+            control.getMidiDeviceMgr().removeListener(this);
+
             // instance = null; no restart, so don't set to null
             result = true;
         }

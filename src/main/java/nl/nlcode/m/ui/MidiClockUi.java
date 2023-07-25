@@ -45,19 +45,6 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
     @FXML
     private Label tickLabel;
 
-    public static void threadBind(Property otherThreadProp, Property fxThreadProp) {
-        otherThreadProp.addListener((ov, oldValue, newValue) -> {
-            if (Platform.isFxApplicationThread()) {
-                fxThreadProp.setValue(newValue);
-            } else {
-                Platform.runLater(() -> fxThreadProp.setValue(newValue));
-            }
-        });
-        fxThreadProp.addListener((ov, oldValue, newValue) -> {
-            otherThreadProp.setValue(newValue);
-        });
-    }
-
     public MidiClockUi(ProjectUi projectUi, MidiClock midiClock, MenuItem menuItem) {
         super(projectUi, midiClock, menuItem);
         loadFxml(MidiClockUi.class, App.MESSAGES);

@@ -6,6 +6,8 @@ import java.util.Map;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
@@ -108,6 +110,10 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
         loadFxml(KeyboardKeyboardUi.class, App.MESSAGES);
     }
 
+    private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {
+        channelBackend.refresh(); // TODO should not be necessary
+    };
+
     protected void handleInitialize() {
         super.handleInitialize();
         KeyboardKeyboard midiInOut = getMidiInOut();
@@ -152,9 +158,7 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
         channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
         channel.getValueFactory().setConverter(getMidiChannelStringConverter());
 
-        getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {
-            channelBackend.refresh(); // TODO should not be necessary
-        });
+        getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
     }
 
     private void bind(KeyCode keyCode, Button button, int note, KeyboardKeyboard midiInOut) {

@@ -74,7 +74,7 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
     }
 
     /**
-     * Listeners are weakly referenced.
+     * FIXME: add support for WeakListeners
      *
      * @param listener
      */
