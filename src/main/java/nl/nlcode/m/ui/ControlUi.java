@@ -20,6 +20,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -33,6 +34,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.Props;
 import nl.nlcode.m.engine.Control;
 import nl.nlcode.m.engine.MidiDeviceMgr;
 import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
@@ -100,6 +102,9 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
 
     @FXML
     private MenuItem newProject;
+    
+    @FXML
+    private Label versionLabel;
 
     private static ControlUi instance;
 
@@ -168,6 +173,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
 
         newProject.setAccelerator(
                 new KeyCodeCombination(KeyCode.P, KeyCombination.SHORTCUT_DOWN));
+        versionLabel.setText(Props.getInstance().getVersion() + " PRE-RELEASE");
         Platform.runLater(
                 () -> {
                     try {

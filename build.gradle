@@ -97,6 +97,14 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+processResources {
+    with copySpec {
+        from 'src/main/resourcesTemplate'
+        filter(ReplaceTokens, tokens:['versionNumber':versionNumber, 'foo':'bar'])
+    }
+}
+
 jlink {
     options = [
         '--compress', '2', 

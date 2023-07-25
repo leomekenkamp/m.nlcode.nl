@@ -120,7 +120,7 @@ public final class MidiDeviceMgr {
         }
     };
 
-    private final boolean USE_COREMIDI4j = false;
+    private final boolean USE_COREMIDI4j = true;
 
     private final List<MidiDevice> midiDevices = new ArrayList<>();
 
