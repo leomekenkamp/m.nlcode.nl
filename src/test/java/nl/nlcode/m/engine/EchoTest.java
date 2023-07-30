@@ -3,8 +3,6 @@ package nl.nlcode.m.engine;
 import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.EqualToShortMessage.equalTo;
 import static nl.nlcode.m.engine.EqualToShortMessage.equalToButData2;
-import static nl.nlcode.m.engine.EqualToShortMessage.equalToIgnoreData2;
-import static nl.nlcode.m.engine.MidiInOut.MIDI_VELOCITY_MAX;
 import static nl.nlcode.m.engine.MidiInOut.createShortMessage;
 import static nl.nlcode.m.engine.IsMidiClock.isMidiClock;
 import nl.nlcode.m.ui.EnglishShortNoteStringConverter;
@@ -57,7 +55,7 @@ public class EchoTest extends DefaultMidiInOutTest<Echo> {
         defaultTestIn.processReceive(noteOn1);
         defaultTestIn.processReceiveMidiClock();
         defaultTestIn.processReceive(noteOff1);
-        defaultTestIn.processReceiveMidiClock(12);
+        defaultTestIn.processReceiveMidiClock(15);
 
         settle();
 
@@ -79,6 +77,9 @@ public class EchoTest extends DefaultMidiInOutTest<Echo> {
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 1)));
         assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOff1, 1)));
+        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());

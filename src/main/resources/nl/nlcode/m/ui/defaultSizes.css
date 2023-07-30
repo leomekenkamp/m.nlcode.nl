@@ -1,4 +1,68 @@
 .root {
+    -fx-base: rgba(10, 30, 33, 255);
+    -fx-base: #102528;
+    /*
+    -fx-dark-text-color: #060808;
+    -fx-mid-text-color: #608080;
+    -fx-light-text-color: #CCFFFF;
+    */
+}
+
+
+
+
+.root.midiInOut.focus .tab-header-background {
+    -fx-background-color: linear-gradient(to right, #0000FF, #FF7F00);
+}
+
+.root.midiInOut.connectedSender .tab-header-background {
+    -fx-background-color: #0000FF;
+}
+
+.combo-box-popup .list-cell:disabled  {
+    -fx-opacity: 0.4;
+}
+
+.list-cell:disabled  {
+    -fx-opacity: 0.4;
+}
+
+ControlUi, ProjectUi {
+    -fx-background-color: black;
+}
+
+ControlUi .logoText, ProjectUi .logoText {
+    -fx-text-fill: aqua;
+}
+
+ControlUi .version  {
+    -fx-text-fill: #00aaaa;
+}
+
+HBox.canvasContainer {
+    -fx-padding: 5px;
+    -fx-border-width: 2px;
+}
+MidiClockUi .position {
+    -fx-background-color: black;
+}
+MidiClockUi .position Label {
+    -fx-text-fill: aqua;
+}
+Label.numberFeedback {
+    /*-fx-text-fill: red; actual text color */
+    -fx-border-color: -fx-mid-text-color;
+    -fx-background-color: black; 
+}
+Field {
+    -fx-border-color: -fx-mid-text-color;
+}
+
+
+
+
+
+.root {
     -fx-font-size: 9pt;
 /*    -fx-font-family: sans-serif;
 undelete in case of strange font problems on a mac
@@ -8,10 +72,11 @@ undelete in case of strange font problems on a mac
 .list-cell.meta {
 }
 
+
 .composite HBox.field {
-    -fx-padding: 1.5em;
-    -fx-spacing: 2em;
-    -fx-alignment: "CENTER_RIGHT";
+    fx-padding: 1.5em;
+    fx-spacing: 2em;
+    fx-alignment: "CENTER_RIGHT";
 }
 
 ControlUi .logoText, ProjectUi .logoText, ControlUi .version  {
@@ -100,11 +165,11 @@ SequencerUi .stepIndicator.active {
 KeyboardKeyboardUi Spinner {
     -fx-max-width: 7em;
 }
-ChannelMatrixUi .checkboxes {
+ChannelMatrixUi .checkboxes .label {
     -fx-font-size: 75%;
 }
 ChannelMatrixUi .checkboxes .check-box > .box {
-    -fx-padding: 0.15em;
+    -fx-padding: 0.3em;
 }
 ChannelMatrixUi .checkboxes .check-box > .box > .mark {
     -fx-padding: 0.3em;
@@ -147,13 +212,13 @@ MidiClockUi .position Field.bar {
 Label.numberFeedback {
     -fx-pref-width: 5em; 
     -fx-font-family: monospace; 
-    -fx-border-width: 0.2em;
+    -fx-border-width: 1px;
     -fx-padding: 0.5em 0.6em; 
-    -fx-font-weight: bold; 
+    -fx-font-weight: bolder; 
     -fx-alignment: CENTER_RIGHT;
 }
 GridPane.channels {
-    -fx-hgap: 0.7em;
+    -fx-hgap: 0.5em;
     -fx-vgap: 0.5em;
 }
 .instrument {
@@ -165,4 +230,23 @@ I0through127Spinner,Spinner {
     -fx-pref-width: 6em;
     -fx-max-width: 6em;
     -fx-min-width: 6em;
+}
+Field {    
+    -fx-margin: 0.4em;
+    -fx-padding: 0.4em;
+    -fx-border-width: 1px;
+    -fx-spacing: 0.2em;
+}
+Label.numberFeedback {
+    -fx-pref-width: 5em; 
+    -fx-font-family: monospace; 
+    -fx-border-width: 1px;
+    -fx-padding: 0.5em 0.6em; 
+    -fx-font-weight: bolder; 
+    -fx-alignment: CENTER_RIGHT;
+}
+.instrument {
+    -fx-padding: 1.5em;
+    -fx-background-insets: 0,0.15em,0.3em,0.4em;
+    -fx-background-radius: 0.3em;
 }

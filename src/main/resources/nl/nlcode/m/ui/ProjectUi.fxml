@@ -41,6 +41,7 @@
                         <MenuItem onAction="#createMidiClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
                         <MenuItem onAction="#createProgramChanger" mnemonicParsing="true" text="%nl.nlcode.m.engine.ProgramChanger" />
                         <SeparatorMenuItem/>
+                        <MenuItem onAction="#createArpeggiator" mnemonicParsing="true" text="%nl.nlcode.m.engine.Arpeggiator" />
                         <MenuItem onAction="#createChannelMatrix" mnemonicParsing="true" text="%nl.nlcode.m.engine.ChannelMatrix" />
                         <MenuItem onAction="#createEcho" mnemonicParsing="true" text="%nl.nlcode.m.engine.Echo" />
                         <MenuItem onAction="#createLayerAndSplit" mnemonicParsing="true" text="%nl.nlcode.m.engine.LayerAndSplit" />

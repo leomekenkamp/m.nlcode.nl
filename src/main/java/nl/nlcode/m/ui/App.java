@@ -110,7 +110,9 @@ public class App extends Application {
     public static void replaceStyleSheetOnAllWindows() {
         for (Window window : Stage.getWindows()) {
             ObservableList<String> styleSheets = window.getScene().getStylesheets();
-            styleSheets.set(0, styleSheet);
+            styleSheets.clear();
+            styleSheets.add(STYLESHEET_MODENA);
+            styleSheets.add(styleSheet);
             window.sizeToScene();
         }
     }

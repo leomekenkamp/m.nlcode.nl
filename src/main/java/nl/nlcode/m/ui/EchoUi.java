@@ -20,19 +20,19 @@ public class EchoUi extends MidiInOutUi<Echo> implements Echo.Ui {
     @FXML
     private EnumChoiceBox<TickSource> tickSource;
     private ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
-    
+
     @FXML
     private Spinner<Integer> echoLength;
     private IntUpdatePropertyBridge echoLengthBackend;
-    
+
     @FXML
     private Spinner<Integer> absoluteVelocityDecrease;
     private IntUpdatePropertyBridge absoluteVelocityDecreaseBackend;
-    
+
     @FXML
     private Spinner<Integer> relativeVelocityDecrease;
     private IntUpdatePropertyBridge relativeVelocityDecreaseBackend;
-    
+
     public EchoUi(ProjectUi projectUi, Echo echo, MenuItem menuItem) {
         super(projectUi, echo, menuItem);
         loadFxml(EchoUi.class, App.MESSAGES);
@@ -45,7 +45,8 @@ public class EchoUi extends MidiInOutUi<Echo> implements Echo.Ui {
     @Override
     protected void handleInitialize() {
         super.handleInitialize();
-        
+        getReceivingFrom().addListener(new DebugListChangeListenener());
+
     }
 
 }

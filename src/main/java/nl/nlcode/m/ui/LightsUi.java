@@ -21,8 +21,13 @@ import org.slf4j.LoggerFactory;
 public class LightsUi extends MidiInOutUi<Lights> implements FxmlController, Lights.Ui {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private static final Color TRANSPARENT = Color.rgb(0, 0, 0, 0);
+    
+    private static final Color COLOUR_OFF = Color.BLACK;
+    
+    private Color colourNoteOn(int velocity) {
+        int i = 96 + (velocity * 5) / 4;
+        return Color.rgb(i, i, i, 1);
+    }
 
     @FXML
     private Canvas keysCanvas;
@@ -38,7 +43,7 @@ public class LightsUi extends MidiInOutUi<Lights> implements FxmlController, Lig
     protected void handleInitialize() {
         super.handleInitialize();
         ctx = keysCanvas.getGraphicsContext2D();
-        ctx.setFill(Color.BLACK);
+        ctx.setFill(COLOUR_OFF);
         ctx.fillRect(0, 0, keysCanvas.getWidth(), keysCanvas.getHeight());
 //        getMidiInOut().setOnMidiMessageProcessed((midiMessage, time) -> {
 //            Platform.runLater(() -> {
@@ -62,9 +67,9 @@ public class LightsUi extends MidiInOutUi<Lights> implements FxmlController, Lig
         if (message instanceof final ShortMessage shortMessage) {
             final Color color;
             if (shortMessage.getCommand() == ShortMessage.NOTE_ON) {
-                color = Color.WHITE;
+                color = colourNoteOn(shortMessage.getData2());
             } else if (shortMessage.getCommand() == ShortMessage.NOTE_OFF) {
-                color = TRANSPARENT;
+                color = COLOUR_OFF;
             } else {
                 color = null;
             }

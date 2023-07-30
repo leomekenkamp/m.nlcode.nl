@@ -1,5 +1,6 @@
 package nl.nlcode.m.ui;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -84,8 +86,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
     private ReadOnlyBooleanWrapper activeReceiverWrapper;
 
-    private boolean propagateInputOutputChangesToOthers = true;
-
+//    private boolean propagateInputOutputChangesToOthers = true;
     private MenuItem menuItem;
 
     static Callback<MidiInOutUi<?>, Observable[]> getNameExtractor() {
@@ -184,93 +185,76 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
     }
 
-    private ListChangeListener<MidiInOutUi> inputSelectionChangeListener = new ListChangeListener<>() {
+    private final ListChangeListenerHelper<MidiInOutUi> inputSelectionHelper = new ListChangeListenerHelper<>() {
+
         @Override
-        public void onChanged(ListChangeListener.Change<? extends MidiInOutUi> change) {
-            LOGGER.debug("change in input selection of <{}>", getMidiInOut());
-            if (isPropagateInputOutputChangesToOthers()) {
-                LOGGER.debug("handling changes {}", change);
-                getProjectUi().setDirty();
-                while (change.next()) {
-                    handleForInputSelection(change);
-                }
-            } else {
-                LOGGER.debug("changes already made on output side");
+        public void removed(MidiInOutUi removed) {
+            LOGGER.debug("removed <{}> from input of <{}>", removed.getMidiInOut(), MidiInOutUi.this);
+            removed.getMidiInOut().stopSendingTo(getMidiInOut());
+            MultipleSelectionModel<MidiInOutUi> removedSelection = removed.getOutputListView().getSelectionModel();
+            if (removedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
+                int index = removed.getOutputListView().getItems().indexOf(MidiInOutUi.this);
+                removedSelection.clearSelection(index);
+            }
+        }
+
+        @Override
+        public void added(MidiInOutUi added) {
+            LOGGER.debug("added <{}> to input of <{}>", added.getMidiInOut(), MidiInOutUi.this);
+            MultipleSelectionModel<MidiInOutUi> addedSelection = added.getOutputListView().getSelectionModel();
+            if (!addedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
+                addedSelection.select(MidiInOutUi.this);
             }
         }
     };
 
-    private void handleForInputSelection(ListChangeListener.Change<? extends MidiInOutUi> change) {
-        if (change.wasRemoved()) {
-            int localIndex = change.getFrom();
-            for (MidiInOutUi removed : change.getRemoved()) {
-                if (removed == null) {
-                    // change.getRemoved() is buggy, use indices instead
-                    removed = getInputListView().getItems().get(localIndex);
-                }
-                LOGGER.debug("removed <{}> from input of <{}>", removed.getMidiInOut(), this);
-                removed.getMidiInOut().stopSendingTo(getMidiInOut());
-                removed.setPropagateInputOutputChangesToOthers(false);
-                int remoteIndex = removed.getOutputListView().getItems().indexOf(MidiInOutUi.this);
-                removed.getOutputListView().getSelectionModel().clearSelection(remoteIndex);
-                removed.setPropagateInputOutputChangesToOthers(true);
-                localIndex += 1;
-            }
-        }
-        if (change.wasAdded()) {
-            for (MidiInOutUi added : change.getAddedSubList()) {
-                LOGGER.debug("added <{}> to input of <{}>", added.getMidiInOut(), this);
-                added.setPropagateInputOutputChangesToOthers(false);
-                added.getOutputListView().getSelectionModel().select(MidiInOutUi.this);
-                added.setPropagateInputOutputChangesToOthers(true);
-                added.getMidiInOut().startSendingTo(getMidiInOut());
-            }
-        }
-    }
-
-    private ListChangeListener<MidiInOutUi> outputSelectionChangeListener = new ListChangeListener<>() {
-        @Override
-        public void onChanged(ListChangeListener.Change<? extends MidiInOutUi> change) {
-            LOGGER.debug("change in output selection of {}", getMidiInOut());
-            if (isPropagateInputOutputChangesToOthers()) {
-                LOGGER.debug("handling changes {}", change);
+    private ListChangeListener<MidiInOutUi> inputSelectionChangeListener
+            = (ListChangeListener.Change<? extends MidiInOutUi> change) -> {
+                LOGGER.debug("change in input selection of <{}>", getMidiInOut());
                 getProjectUi().setDirty();
-                while (change.next()) {
-                    handleForOutputSelection(change);
-                }
-            } else {
-                LOGGER.debug("changes already made on input side");
-            }
-        }
-    };
+                inputSelectionHelper.process(change);
+            };
 
-    private void handleForOutputSelection(ListChangeListener.Change<? extends MidiInOutUi> change) {
-        if (change.wasRemoved()) {
-            int localIndex = change.getFrom();
-            for (MidiInOutUi removed : change.getRemoved()) {
-                if (removed == null) {
-                    // change.getRemoved() is buggy, use indices instead
-                    removed = getOutputListView().getItems().get(localIndex);
-                }
-                LOGGER.debug("removed <{}> from output of <{}>", removed.getMidiInOut(), this);
-                getMidiInOut().stopSendingTo(removed.getMidiInOut());
-                removed.setPropagateInputOutputChangesToOthers(false);
-                int remoteIndex = removed.getInputListView().getItems().indexOf(MidiInOutUi.this);
-                removed.getInputListView().getSelectionModel().clearSelection(remoteIndex);
-                removed.setPropagateInputOutputChangesToOthers(true);
-                localIndex += 1;
+    private final ListChangeListenerHelper<MidiInOutUi> outputSelectionHelper = new ListChangeListenerHelper<>() {
+
+        @Override
+        public void removed(MidiInOutUi removed) {
+            LOGGER.debug("removed <{}> from output of <{}>", removed.getMidiInOut(), this);
+            getMidiInOut().stopSendingTo(removed.getMidiInOut());
+            MultipleSelectionModel<MidiInOutUi> removedSelection = removed.getInputListView().getSelectionModel();
+            if (removedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
+                int index = removed.getInputListView().getItems().indexOf(MidiInOutUi.this);
+                removedSelection.clearSelection(index);
             }
         }
-        if (change.wasAdded()) {
-            for (MidiInOutUi added : change.getAddedSubList()) {
-                LOGGER.debug("added <{}> to output of <{}>", added.getMidiInOut(), this);
+
+        @Override
+        public void added(MidiInOutUi added) {
+            LOGGER.debug("added <{}> to output of <{}>", added.getMidiInOut(), this);
+            try {
                 getMidiInOut().startSendingTo(added.getMidiInOut());
-                added.setPropagateInputOutputChangesToOthers(false);
-                added.getInputListView().getSelectionModel().select(MidiInOutUi.this);
-                added.setPropagateInputOutputChangesToOthers(true);
+                MultipleSelectionModel<MidiInOutUi> addedSelection = added.getInputListView().getSelectionModel();
+                if (!addedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
+                    addedSelection.select(MidiInOutUi.this);
+                }
+            } catch (MidiInOut.SendReceiveLoopDetectedException e) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(App.MESSAGES.getString("loopDetected"));
+                alert.setContentText(String.format(App.MESSAGES.getString("loopDetectedExplanation"), getName(), added.getName()));
+                ButtonType close = new ButtonType(App.MESSAGES.getString("ok"), ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(close);
+                alert.showAndWait();
             }
         }
-    }
+
+    };
+
+    private ListChangeListener<MidiInOutUi> outputSelectionChangeListener
+            = (ListChangeListener.Change<? extends MidiInOutUi> change) -> {
+                LOGGER.debug("change in output selection of {}", getMidiInOut());
+                getProjectUi().setDirty();
+                outputSelectionHelper.process(change);
+            };
 
     protected void setDirty() {
         getProjectUi().setDirty();
@@ -324,20 +308,19 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         return inputListView;
     }
 
-    /**
-     * @return the propagateSelectionChangesToOthers
-     */
-    public boolean isPropagateInputOutputChangesToOthers() {
-        return propagateInputOutputChangesToOthers;
-    }
-
-    /**
-     * @param propagateInputOutputChangesToOthers the propagateSelectionChangesToOthers to set
-     */
-    public void setPropagateInputOutputChangesToOthers(boolean propagateInputOutputChangesToOthers) {
-        this.propagateInputOutputChangesToOthers = propagateInputOutputChangesToOthers;
-    }
-
+//    /**
+//     * @return the propagateSelectionChangesToOthers
+//     */
+//    public boolean isPropagateInputOutputChangesToOthers() {
+//        return propagateInputOutputChangesToOthers;
+//    }
+//
+//    /**
+//     * @param propagateInputOutputChangesToOthers the propagateSelectionChangesToOthers to set
+//     */
+//    public void setPropagateInputOutputChangesToOthers(boolean propagateInputOutputChangesToOthers) {
+//        this.propagateInputOutputChangesToOthers = propagateInputOutputChangesToOthers;
+//    }
     public void restoreWindowPositionAndSetAutosave() {
         ProjectUi.restoreWindowPosition((Stage) getScene().getWindow(), getMidiInOut().getInfo());
     }

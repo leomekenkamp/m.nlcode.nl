@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import nl.nlcode.m.ui.ArpeggiatorUi?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import nl.nlcode.m.ui.Field?>
 
 <fx:root
@@ -26,6 +27,65 @@
     styleClass="arpeggiator"
 >
     <instrument>
-    
+        <VBox>                
+            <Field labelText="%channel">
+                <Spinner fx:id="channel" editable="true">
+                    <valueFactory>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="15"/>
+                    </valueFactory>
+                </Spinner>
+            </Field>
+            <Field labelText="%reach">
+                <children>
+                    <HBox>
+                        <Field labelText="%octaveDown">
+                            <Spinner fx:id="octaveDown" editable="true">
+                                <valueFactory>
+                                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="11"/>
+                                </valueFactory>
+                            </Spinner>
+                        </Field>
+                        <Field labelText="%octaveUp">
+                            <Spinner fx:id="octaveUp" editable="true">
+                                <valueFactory>
+                                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="11"/>
+                                </valueFactory>
+                            </Spinner>
+                        </Field>
+                    </HBox>
+                </children>
+            </Field>
+            <Field labelText="%length">
+                <HBox>
+                    <Spinner fx:id="length">
+                        <valueFactory>
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="384"/>
+                        </valueFactory>
+                    </Spinner>
+                    <Label text="%ticksPer" />
+                    <EnumChoiceBox enumClass="nl.nlcode.m.engine.ArpeggiatorLengthPer" fx:id="lengthPer"/>
+                </HBox>
+            </Field>
+            <Field labelText="%velocity">
+                <children>
+                    <HBox>
+                        <Field labelText="%attack">
+                            <Spinner fx:id="overrideAttackVelocity">
+                                <valueFactory>
+                                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/> <!-- FIXME implement NONE, use keydown velocity -->
+                                </valueFactory>
+                            </Spinner>
+                        </Field>
+                        <Field labelText="%release">
+                            <Spinner fx:id="releaseVelocity">
+                                <valueFactory>
+                                    <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
+                                </valueFactory>
+                            </Spinner>
+                        </Field>
+                    </HBox>
+                </children>
+            </Field>
+        </VBox>
     </instrument>
 </fx:root>

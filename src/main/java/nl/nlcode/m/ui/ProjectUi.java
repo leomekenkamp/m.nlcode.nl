@@ -49,7 +49,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
-import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
@@ -63,8 +62,6 @@ import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.LayerAndSplit;
 import nl.nlcode.m.engine.Lights;
 import nl.nlcode.m.engine.MessageTypeFilter;
-import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
-import static nl.nlcode.m.engine.MidiDeviceMgr.NONE_MIDI_DEVICE;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.MidiMessageDump;
@@ -342,9 +339,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
             inOutToUi.put(midiInOutUi.getMidiInOut(), midiInOutUi);
         }
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
-            midiInOutUi.setPropagateInputOutputChangesToOthers(false);
-        }
         LOGGER.debug("iterating over <{}> midiInOut instances", getMidiInOutUiList().size());
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
             LOGGER.debug("processing instance <{}>", midiInOut);
@@ -360,9 +354,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
                 LOGGER.debug("and reversely adding <{}> to output list of <{}>", receiverUi, midiInOutUi);
                 midiInOutUi.getOutputListView().getSelectionModel().select(receiverUi);
             }
-        }
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
-            midiInOutUi.setPropagateInputOutputChangesToOthers(true);
         }
     }
 

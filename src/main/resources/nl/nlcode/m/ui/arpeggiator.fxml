@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import nl.nlcode.m.ui.Field?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Field labelText="channel">
+         <children>
+            <Spinner />
+         </children>
+      </Field>
+      <Field labelText="reach">
+         <children>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Field labelText="octave down">
+                     <children>
+                        <Spinner />
+                     </children>
+                  </Field>
+                  <Field labelText="octave up">
+                     <children>
+                        <Spinner />
+                     </children>
+                  </Field>
+               </children>
+            </HBox>
+         </children>
+      </Field>
+      <Field labelText="length">
+         <children>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Spinner />
+                  <Label text="ticks per" />
+                  <ComboBox prefWidth="150.0" promptText="Chord" />
+               </children>
+            </HBox>
+         </children>
+      </Field>
+      <Field labelText="velocity">
+         <children>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Field labelText="attack">
+                     <children>
+                        <Spinner />
+                     </children>
+                  </Field>
+                  <Field labelText="release">
+                     <children>
+                        <Spinner />
+                     </children>
+                  </Field>
+               </children>
+            </HBox>
+         </children>
+      </Field>
+   </children>
+   <stylesheets>
+      <URL value="@dark.css" />
+      <URL value="@defaultSizes.css" />
+      <URL value="@defaultColours.css" />
+   </stylesheets>
+</VBox>

@@ -6,10 +6,6 @@
     -fx-background-color: #0000FF;
 }
 
-.root.midiInOut.connectedReceiver .tab-header-background {
-    -fx-background-color: #FF7F00;
-}
-
 .combo-box-popup .list-cell:disabled  {
     -fx-opacity: 0.4;
 }
@@ -34,12 +30,6 @@ HBox.canvasContainer {
     -fx-padding: 5px;
     -fx-border-width: 2px;
 }
-SequencerUi .stepIndicator {
-    -fx-text-fill: lightgrey;
-}
-SequencerUi .stepIndicator.active {
-    -fx-text-fill: red;
-}
 MidiClockUi .position {
     -fx-background-color: black;
 }
@@ -47,11 +37,10 @@ MidiClockUi .position Label {
     -fx-text-fill: aqua;
 }
 Label.numberFeedback {
-    -fx-text-fill: aqua;
-    -fx-border-color: darkcyan;
+    /*-fx-text-fill: red; actual text color */
+    -fx-border-color: -fx-mid-text-color;
     -fx-background-color: black; 
-    -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.3) , 5, 0.1 , 2 , 2 );
 }
-.instrument {
-    -fx-background-color: black,darkgrey,black,darkgrey;
+Field {
+    -fx-border-color: -fx-mid-text-color;
 }

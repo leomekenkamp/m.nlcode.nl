@@ -4,15 +4,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +16,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
+public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
 
-    public static interface Ui extends MidiInOut.Ui {
+    public static interface Ui extends TimeSensitiveMidiInOut.Ui {
 
     }
 
@@ -54,15 +49,8 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     private transient volatile AtomicInteger notePlayCount[][];
     private transient volatile AtomicInteger notePlannedCount[][];
 
-    private transient ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-
-    private ScheduledFuture<?> timerFuture;
-
-    private ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource = new ObjectUpdateProperty<>(TickSource.TIME);
-
     public static record SaveData0(
             int id,
-            TickSource tickSource,
             int echoLength,
             int absoluteVelocityDecrease,
             int relativeVelocityDecrease,
@@ -70,7 +58,6 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
 
         @Override
         public void unmarshalInto(Context context, Echo target) {
-            target.tickSource.set(tickSource());
             target.echoLength.set(echoLength());
             target.absoluteVelocityDecrease.set(absoluteVelocityDecrease());
             target.relativeVelocityDecrease.set(relativeVelocityDecrease());
@@ -88,7 +75,6 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     public Marshalled marshalInternal(int id, Context context) {
         return new SaveData0(
                 id,
-                tickSource.get(),
                 echoLength.get(),
                 absoluteVelocityDecrease.get(),
                 relativeVelocityDecrease.get(),
@@ -101,26 +87,6 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
         forAllChannels(channel -> forAllNotes(note -> notePlayCount[channel][note] = new AtomicInteger()));
         notePlannedCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
         forAllChannels(channel -> forAllNotes(note -> notePlannedCount[channel][note] = new AtomicInteger()));
-        tickSource.register(this);
-        tickSource.addListener((oldValue, newValue) -> {
-            timer(newValue == TickSource.TIME);
-        });
-        timer(tickSource.get() == TickSource.TIME);
-    }
-
-    private void timer(boolean run) {
-        synchronized (buckets) {
-            if (run) {
-                if (timerFuture == null || timerFuture.isDone()) {
-                    timerFuture = scheduledExecutorService.scheduleAtFixedRate(() -> timeTick(), 0, 20, TimeUnit.MILLISECONDS);
-                }
-            } else {
-                if (timerFuture != null) {
-                    timerFuture.cancel(false);
-                    timerFuture = null;
-                }
-            }
-        }
     }
 
     @Override
@@ -136,12 +102,10 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
         if (message instanceof ShortMessage incoming) {
-            synchronized (buckets) {
+            synchronized (SYNCHRONIZATION_LOCK) {
                 if (incoming.getStatus() == ShortMessage.TIMING_CLOCK) {
                     send(message, timeStamp);
-                    if (tickSource.get() == TickSource.MIDI) {
-                        tick();
-                    }
+                    processReceiveTimingClock(timeStamp);
                 } else if (incoming.getCommand() == ShortMessage.NOTE_ON || incoming.getCommand() == ShortMessage.NOTE_OFF) {
                     sendAndEcho(incoming, timeStamp);
                 } else {
@@ -153,13 +117,8 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
         }
     }
 
-    private void timeTick() {
-        synchronized (buckets) {
-            tick();
-        }
-    }
-
-    private void tick() {
+    @Override
+    protected void synchronizedTick() {
         futureBucket = null;
         currentTimeIndex += 1;
         while (!buckets.isEmpty() && buckets.getFirst().targetTimeIndex <= currentTimeIndex) {
@@ -216,18 +175,6 @@ public class Echo<U extends Echo.Ui> extends MidiInOut<U> {
                 }
             }
         }
-    }
-
-    public ObjectUpdateProperty<TickSource, U, Echo<U>> tickSource() {
-        return tickSource;
-    }
-
-    public TickSource getTickSource() {
-        return tickSource.get();
-    }
-
-    public void setTickSource(TickSource tickSource) {
-        this.tickSource.set(tickSource);
     }
 
     public int getAbsoluteVelocityDecrease() {
