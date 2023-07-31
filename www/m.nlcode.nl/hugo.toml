@@ -13,4 +13,4 @@ page = ["HTML", "RSS", "PRINT"]
   path = "github.com/McShelby/hugo-theme-relearn.git"
 
 [params]
-  themeVariant = ["relearn-bright", "relearn-light", "relearn-dark", "learn", "neon", "blue", "green", "red" ]
+  themeVariant = ["relearn-dark", "red" ]
