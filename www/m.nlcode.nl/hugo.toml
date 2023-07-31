@@ -1,4 +1,4 @@
-baseURL = 'http://nlcode.nl/'
+baseURL = 'https://nlcode.nl/'
 languageCode = 'en-us'
 title = 'm.nlcode.nl'
 theme = "hugo-theme-relearn"
