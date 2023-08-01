@@ -17,55 +17,57 @@ import org.slf4j.LoggerFactory;
  *
  * @author lmekenkamp
  */
-public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlController {
+public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements FxmlController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private ObjectProperty<MidiInOutUi> ownerProperty = new SimpleObjectProperty();
+    private ObjectProperty<MidiInOutUi<?>> ownerProperty = new SimpleObjectProperty();
 
     private ObjectProperty<ObservableList<MidiInOutUi<?>>> availableMidiInOutUiListProperty = new SimpleObjectProperty<>();
+
+    private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
     private ListChangeListener<MidiInOutUi<?>> availableMidiInOutUiListChangeListener = new ListChangeListener<>() {
         @Override
         public void onChanged(ListChangeListener.Change<? extends MidiInOutUi<?>> change) {
-            boolean sort = false;
             while (change.next()) {
-                if (change.wasRemoved()) {
-                    for (MidiInOutUi removed : change.getRemoved()) {
-                        LOGGER.debug("not longer available, removed <{}> from <{}>", removed.getMidiInOut(), getOwner());
-                        int remoteOutIndex = removed.getOutputListView().getItems().indexOf(removed);
-                        if (remoteOutIndex != -1) {
-                            removed.getOutputListView().getSelectionModel().clearSelection(remoteOutIndex);
-                        }
-                        int remoteInIndex = removed.getOutputListView().getItems().indexOf(removed);
-                        if (remoteInIndex != -1) {
-                            removed.getOutputListView().getSelectionModel().clearSelection(remoteInIndex);
-                        }
-                        getItems().remove(removed);
-                    }
-                }
-                if (change.wasAdded()) {
-                    for (MidiInOutUi<?> added : change.getAddedSubList()) {
-                        if (added == getOwner()) {
-                            LOGGER.debug("skipping owner");
-                        } else {
-                            LOGGER.debug("newly available, added <{}> to <{}>", added.getMidiInOut(), getOwner());
-                            getItems().add(added);
-                            sort = true;
+                if (change.wasPermutated()) {
+                } else if (change.wasUpdated()) {
+                } else if (change.wasReplaced()) {
+                } else {
+                    if (change.wasRemoved()) {
+                        for (MidiInOutUi removed : change.getRemoved()) {
+                            LOGGER.debug("not longer available, removed <{}> from <{}>", removed.getMidiInOut(), getOwner());
+//                        int remoteOutIndex = removed.getOutputListView().getItems().indexOf(removed);
+//                        if (remoteOutIndex != -1) {
+//                            removed.getOutputListView().getSelectionModel().clearSelection(remoteOutIndex);
+//                        }
+//                        int remoteInIndex = removed.getInputListView().getItems().indexOf(removed);
+//                        if (remoteInIndex != -1) {
+//                            removed.getInputListView().getSelectionModel().clearSelection(remoteInIndex);
+//                        }
+                            midiInOutUiList.remove(removed);
                         }
                     }
+                    if (change.wasAdded()) {
+                        for (MidiInOutUi<?> added : change.getAddedSubList()) {
+                            if (added == getOwner()) {
+                                LOGGER.debug("skipping owner");
+                            } else {
+                                LOGGER.debug("newly available, added <{}> to <{}>", added.getMidiInOut(), getOwner());
+                                midiInOutUiList.add(added);
+                            }
+                        }
+                    }
                 }
-                sort = sort || change.wasPermutated() || change.wasUpdated();
-            }
-            if (sort) {
-                sortItems();
             }
         }
     };
 
     public MidiInOutUiListView() {
+        setItems(midiInOutUiList.sorted(MidiInOutUi.BY_NAME));
         getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        setCellFactory(ly -> new ListCell<MidiInOutUi>() {
+        setCellFactory(ly -> new ListCell<MidiInOutUi<?>>() {
             @Override
             public void updateItem(MidiInOutUi midiInOutUi, boolean empty) {
                 super.updateItem(midiInOutUi, empty);
@@ -97,42 +99,34 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi> implements FxmlCo
 
         ownerProperty.addListener((ov, oldValue, newValue) -> {
             if (oldValue != null) {
-                getItems().add(oldValue);
+                midiInOutUiList.add(oldValue);
             }
-            getItems().remove(newValue);
-            sortItems();
+            midiInOutUiList.remove(newValue);
         });
 //        prefHeightProperty().bind(widthProperty().divide(2));
     }
 
     private void midiInOutUiListToItems() {
-        getItems().clear();
+        midiInOutUiList.clear();
         for (MidiInOutUi midiInOutUi : getAvailableMidiInOutUiList()) {
             if (midiInOutUi != getOwner()) {
-                getItems().add(midiInOutUi);
+                midiInOutUiList.add(midiInOutUi);
             }
         }
-        sortItems();
     }
 
-    private void sortItems() {
-        FXCollections.sort(getItems(), (left, right) -> {
-            return left.getMidiInOut().getName().compareTo(right.getMidiInOut().getName());
-        });
-    }
-
-    public ObjectProperty<MidiInOutUi> ownerProperty() {
+    public ObjectProperty<MidiInOutUi<?>> ownerProperty() {
         return ownerProperty;
     }
 
-    public void setOwner(MidiInOutUi owner) {
+    public void setOwner(MidiInOutUi<?> owner) {
         ownerProperty.set(owner);
     }
 
     /*
     FIXME: get rid of this: the list with the items should know who the owner is and not add it
-    */
-    public MidiInOutUi getOwner() {
+     */
+    public MidiInOutUi<?> getOwner() {
         return ownerProperty.get();
     }
 

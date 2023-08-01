@@ -153,7 +153,7 @@ public class App extends Application {
         } else if (!Platform.isFxApplicationThread()) {
             LOGGER.info("error in background", e);
         } else {
-            showErrorDialog(e);
+            e.printStackTrace(System.out);
             LOGGER.warn("An unexpected error occurred in {}", t);
         }
     }

@@ -96,13 +96,15 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     @FXML
     private Menu windowMenu;
 
-    private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+    private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
-    private ObservableList<MidiInOutUi<?>> activeSenders = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+    private ObservableList<MidiInOutUi<?>> midiInOutUiListReadonly = FXCollections.unmodifiableObservableList(midiInOutUiList);
+
+    private ObservableList<MidiInOutUi<?>> activeSenders = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
     private ObservableList<MidiInOutUi<?>> activeSendersReadonly = FXCollections.unmodifiableObservableList(activeSenders);
 
-    private ObservableList<MidiInOutUi<?>> activeReceivers = FXCollections.observableArrayList(MidiInOutUi.getNameExtractor());
+    private ObservableList<MidiInOutUi<?>> activeReceivers = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
     private ObservableList<MidiInOutUi<?>> activeReceiversReadonly = FXCollections.unmodifiableObservableList(activeReceivers);
 
@@ -298,48 +300,74 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         activateAndCreateStage(new NoteChannelSpreader());
     }
 
-    private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> {
-        while (change.next()) {
-            if (change.wasRemoved()) {
-                int localIndex = change.getFrom();
-                for (MidiInOutUi removed : change.getRemoved()) {
-                    if (removed == null) {
-                        // change.getRemoved() is buggy, use indices instead
-                        removed = midiInOutUiList.get(localIndex);
-                    }
-                    LOGGER.debug("removed from general list: <{}>", removed);
-                    removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
-                    removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
-                    activeReceivers.remove(removed); // could call contains() first
-                    activeSenders.remove(removed); // could call contains() first
-                    localIndex++;
-                }
+    private ListChangeListenerHelper<MidiInOutUi> midiInOutListChangeHelper = new ListChangeListenerHelper<>() {
+        @Override
+        public void removed(MidiInOutUi removed) {
+            LOGGER.debug("removed from general list: <{}>", removed);
+            removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
+            removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
+            activeReceivers.remove(removed); // could call contains() first
+            activeSenders.remove(removed); // could call contains() first
+        }
+
+        @Override
+        public void added(MidiInOutUi removed) {
+            LOGGER.debug("added to general list: <{}>", removed);
+            removed.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
+            removed.activeSenderProperty().addListener(midiInOutUiSenderChange);
+            if (removed.getMidiInOut().isActiveReceiver()) {
+                activeReceivers.add(removed);
             }
-            if (change.wasAdded()) {
-                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
-                    LOGGER.debug("added to general list: <{}>", midiInOutUi);
-                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
-                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
-                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
-                        activeReceivers.add(midiInOutUi);
-                    }
-                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
-                        activeSenders.add(midiInOutUi);
-                    }
-                }
+            if (removed.getMidiInOut().isActiveSender()) {
+                activeSenders.add(removed);
             }
         }
     };
+
+    private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> midiInOutListChangeHelper.process(change);
+
+    //    private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> {
+    //        while (change.next()) {
+    //            if (change.wasRemoved()) {
+    //                int localIndex = change.getFrom();
+    //                for (MidiInOutUi removed : change.getRemoved()) {
+    //                    if (removed == null) {
+    //                        // change.getRemoved() is buggy, use indices instead
+    //                        removed = midiInOutUiList.get(localIndex);
+    //                    }
+    //                    LOGGER.debug("removed from general list: <{}>", removed);
+    //                    removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
+    //                    removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
+    //                    activeReceivers.remove(removed); // could call contains() first
+    //                    activeSenders.remove(removed); // could call contains() first
+    //                    localIndex++;
+    //                }
+    //            }
+    //            if (change.wasAdded()) {
+    //                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
+    //                    LOGGER.debug("added to general list: <{}>", midiInOutUi);
+    //                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
+    //                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
+    //                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
+    //                        activeReceivers.add(midiInOutUi);
+    //                    }
+    //                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
+    //                        activeSenders.add(midiInOutUi);
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    };
 
     public void createMidiInOutUisFromProjectMidiInOuts() {
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
             createStage(midiInOut);
         }
         Map<MidiInOut, MidiInOutUi> inOutToUi = new HashMap<>();
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+        for (MidiInOutUi midiInOutUi : midiInOutUiList) {
             inOutToUi.put(midiInOutUi.getMidiInOut(), midiInOutUi);
         }
-        LOGGER.debug("iterating over <{}> midiInOut instances", getMidiInOutUiList().size());
+        LOGGER.debug("iterating over <{}> midiInOut instances", midiInOutUiList.size());
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
             LOGGER.debug("processing instance <{}>", midiInOut);
             MidiInOutUi midiInOutUi = inOutToUi.get(midiInOut);
@@ -371,7 +399,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     public ObservableList<MidiInOutUi<?>> getMidiInOutUiList() {
-        return midiInOutUiList;
+        return midiInOutUiListReadonly;
     }
 
     public void move(Path path) {
@@ -433,7 +461,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
             Stage result = App.createStage(midiInOutUi);
             result.titleProperty().bind(midiInOutUi.nameProperty());
-            getMidiInOutUiList().add(midiInOutUi);
+            midiInOutUiList.add(midiInOutUi);
             midiInOutUi.restoreWindowPositionAndSetAutosave();
             result.focusedProperty().addListener((ov, oldValue, newValue) -> {
                 if (newValue) {
@@ -498,15 +526,19 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     private void addStyleClass(MidiInOutUiListView listView, String styleClass) {
         for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
-            other.getStyleClass().add(styleClass);
-            other.sizeToScene();
+            if (other != null) { // don't ask me how, but it happens
+                other.getStyleClass().add(styleClass);
+                other.sizeToScene();
+            }
         }
     }
 
     private void removeStyleClass(MidiInOutUiListView listView, String styleClass) {
         for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
-            other.getStyleClass().remove(styleClass);
-            other.sizeToScene();
+            if (other != null) { // don't ask me how, but it happens
+                other.getStyleClass().remove(styleClass);
+                other.sizeToScene();
+            }
         }
     }
 
@@ -518,7 +550,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     public void remove(MidiInOutUi midiInOutUi) {
-        getMidiInOutUiList().remove(midiInOutUi);
+        midiInOutUiList.remove(midiInOutUi);
         setDirty();
     }
 
@@ -621,7 +653,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         getProject().getInfo().put(App.PREF_X, x);
         getProject().getInfo().put(App.PREF_Y, y);
         LOGGER.info("moved X,Y to {} {}", x, y);
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+        for (MidiInOutUi midiInOutUi : midiInOutUiList) {
             midiInOutUi.beforeSave();
         }
     }
@@ -664,10 +696,10 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         LOGGER.debug("remove project menu item");
         menuItem.getParentMenu().getItems().remove(menuItem);
         LOGGER.debug("iterating over open midiInOutUi items");
-        while (!getMidiInOutUiList().isEmpty()) {
+        while (!midiInOutUiList.isEmpty()) {
             // A closing MidiInOutUi indirectly removes itself from a.a. the midiInOutUiList, so we cannot use an iterator.
             LOGGER.debug("closing window for <{}>", getMidiInOutUiList().get(0));
-            getMidiInOutUiList().get(0).forceCloseWindow();
+            midiInOutUiList.get(0).forceCloseWindow();
         }
     }
 
@@ -691,14 +723,14 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     @FXML
     private void allMidiInOutToFront() {
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+        for (MidiInOutUi midiInOutUi : midiInOutUiList) {
             ((Stage) midiInOutUi.getScene().getWindow()).toFront();
         }
     }
 
     @FXML
     private void minimizeAllMidiInOut() {
-        for (MidiInOutUi midiInOutUi : getMidiInOutUiList()) {
+        for (MidiInOutUi midiInOutUi : midiInOutUiList) {
             ((Stage) midiInOutUi.getScene().getWindow()).setIconified(true);
         }
     }
