@@ -1,9 +1,11 @@
 package nl.nlcode.m.ui;
 
 import java.lang.invoke.MethodHandles;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.WeakListChangeListener;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javax.sound.midi.MidiDevice;
@@ -21,6 +23,11 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
 
     @FXML
     private ComboBox midiDeviceComboBox;
+    
+    @FXML
+    private Node noOpenMidiDevices;
+    
+    private SimpleListProperty<MidiDevice> midiDeviceListProp;
 
     private ListChangeListener<MidiDevice> listChangeListener;
 
@@ -74,6 +81,8 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
             syncActiveSenderReceiver();
             getProjectUi().setDirty();
         });
+        midiDeviceListProp = new SimpleListProperty(getProjectUi().getControlUi().getOpenMidiDevices());
+        noOpenMidiDevices.visibleProperty().bind(midiDeviceListProp.emptyProperty());
     }
 
     @Override
@@ -83,6 +92,12 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
             selected = NONE_MIDI_DEVICE;
         }
         midiDeviceComboBox.setValue(selected);
+    }
+    
+    @FXML
+    public void openSettings() {
+        SettingsUi settingsUi = getProjectUi().getControlUi().settings();
+        settingsUi.getSelectionModel().select(0);
     }
 
 }

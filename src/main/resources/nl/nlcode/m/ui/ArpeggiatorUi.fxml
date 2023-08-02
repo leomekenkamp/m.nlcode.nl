@@ -19,6 +19,7 @@
 <?import nl.nlcode.m.ui.ArpeggiatorUi?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldVBox?>
 
 <fx:root
     xmlns="http://javafx.com/javafx" 
@@ -27,7 +28,7 @@
     styleClass="arpeggiator"
 >
     <instrument>
-        <VBox>                
+        <FieldVBox>                
             <Field labelText="%channel">
                 <Spinner fx:id="channel" editable="true">
                     <valueFactory>
@@ -86,6 +87,6 @@
                     </HBox>
                 </children>
             </Field>
-        </VBox>
+        </FieldVBox>
     </instrument>
 </fx:root>

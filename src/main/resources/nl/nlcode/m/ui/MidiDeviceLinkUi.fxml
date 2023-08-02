@@ -10,6 +10,9 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TextField?>
+<?import org.controlsfx.control.HyperlinkLabel?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldVBox?>
 <?import nl.nlcode.m.ui.MidiDeviceLinkUi?>
 
 <fx:root 
@@ -19,6 +22,14 @@
     styleClass="midiDeviceLink"
 >
     <instrument>
-        <ComboBox fx:id="midiDeviceComboBox"/>
+        <FieldVBox>
+            <Field labelText="%midiDevice">
+                <ComboBox fx:id="midiDeviceComboBox"/>
+            </Field>
+            <VBox fx:id="noOpenMidiDevices">
+                <Label text="%noOpenMidiDevices1"/>
+                <HyperlinkLabel text="%noOpenMidiDevices2" onAction="#openSettings"/>
+            </VBox>
+        </FieldVBox>
     </instrument>
 </fx:root>

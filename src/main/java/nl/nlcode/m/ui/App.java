@@ -78,6 +78,7 @@ public class App extends Application {
             stage.setScene(scene);
             stage.setOnCloseRequest(onCloseRequest(controlUi));
             controlUi.restoreWindowPositionAndSetAutosave();
+            stage.setResizable(false);
             stage.show();
         } catch (RuntimeException e) {
             LOGGER.error("cannot start", e);

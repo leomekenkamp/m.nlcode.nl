@@ -23,7 +23,6 @@ import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
 
 import nl.nlcode.m.engine.MidiDeviceMgr;
 import nl.nlcode.m.engine.SaveFileEncoding;
-import nl.nlcode.m.engine.SaverLoader;
 import static nl.nlcode.m.ui.ZeroOrOneBased.ONE_BASED;
 import static nl.nlcode.m.ui.ZeroOrOneBased.ZERO_BASED;
 import org.controlsfx.control.ToggleSwitch;

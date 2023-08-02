@@ -233,7 +233,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     }
 
     @FXML
-    private void settings() {
+    public SettingsUi settings() {
         if (settings == null) {
             settings = App.createStage(new SettingsUi(this));
             settings.initOwner(this.getScene().getWindow());
@@ -241,6 +241,8 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
             restoreWindowPositionAndSetAutosave(settings, Control.PREFERENCES.node("settings"));
         }
         settings.show();
+        settings.toFront();
+        return (SettingsUi) settings.getScene().getRoot();
     }
 
     private static final String PREF_MIDI_NOTE_ZERO_BASED = "midiNoteZeroBased";

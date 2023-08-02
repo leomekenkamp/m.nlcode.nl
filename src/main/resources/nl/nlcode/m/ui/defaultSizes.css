@@ -79,6 +79,10 @@ undelete in case of strange font problems on a mac
     fx-alignment: "CENTER_RIGHT";
 }
 
+FieldVBox, FieldHBox {
+     -fx-alignment: center;
+}
+
 ControlUi .logoText, ProjectUi .logoText, ControlUi .version  {
     -fx-alignment: center;
     -fx-font-family: "Andale Mono";
@@ -114,11 +118,7 @@ ChannelMatrixUi .buttons {
     /*-fx-border-insets: 1em 2em;*/
 }
 
-.tab-content-area > VBox {
-    -fx-alignment: center;
-}
-
-.tab-content-area > HBox {
+.tab-content-area > HBox, .tab-content-area > VBox {
     -fx-alignment: center;
 }
 
@@ -139,7 +139,7 @@ VBox.buttons, HBox.buttons {
 VBox.buttons > Button {
     -fx-max-width: Infinity;
 }
-HBox.fields {
+HBox.fields, HBox.fields {
     -fx-padding: 0.4em;
     -fx-spacing: 0.8em;
 }
@@ -249,4 +249,7 @@ Label.numberFeedback {
     -fx-padding: 1.5em;
     -fx-background-insets: 0,0.15em,0.3em,0.4em;
     -fx-background-radius: 0.3em;
+}
+SettingsUi .tab-content-area FieldVBox.midiDevices {
+    -fx-alignment: left;
 }
