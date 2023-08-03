@@ -122,7 +122,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         verifyFormat(name);
         synchronized (synchronizedBackingList) {
             for (T t : synchronizedBackingList) {
-                if (t.equals(name)) {
+                if (t.getName().equals(name)) {
                     throw new FunctionalException("name already exists: <" + name +">");
                 }
             }

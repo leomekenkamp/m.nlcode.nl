@@ -359,7 +359,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     public void setName(String name) {
-        boolean changing = Objects.equals(this.name, name);
+        boolean changing = !Objects.equals(this.name, name);
         boolean verify = lookup != null && changing;
         if (verify) {
             lookup.verifyName(name);

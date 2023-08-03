@@ -98,15 +98,15 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
-    private ObservableList<MidiInOutUi<?>> midiInOutUiListReadonly = FXCollections.unmodifiableObservableList(midiInOutUiList);
+    private ObservableList<MidiInOutUi<?>> midiInOutUiListReadonly = midiInOutUiList.sorted(MidiInOutUi.BY_NAME);
 
     private ObservableList<MidiInOutUi<?>> activeSenders = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
-    private ObservableList<MidiInOutUi<?>> activeSendersReadonly = FXCollections.unmodifiableObservableList(activeSenders);
+    private ObservableList<MidiInOutUi<?>> activeSendersReadonly = activeSenders.sorted(MidiInOutUi.BY_NAME);
 
     private ObservableList<MidiInOutUi<?>> activeReceivers = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
 
-    private ObservableList<MidiInOutUi<?>> activeReceiversReadonly = FXCollections.unmodifiableObservableList(activeReceivers);
+    private ObservableList<MidiInOutUi<?>> activeReceiversReadonly = activeReceivers.sorted(MidiInOutUi.BY_NAME);
 
     private Project project;
 
@@ -184,7 +184,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             }
         });
 
-        windowMenu.setDisable(windowMenu.getItems().size() <= 3);
+        windowMenu.setDisable(true);
         windowMenu.getItems().addListener(new ListChangeListener() {
             public void onChanged(ListChangeListener.Change c) {
                 windowMenu.setDisable(c.getList().size() <= 3);
@@ -326,39 +326,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> midiInOutListChangeHelper.process(change);
 
-    //    private ListChangeListener<MidiInOutUi> midiInOutListChange = (change) -> {
-    //        while (change.next()) {
-    //            if (change.wasRemoved()) {
-    //                int localIndex = change.getFrom();
-    //                for (MidiInOutUi removed : change.getRemoved()) {
-    //                    if (removed == null) {
-    //                        // change.getRemoved() is buggy, use indices instead
-    //                        removed = midiInOutUiList.get(localIndex);
-    //                    }
-    //                    LOGGER.debug("removed from general list: <{}>", removed);
-    //                    removed.activeReceiverProperty().removeListener(midiInOutUiReceiverChange);
-    //                    removed.activeSenderProperty().removeListener(midiInOutUiSenderChange);
-    //                    activeReceivers.remove(removed); // could call contains() first
-    //                    activeSenders.remove(removed); // could call contains() first
-    //                    localIndex++;
-    //                }
-    //            }
-    //            if (change.wasAdded()) {
-    //                for (MidiInOutUi midiInOutUi : change.getAddedSubList()) {
-    //                    LOGGER.debug("added to general list: <{}>", midiInOutUi);
-    //                    midiInOutUi.activeReceiverProperty().addListener(midiInOutUiReceiverChange);
-    //                    midiInOutUi.activeSenderProperty().addListener(midiInOutUiSenderChange);
-    //                    if (midiInOutUi.getMidiInOut().isActiveReceiver()) {
-    //                        activeReceivers.add(midiInOutUi);
-    //                    }
-    //                    if (midiInOutUi.getMidiInOut().isActiveSender()) {
-    //                        activeSenders.add(midiInOutUi);
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    };
-
     public void createMidiInOutUisFromProjectMidiInOuts() {
         for (MidiInOut midiInOut : getProject().getMidiInOutList()) {
             createStage(midiInOut);
@@ -376,11 +343,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
                 MidiInOutUi receiverUi = inOutToUi.get(receiver);
                 LOGGER.debug("adding <{}> to input list of <{}>", midiInOutUi, receiverUi);
                 LOGGER.debug("selectable inputs: <{}>", receiverUi.getInputListView().getItems());
-                LOGGER.debug("input pre: <{}>", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
-                receiverUi.getInputListView().getSelectionModel().select(midiInOutUi);
-                LOGGER.debug("input post: <{}>", receiverUi.getInputListView().getSelectionModel().getSelectedItems());
+                LOGGER.debug("input pre: <{}>", receiverUi.getInputListView().getChecked());
+                receiverUi.getInputListView().setChecked(midiInOutUi, true);
+                LOGGER.debug("input post: <{}>", receiverUi.getInputListView().getChecked());
                 LOGGER.debug("and reversely adding <{}> to output list of <{}>", receiverUi, midiInOutUi);
-                midiInOutUi.getOutputListView().getSelectionModel().select(receiverUi);
+                midiInOutUi.getOutputListView().setChecked(receiverUi, true); //FIXME is this needed?
             }
         }
     }
@@ -468,14 +435,14 @@ public final class ProjectUi extends BorderPane implements FxmlController {
                     midiInOutUi.getStyleClass().add(FOCUS);
                     addStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
                     addStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
-                    midiInOutUi.getInputListView().getSelectionModel().getSelectedItems().addListener(inputListChangeWhileInFocus);
-                    midiInOutUi.getOutputListView().getSelectionModel().getSelectedItems().addListener(outputListChangeWhileInFocus);
+                    midiInOutUi.getInputListView().getChecked().addListener(inputListChangeWhileInFocus);
+                    midiInOutUi.getOutputListView().getChecked().addListener(outputListChangeWhileInFocus);
                 } else {
                     midiInOutUi.getStyleClass().remove(FOCUS);
                     removeStyleClass(midiInOutUi.getInputListView(), CONNECTED_SENDER);
                     removeStyleClass(midiInOutUi.getOutputListView(), CONNECTED_RECEIVER);
-                    midiInOutUi.getInputListView().getSelectionModel().getSelectedItems().removeListener(inputListChangeWhileInFocus);
-                    midiInOutUi.getOutputListView().getSelectionModel().getSelectedItems().removeListener(outputListChangeWhileInFocus);
+                    midiInOutUi.getInputListView().getChecked().removeListener(inputListChangeWhileInFocus);
+                    midiInOutUi.getOutputListView().getChecked().removeListener(outputListChangeWhileInFocus);
                 }
                 midiInOutUi.sizeToScene();
             });
@@ -485,7 +452,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
                 result.show();
                 result.toFront();
             });
-            menuItem.textProperty().bindBidirectional(midiInOutUi.nameProperty());
+            menuItem.textProperty().bind(midiInOutUi.nameProperty());
             menuItem.textProperty().addListener((ov, oldValue, newValue) -> {
                 LOGGER.debug("from {} to {}", oldValue, newValue);
                 sortMenuItems();
@@ -525,7 +492,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     private void addStyleClass(MidiInOutUiListView listView, String styleClass) {
-        for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
+        for (MidiInOutUi other : listView.getChecked()) {
             if (other != null) { // don't ask me how, but it happens
                 other.getStyleClass().add(styleClass);
                 other.sizeToScene();
@@ -534,7 +501,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     private void removeStyleClass(MidiInOutUiListView listView, String styleClass) {
-        for (MidiInOutUi other : listView.getSelectionModel().getSelectedItems()) {
+        for (MidiInOutUi other : listView.getChecked()) {
             if (other != null) { // don't ask me how, but it happens
                 other.getStyleClass().remove(styleClass);
                 other.sizeToScene();
@@ -734,5 +701,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             ((Stage) midiInOutUi.getScene().getWindow()).setIconified(true);
         }
     }
+
+    
 
 }

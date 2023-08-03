@@ -3,11 +3,16 @@ package nl.nlcode.m.ui;
 import java.lang.invoke.MethodHandles;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.adapter.JavaBeanIntegerProperty;
 import javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder;
@@ -16,13 +21,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -49,8 +55,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
     public static final Comparator<MidiInOutUi<?>> BY_NAME = Comparator.comparing(MidiInOutUi::getName);
 
-    @FXML
-    private TextField name;
+    private ReadOnlyStringWrapper nameProperty = new ReadOnlyStringWrapper();
 
     @FXML
     private MidiInOutUiListView outputListView;
@@ -88,7 +93,6 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
     private ReadOnlyBooleanWrapper activeReceiverWrapper;
 
-//    private boolean propagateInputOutputChangesToOthers = true;
     private MenuItem menuItem;
 
     static Callback<MidiInOutUi<?>, Observable[]> getNameExtractor() {
@@ -98,7 +102,6 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     static final Callback<MidiInOutUi<?>, Observable[]> NAME_EXTRACTOR = new Callback<MidiInOutUi<?>, Observable[]>() {
         @Override
         public Observable[] call(MidiInOutUi midiInOutUi) {
-            LOGGER.debug("extractor initialized");
             return new Observable[]{
                 midiInOutUi.nameProperty()
             };
@@ -115,7 +118,8 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         activeSenderWrapper = new ReadOnlyBooleanWrapper(this, "activeSenderWrapper");
         activeReceiverWrapper = new ReadOnlyBooleanWrapper(this, "activeReceiverWrapper");
         runOnce = new FxmlController.RunOnce(distance(getClass(), MidiInOutUi.class));
-        Object x = loadFxml(MidiInOutUi.class, new CtorParamControllerFactory(projectUi), App.MESSAGES);
+        loadFxml(MidiInOutUi.class, new CtorParamControllerFactory(projectUi), App.MESSAGES);
+        nameProperty.set(midiInOut.getName());
     }
 
     @FXML
@@ -140,22 +144,14 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     protected void handleInitialize() {
         syncAll();
 
-        inputListView.setAvailableMidiInOutUiList(projectUi.getActiveSendersReadonly());
-        outputListView.setAvailableMidiInOutUiList(projectUi.getActiveReceiversReadonly());
-
         setName(getMidiInOut().getName());
-        LOGGER.debug("name from non-gui counterpart: {}", name.getText());
         nameProperty().addListener((ov, oldValue, newValue) -> {
             // FIXME: see if a TextFormatter works better here
             T midiInOut = getMidiInOut();
             if (midiInOut != null && !midiInOut.getName().equals(newValue)) {
-                try {
-                    getMidiInOut().setName(newValue);
-                    LOGGER.debug("name changed to {}", name.getText());
-                    getProjectUi().setDirty();
-                } catch (FunctionalException e) {
-                    name.textProperty().set(oldValue);
-                }
+                getMidiInOut().setName(newValue);
+                LOGGER.debug("name changed to {}", getMidiInOut().getName());
+                getProjectUi().setDirty();
             }
         });
 
@@ -164,8 +160,8 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
         inputListView.setOwner(this);
         outputListView.setOwner(this);
-        inputListView.getSelectionModel().getSelectedItems().addListener(inputSelectionChangeListener);
-        outputListView.getSelectionModel().getSelectedItems().addListener(outputSelectionChangeListener);
+        inputListView.getChecked().addListener(inputSelectionChangeListener);
+        outputListView.getChecked().addListener(outputSelectionChangeListener);
 
         activeSenderWrapper.addListener((ov, oldValue, newValue) -> {
             if (newValue.booleanValue()) {
@@ -183,8 +179,10 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             }
         });
 
-        getStyleClass().add(MIDI_IN_OUT);
+        inputListView.setAvailableMidiInOutUiList(projectUi.getActiveSendersReadonly());
+        outputListView.setAvailableMidiInOutUiList(projectUi.getActiveReceiversReadonly());
 
+        getStyleClass().add(MIDI_IN_OUT);
     }
 
     private final ListChangeListenerHelper<MidiInOutUi> inputSelectionHelper = new ListChangeListenerHelper<>() {
@@ -193,19 +191,18 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         public void removed(MidiInOutUi removed) {
             LOGGER.debug("removed <{}> from input of <{}>", removed.getMidiInOut(), MidiInOutUi.this);
             removed.getMidiInOut().stopSendingTo(getMidiInOut());
-            MultipleSelectionModel<MidiInOutUi<?>> removedSelection = removed.getOutputListView().getSelectionModel();
-            if (removedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
-                int index = removed.getOutputListView().getItems().indexOf(MidiInOutUi.this);
-                removedSelection.clearSelection(index);
+            MidiInOutUiListView removedView = removed.getOutputListView();
+            if (removedView.isChecked(MidiInOutUi.this)) {
+                removedView.setChecked(MidiInOutUi.this, false);
             }
         }
 
         @Override
         public void added(MidiInOutUi added) {
             LOGGER.debug("added <{}> to input of <{}>", added.getMidiInOut(), MidiInOutUi.this);
-            MultipleSelectionModel<MidiInOutUi<?>> addedSelection = added.getOutputListView().getSelectionModel();
-            if (!addedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
-                addedSelection.select(MidiInOutUi.this);
+            MidiInOutUiListView addedView = added.getOutputListView();
+            if (!addedView.isChecked(MidiInOutUi.this)) {
+                addedView.setChecked(MidiInOutUi.this, true);
             }
         }
     };
@@ -223,10 +220,9 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         public void removed(MidiInOutUi removed) {
             LOGGER.debug("removed <{}> from output of <{}>", removed.getMidiInOut(), this);
             getMidiInOut().stopSendingTo(removed.getMidiInOut());
-            MultipleSelectionModel<MidiInOutUi<?>> removedSelection = removed.getInputListView().getSelectionModel();
-            if (removedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
-                int index = removed.getInputListView().getItems().indexOf(MidiInOutUi.this);
-                removedSelection.clearSelection(index);
+            MidiInOutUiListView removedView = removed.getInputListView();
+            if (removedView.isChecked(MidiInOutUi.this)) {
+                removedView.setChecked(MidiInOutUi.this, false);
             }
         }
 
@@ -243,12 +239,11 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
                 alert.getButtonTypes().setAll(close);
                 alert.showAndWait();
             }
-            MultipleSelectionModel<MidiInOutUi<?>> addedSelection = added.getInputListView().getSelectionModel();
-            if (!addedSelection.getSelectedItems().contains(MidiInOutUi.this)) {
-                addedSelection.select(MidiInOutUi.this);
+            MidiInOutUiListView addedView = added.getInputListView();
+            if (!addedView.isChecked(MidiInOutUi.this)) {
+                addedView.setChecked(MidiInOutUi.this, true);
             }
         }
-
     };
 
     private ListChangeListener<MidiInOutUi> outputSelectionChangeListener
@@ -266,16 +261,16 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         return midiInOut;
     }
 
-    public StringProperty nameProperty() {
-        return name.textProperty();
+    public ReadOnlyStringProperty nameProperty() {
+        return nameProperty.getReadOnlyProperty();
     }
 
     public String getName() {
-        return name.textProperty().get();
+        return nameProperty.get();
     }
 
     public void setName(String nm) {
-        name.textProperty().set(nm);
+        nameProperty.set(nm);
     }
 
     public ProjectUi getProjectUi() {
@@ -310,19 +305,6 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         return inputListView;
     }
 
-//    /**
-//     * @return the propagateSelectionChangesToOthers
-//     */
-//    public boolean isPropagateInputOutputChangesToOthers() {
-//        return propagateInputOutputChangesToOthers;
-//    }
-//
-//    /**
-//     * @param propagateInputOutputChangesToOthers the propagateSelectionChangesToOthers to set
-//     */
-//    public void setPropagateInputOutputChangesToOthers(boolean propagateInputOutputChangesToOthers) {
-//        this.propagateInputOutputChangesToOthers = propagateInputOutputChangesToOthers;
-//    }
     public void restoreWindowPositionAndSetAutosave() {
         ProjectUi.restoreWindowPosition((Stage) getScene().getWindow(), getMidiInOut().getInfo());
     }
@@ -336,16 +318,16 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     }
 
     public boolean isConnected() {
-        return !getInputListView().getSelectionModel().isEmpty() || !getOutputListView().getSelectionModel().isEmpty();
+        return !getInputListView().getChecked().isEmpty() || !getOutputListView().getChecked().isEmpty();
     }
 
     public String connectedDebugInfo() {
         StringBuilder result = new StringBuilder();
-        for (MidiInOutUi input : getInputListView().getSelectionModel().getSelectedItems()) {
+        for (MidiInOutUi input : getInputListView().getChecked()) {
             result.append(input).append(" -> ").append("\n");
         }
         result.append(getName()).append("\n");
-        for (MidiInOutUi output : getOutputListView().getSelectionModel().getSelectedItems()) {
+        for (MidiInOutUi output : getOutputListView().getChecked()) {
             result.append(" -> ").append(output).append("\n");
         }
         return result.toString();
@@ -356,11 +338,11 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     }
 
     protected ObservableList<MidiInOutUi<?>> getSendingTo() {
-        return getOutputListView().getSelectionModel().getSelectedItems();
+        return getOutputListView().getChecked();
     }
 
     protected ObservableList<MidiInOutUi<?>> getReceivingFrom() {
-        return getInputListView().getSelectionModel().getSelectedItems();
+        return getInputListView().getChecked();
     }
 
     private void forAllConnected(Consumer<MidiInOutUi> consumer) {
@@ -407,10 +389,6 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     }
 
     public void forceCloseWindow() {
-//        inputListView.getSelectionModel().clearSelection();
-//        outputListView.getSelectionModel().clearSelection();
-//        inputListView.getSelectionModel().getSelectedItems().removeListener(inputSelectionChangeListener);
-//        outputListView.getSelectionModel().getSelectedItems().removeListener(outputSelectionChangeListener);
         menuItem.getParentMenu().getItems().remove(menuItem);
         getProjectUi().remove(this);
         getMidiInOut().close();
@@ -472,4 +450,26 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         return getProjectUi().getControlUi().getMidiNoteNumberStringConverter();
     }
 
+    @FXML
+    private void changeName() {
+        TextInputDialog dialog = new TextInputDialog(getName());
+        dialog.setTitle(App.MESSAGES.getString("changeName"));
+        dialog.setContentText(String.format(App.MESSAGES.getString("enterNewNameFor"), getName()));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText(App.MESSAGES.getString("changeName"));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText(App.MESSAGES.getString("neverMind"));
+        Optional<String> newName = dialog.showAndWait();
+        try {
+            newName.ifPresent(name -> {
+                getMidiInOut().setName(name); // can fail with FunctionalException
+                setName(name);
+            });
+        } catch (FunctionalException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(App.MESSAGES.getString("nameNotChanged"));
+            alert.setContentText(String.format(App.MESSAGES.getString("nameAlreadyInUse"), newName.get()));
+            ButtonType close = new ButtonType(App.MESSAGES.getString("close"), ButtonBar.ButtonData.OK_DONE);
+            alert.getButtonTypes().setAll(close);
+            alert.showAndWait();
+        }
+    }
 }

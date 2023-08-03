@@ -22,6 +22,7 @@
 <?import nl.nlcode.m.ui.MidiInOutUiListView?>
 <?import nl.nlcode.m.ui.ControlUi?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
 
 <fx:root type="MidiInOutUi" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
          tabClosingPolicy="UNAVAILABLE" fx:id="tabPane">
@@ -59,11 +60,11 @@
                 </MenuBar>
             </top>
             <center>
-                <HBox>
+                <FieldHBox>
                     <Field labelText="%name">
-                        <TextField fx:id="name"/>
+                        <Label text="${controller.name}"/> <Button text="%changeName" onAction="#changeName"/>
                     </Field>
-                </HBox>
+                </FieldHBox>
             </center>
         </BorderPane>
     </Tab>

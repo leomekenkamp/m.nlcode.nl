@@ -19,7 +19,7 @@ public class DebugListChangeListenener implements ListChangeListener {
         while (change.next()) {
             LOGGER.info("next change");
             LOGGER.info("list: {}", change.getList());
-            LOGGER.info("permutated: {}, udpated: {}, replaced: {}, added: {}, removed: {}, ", change.wasPermutated(), change.wasUpdated(), change.wasReplaced(), change.wasAdded(), change.wasRemoved());
+            LOGGER.info("permutated: {}, updated: {}, replaced: {}, added: {}, removed: {}, ", change.wasPermutated(), change.wasUpdated(), change.wasReplaced(), change.wasAdded(), change.wasRemoved());
             LOGGER.info("from: {}, to: {}", change.getFrom(), change.getTo());
             LOGGER.info("removed size:{}, list: {}", change.getRemovedSize(), change.getRemoved());
             LOGGER.info("added size: {}, subList: {}", change.getAddedSize(), change.getAddedSubList());

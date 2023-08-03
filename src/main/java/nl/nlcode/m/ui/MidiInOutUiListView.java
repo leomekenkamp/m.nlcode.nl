@@ -1,14 +1,22 @@
 package nl.nlcode.m.ui;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.Map;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.cell.CheckBoxListCell;
 import nl.nlcode.javafxutil.FxmlController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +29,18 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private ObjectProperty<MidiInOutUi<?>> ownerProperty = new SimpleObjectProperty();
+    private final ObservableList<MidiInOutUi<?>> itemsBacking;
 
-    private ObjectProperty<ObservableList<MidiInOutUi<?>>> availableMidiInOutUiListProperty = new SimpleObjectProperty<>();
+    private final ObjectProperty<MidiInOutUi<?>> ownerProperty = new SimpleObjectProperty();
 
-    private ObservableList<MidiInOutUi<?>> midiInOutUiList = FXCollections.observableArrayList(MidiInOutUi.NAME_EXTRACTOR);
+    private final ObjectProperty<ObservableList<MidiInOutUi<?>>> availableMidiInOutUiListProperty = new SimpleObjectProperty<>();
+
+    private final Map<MidiInOutUi<?>, BooleanProperty> midiInOutUiToBoolProp = new HashMap<>();
+
+    // Contents may only be changed by SimpleBooleanProperty in values of midiInOutUiToBoolProp.
+    private final ObservableList<MidiInOutUi<?>> checked = FXCollections.observableArrayList();
+
+    private final ObservableList<MidiInOutUi<?>> checkedReadonly = FXCollections.unmodifiableObservableList(checked);
 
     private ListChangeListener<MidiInOutUi<?>> availableMidiInOutUiListChangeListener = new ListChangeListener<>() {
         @Override
@@ -38,15 +53,7 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
                     if (change.wasRemoved()) {
                         for (MidiInOutUi removed : change.getRemoved()) {
                             LOGGER.debug("not longer available, removed <{}> from <{}>", removed.getMidiInOut(), getOwner());
-//                        int remoteOutIndex = removed.getOutputListView().getItems().indexOf(removed);
-//                        if (remoteOutIndex != -1) {
-//                            removed.getOutputListView().getSelectionModel().clearSelection(remoteOutIndex);
-//                        }
-//                        int remoteInIndex = removed.getInputListView().getItems().indexOf(removed);
-//                        if (remoteInIndex != -1) {
-//                            removed.getInputListView().getSelectionModel().clearSelection(remoteInIndex);
-//                        }
-                            midiInOutUiList.remove(removed);
+                            itemsBacking.remove(removed);
                         }
                     }
                     if (change.wasAdded()) {
@@ -55,7 +62,7 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
                                 LOGGER.debug("skipping owner");
                             } else {
                                 LOGGER.debug("newly available, added <{}> to <{}>", added.getMidiInOut(), getOwner());
-                                midiInOutUiList.add(added);
+                                itemsBacking.add(added);
                             }
                         }
                     }
@@ -65,52 +72,86 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
     };
 
     public MidiInOutUiListView() {
-        setItems(midiInOutUiList.sorted(MidiInOutUi.BY_NAME));
-        getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        setCellFactory(ly -> new ListCell<MidiInOutUi<?>>() {
+        // stop selection; not foolproof; might sometimes see brief selection of a row
+        getSelectionModel().selectedIndexProperty().addListener((ov, oldvalue, newValue)
+                -> Platform.runLater(()
+                        -> getSelectionModel().clearSelection()
+                )
+        );
+
+        itemsBacking = getItems();
+
+        itemsBacking.addListener(
+                new ListChangeListenerHelper<MidiInOutUi<?>>() {
             @Override
-            public void updateItem(MidiInOutUi midiInOutUi, boolean empty) {
-                super.updateItem(midiInOutUi, empty);
-                if (empty || midiInOutUi == null) {
-                    setText(null);
-                } else {
-                    setText(midiInOutUi.getName());
+            public void removed(MidiInOutUi<?> removed) {
+                checked.remove(removed);
+                midiInOutUiToBoolProp.remove(removed, removed);
+            }
+
+            @Override
+            public void added(MidiInOutUi<?> added) {
+                SimpleBooleanProperty checkedProp = new SimpleBooleanProperty();
+                checkedProp.addListener((ov, oldValue, newValue) -> {
+                    if (newValue) {
+                        checked.add(added);
+                    } else {
+                        checked.remove(added);
+                    }
+                });
+                midiInOutUiToBoolProp.put(added, checkedProp);
+            }
+
+        });
+
+        setItems(itemsBacking.sorted(MidiInOutUi.BY_NAME));
+
+        itemsProperty()
+                .addListener((ov, oldValue, newValue) -> {
+                    throw new IllegalStateException("MUST NOT CHANGE ITEMS!!!");
+//            if (newValue != null) {
+//                LOGGER.debug("items changed to <{}>", newValue);
+//                midiInOutUiListToItems();
+//            }
                 }
-            }
-        });
+                );
 
-        itemsProperty().addListener((ov, oldValue, newValue) -> {
-            if (newValue != null) {
-                LOGGER.debug("items changed to <{}>", newValue);
-                midiInOutUiListToItems();
-            }
-        });
+        availableMidiInOutUiListProperty.addListener(
+                (ov, oldValue, newValue) -> {
+                    LOGGER.debug("midiInOutListProperty changed from <{}> to <{}>", oldValue, newValue);
+                    if (oldValue != null) {
+                        oldValue.removeListener(availableMidiInOutUiListChangeListener);
+                    }
+                    if (newValue != null) {
+                        MidiInOutUiStringConverter conv = new MidiInOutUiStringConverter(newValue);
+                        setCellFactory(list -> new CheckBoxListCell(midiInOutUi -> {
+                    BooleanProperty check = midiInOutUiToBoolProp.get(midiInOutUi);
+                    return check;
+                }, conv));
 
-        availableMidiInOutUiListProperty.addListener((ov, oldValue, newValue) -> {
-            LOGGER.debug("midiInOutListProperty changed from <{}> to <{}>", oldValue, newValue);
-            if (oldValue != null) {
-                oldValue.removeListener(availableMidiInOutUiListChangeListener);
-            }
-            if (newValue != null) {
-                midiInOutUiListToItems();
-                newValue.addListener(availableMidiInOutUiListChangeListener);
-            }
-        });
+                        midiInOutUiListToItems();
+                        newValue.addListener(availableMidiInOutUiListChangeListener);
+                    }
+                }
+        );
 
-        ownerProperty.addListener((ov, oldValue, newValue) -> {
-            if (oldValue != null) {
-                midiInOutUiList.add(oldValue);
-            }
-            midiInOutUiList.remove(newValue);
-        });
+        ownerProperty.addListener(
+                (ov, oldValue, newValue) -> {
+                    if (oldValue != null) {
+                        itemsBacking.add(oldValue);
+                    }
+                    itemsBacking.remove(newValue);
+                }
+        );
+
 //        prefHeightProperty().bind(widthProperty().divide(2));
     }
 
     private void midiInOutUiListToItems() {
-        midiInOutUiList.clear();
+        itemsBacking.clear();
         for (MidiInOutUi midiInOutUi : getAvailableMidiInOutUiList()) {
             if (midiInOutUi != getOwner()) {
-                midiInOutUiList.add(midiInOutUi);
+                itemsBacking.add(midiInOutUi);
             }
         }
     }
@@ -140,6 +181,18 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
 
     public void setAvailableMidiInOutUiList(ObservableList<MidiInOutUi<?>> availableMidiInOutUiList) {
         availableMidiInOutUiListProperty.set(availableMidiInOutUiList);
+    }
+
+    public ObservableList<MidiInOutUi<?>> getChecked() {
+        return checkedReadonly;
+    }
+
+    public boolean isChecked(MidiInOutUi<?> midiInOutUi) {
+        return midiInOutUiToBoolProp.get(midiInOutUi).get();
+    }
+
+    public void setChecked(MidiInOutUi<?> midiInOutUi, boolean checked) {
+        midiInOutUiToBoolProp.get(midiInOutUi).set(checked);
     }
 
 }

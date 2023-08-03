@@ -181,7 +181,8 @@ public class App extends Application {
         LOGGER.debug("error dialog shown for <{}>", e.getMessage());
     }
 
-    private static abstract class ListItemStringConverter<T> extends StringConverter<T> {
+    // FIXME: extract into own file
+    public static abstract class ListItemStringConverter<T> extends StringConverter<T> {
 
         private List<T> list;
 

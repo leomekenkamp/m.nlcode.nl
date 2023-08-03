@@ -6,7 +6,12 @@ import javafx.collections.ListChangeListener;
  *
  * @author leo
  */
-public class ListChangeListenerHelper<E> {
+public class ListChangeListenerHelper<E> implements ListChangeListener<E> {
+
+        @Override
+    public void onChanged(Change<? extends E> change) {
+        process(change);
+    }
 
     public void process(ListChangeListener.Change<? extends E> change) {
         while (change.next()) {
@@ -47,5 +52,6 @@ public class ListChangeListenerHelper<E> {
 
     public void updated(E updated) {
     }
+
 
 }
