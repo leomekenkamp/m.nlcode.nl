@@ -122,8 +122,8 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
         public Layer(int channel) {
             fromNote = new IntUpdateProperty<>(NOTE_MIN, NOTE_MIN, NOTE_MAX);
             toNote = new IntUpdateProperty<>(NOTE_MAX, NOTE_MIN, NOTE_MAX);
-            inputChannel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
-            outputChannel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
+            inputChannel = new IntUpdateProperty<>(channel, CHANNEL_MIN, CHANNEL_MAX);
+            outputChannel = new IntUpdateProperty<>(channel, CHANNEL_MIN, CHANNEL_MAX);
             transpose = new IntUpdateProperty<>(0);
         }
 

@@ -64,9 +64,4 @@
          </children>
       </Field>
    </children>
-   <stylesheets>
-      <URL value="@dark.css" />
-      <URL value="@defaultSizes.css" />
-      <URL value="@defaultColours.css" />
-   </stylesheets>
 </VBox>

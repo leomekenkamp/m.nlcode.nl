@@ -32,7 +32,6 @@ HBox.canvasContainer {
 }
 MidiClockUi .position {
     -fx-background-color: black;
-    -fx-border-color:black;
 }
 MidiClockUi .position Label {
     -fx-text-fill: aqua;
@@ -45,3 +44,6 @@ Label.numberFeedback {
 Field {
     -fx-border-color: -fx-mid-text-color;
 }
+
+
+

@@ -1,9 +1,10 @@
-@import "./defaultColours.css";
-@import "./defaultSizes.css";
-
 .root {
     -fx-base: rgba(0, 6, 6, 255);
     -fx-dark-text-color: #060808;
     -fx-mid-text-color: #608080;
     -fx-light-text-color: #CCFFFF;
 }
+
+@import "./defaultColours.css";
+@import "./defaultSizes.css";
+
