@@ -181,29 +181,6 @@ public class App extends Application {
         LOGGER.debug("error dialog shown for <{}>", e.getMessage());
     }
 
-    // FIXME: extract into own file
-    public static abstract class ListItemStringConverter<T> extends StringConverter<T> {
-
-        private List<T> list;
-
-        public ListItemStringConverter(List<T> list) {
-            this.list = list;
-        }
-
-        @Override
-        public abstract String toString(T t);
-
-        @Override
-        public T fromString(String string) {
-            for (T t : list) {
-                if (toString(t).equals(string)) {
-                    return t;
-                }
-            }
-            return null;
-        }
-    }
-
     private static class MidiInOutStringConverter extends ListItemStringConverter<MidiInOut> {
 
         public MidiInOutStringConverter(List<MidiInOut> list) {

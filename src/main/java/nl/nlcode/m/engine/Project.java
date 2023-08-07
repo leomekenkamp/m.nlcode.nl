@@ -77,6 +77,7 @@ public final class Project implements Serializable, Marshallable {
         Project result = SAVER_LOADER.load(path);
         result.init(control, path);
         result.fullyLoaded();
+        result.resetDirty();
         return result;
     }
 
@@ -163,7 +164,7 @@ public final class Project implements Serializable, Marshallable {
         dirty = true;
     }
 
-    private void dirtyReset() {
+    private void resetDirty() {
         dirty = false;
     }
 

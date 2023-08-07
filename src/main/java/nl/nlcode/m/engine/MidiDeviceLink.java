@@ -60,6 +60,7 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
                 LOGGER.debug("no midiDevice name, so not trying to find matching midiDevice");
             } else {
                 // FIXME: is there an other way than through a static? s has been unmarshalled already...
+                // Yes, can override startListening and use project to get to control.
                 for (MidiDevice search : Control.getInstance().getMidiDeviceMgr().getOpenMidiDevices()) {
                     if (midiDeviceName().equals(MidiDeviceMgr.getDisplayName(search))) {
                         target.setMidiDevice(search);

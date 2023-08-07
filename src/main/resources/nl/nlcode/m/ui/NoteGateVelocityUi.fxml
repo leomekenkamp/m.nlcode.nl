@@ -13,18 +13,18 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
 <?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
 <?import javafx.scene.control.TextField?>
-<?import nl.nlcode.m.ui.NoteGateUi?>
+<?import nl.nlcode.m.ui.NoteGateVelocityUi?>
 
 <fx:root 
     xmlns="http://javafx.com/javafx" 
     xmlns:fx="http://javafx.com/fxml/1"
-    type="NoteGateUi"  
-    styleClass="noteGate"
+    type="NoteGateVelocityUi"  
 >
     <instrument>
-        <VBox>
+        <FieldHBox>
             <Field labelText="%velocity.from">
                 <Spinner fx:id="fromVelocity" editable="true">
                     <valueFactory>
@@ -43,6 +43,6 @@
                     </valueFactory>
                 </Spinner>
             </Field>
-        </VBox>
+        </FieldHBox>
     </instrument>
 </fx:root>

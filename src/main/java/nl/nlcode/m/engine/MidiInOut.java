@@ -369,6 +369,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
             lookup.renamed(this);
         }
         if (changing) {
+            setDirty();
             uiUpdate(ui -> ui.nameChanged(name));
         }
     }

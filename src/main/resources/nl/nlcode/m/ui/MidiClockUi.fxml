@@ -22,13 +22,15 @@
 <?import nl.nlcode.m.ui.ProjectUi?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.FieldVBox?>
 
 <fx:root 
     xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
     type="MidiClockUi"  styleClass="channelMatrix">
     <instrument>
         <VBox>
-            <HBox styleClass="fields">
+            <FieldHBox styleClass="fields">
                 <Field labelText="%clockSource" styleClass="clockSource">
                     <EnumChoiceBox enumClass="nl.nlcode.m.engine.ClockSource" fx:id="clockChoice"/>
                 </Field>
@@ -46,8 +48,8 @@
                         </valueFactory>
                     </Spinner>                            
                 </Field>
-            </HBox>
-            <HBox styleClass="position">
+            </FieldHBox>
+            <FieldHBox styleClass="position">
                 <Field labelText="%bar" styleClass="bar">
                     <Label fx:id="barLabel" styleClass="value"/>
                 </Field>
@@ -57,7 +59,7 @@
                 <Field labelText="%tick" styleClass="tick">
                     <Label fx:id="tickLabel" styleClass="value"/>
                 </Field>
-            </HBox>
+            </FieldHBox>
             <Field labelText="%mediaControl">
                 <HBox styleClass="buttons">
                     <Button text="%clockStart" onAction="#start"/>

@@ -97,9 +97,6 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         if (name.length() > 255) {
             throw new FunctionalException("name size cannot exceed 255 characters");
         }
-        if (!name.matches("[a-zA-Z0-9 ]*")) {
-            throw new FunctionalException("name can contain letters, spaces and digits only");
-        }
     }
 
     public String suggestName(String base) {

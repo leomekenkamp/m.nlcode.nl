@@ -13,6 +13,8 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.FieldGridPane?>
 <?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import javafx.scene.control.TextField?>
@@ -27,31 +29,35 @@
     styleClass="echo"
 >
     <instrument>
-        <VBox>
-            <Field labelText="%tickSource">
+        <FieldGridPane>
+            <Field labelText="%tickSource" FieldGridPane.columnIndex="0" FieldGridPane.rowIndex="0">
                 <EnumChoiceBox fx:id="tickSource" enumClass="nl.nlcode.m.engine.TickSource" />
             </Field>
-            <Field labelText="%echoLength">
+            <Field labelText="%echoLength" FieldGridPane.columnIndex="1" FieldGridPane.rowIndex="0">
                 <Spinner fx:id="echoLength" editable="true">
                     <valueFactory>
                         <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="480"/>
                     </valueFactory>
                 </Spinner>
             </Field>
-            <Field labelText="%relativeVelocityDecrease">
-                <Spinner fx:id="relativeVelocityDecrease" editable="true">
-                    <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="100"/>
-                    </valueFactory>
-                </Spinner>
+            <Field labelText="%velocityDecrease" FieldGridPane.columnSpan="2" FieldGridPane.columnIndex="0" FieldGridPane.rowIndex="1">
+                <FieldHBox>
+                    <Field labelText="%relative">
+                        <Spinner fx:id="relativeVelocityDecrease" editable="true">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="100"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                    <Field labelText="%absolute">
+                        <Spinner fx:id="absoluteVelocityDecrease" editable="true">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                </FieldHBox>
             </Field>
-            <Field labelText="%absoluteVelocityDecrease">
-                <Spinner fx:id="absoluteVelocityDecrease" editable="true">
-                    <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
-                    </valueFactory>
-                </Spinner>
-            </Field>
-        </VBox>
+        </FieldGridPane>
     </instrument>
 </fx:root>

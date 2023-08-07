@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
+public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -27,17 +27,17 @@ public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
 
     private IntUpdateProperty toVelocity = new IntUpdateProperty(MIDI_DATA_MAX);
 
-    private ObjectUpdateProperty<IntervalClosure, U, NoteGate<U>> intervalClosure = new ObjectUpdateProperty(IntervalClosure.CLOSED);
+    private ObjectUpdateProperty<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure = new ObjectUpdateProperty(IntervalClosure.CLOSED);
 
     public static record SaveData0(
             int id,
             int fromVelocity,
             int toVelocity,
             IntervalClosure intervalClosure,
-            Marshalled<MidiInOut> s) implements Marshalled<NoteGate> {
+            Marshalled<MidiInOut> s) implements Marshalled<NoteGateVelocity> {
 
         @Override
-        public void unmarshalInto(Marshalled.Context context, NoteGate target) {
+        public void unmarshalInto(Marshalled.Context context, NoteGateVelocity target) {
             target.fromVelocity.set(fromVelocity());
             target.toVelocity.set(toVelocity());
             target.intervalClosure.set(intervalClosure());
@@ -45,15 +45,15 @@ public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
         }
 
         @Override
-        public NoteGate createMarshallable() {
-            return new NoteGate();
+        public NoteGateVelocity createMarshallable() {
+            return new NoteGateVelocity();
         }
 
     }
 
     @Override
     public Marshalled marshalInternal(int id, Context context) {
-        return new NoteGate.SaveData0(
+        return new NoteGateVelocity.SaveData0(
                 id,
                 fromVelocity.get(),
                 toVelocity.get(),
@@ -62,7 +62,7 @@ public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
         );
     }
 
-    public NoteGate() {
+    public NoteGateVelocity() {
     }
 
     @Override
@@ -104,7 +104,7 @@ public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
         this.fromVelocity.set(fromVelocity);
     }
 
-    public IntUpdateProperty<U, NoteGate<U>> fromVelocity() {
+    public IntUpdateProperty<U, NoteGateVelocity<U>> fromVelocity() {
         return fromVelocity;
     }
 
@@ -116,7 +116,7 @@ public class NoteGate<U extends NoteGate.Ui> extends MidiInOut<U> {
         this.toVelocity.set(toVelocity);
     }
 
-    public IntUpdateProperty<U, NoteGate<U>> toVelocity() {
+    public IntUpdateProperty<U, NoteGateVelocity<U>> toVelocity() {
         return toVelocity;
     }
 

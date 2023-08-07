@@ -9,11 +9,8 @@ import java.util.function.Consumer;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.property.adapter.JavaBeanIntegerProperty;
 import javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder;
 import javafx.collections.ListChangeListener;
@@ -25,7 +22,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputDialog;
@@ -146,12 +142,11 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
 
         setName(getMidiInOut().getName());
         nameProperty().addListener((ov, oldValue, newValue) -> {
-            // FIXME: see if a TextFormatter works better here
             T midiInOut = getMidiInOut();
             if (midiInOut != null && !midiInOut.getName().equals(newValue)) {
                 getMidiInOut().setName(newValue);
                 LOGGER.debug("name changed to {}", getMidiInOut().getName());
-                getProjectUi().setDirty();
+                setDirty();
             }
         });
 
@@ -210,7 +205,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     private ListChangeListener<MidiInOutUi> inputSelectionChangeListener
             = (ListChangeListener.Change<? extends MidiInOutUi> change) -> {
                 LOGGER.debug("change in input selection of <{}>", getMidiInOut());
-                getProjectUi().setDirty();
+                setDirty();
                 inputSelectionHelper.process(change);
             };
 
@@ -249,7 +244,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     private ListChangeListener<MidiInOutUi> outputSelectionChangeListener
             = (ListChangeListener.Change<? extends MidiInOutUi> change) -> {
                 LOGGER.debug("change in output selection of {}", getMidiInOut());
-                getProjectUi().setDirty();
+                setDirty();
                 outputSelectionHelper.process(change);
             };
 

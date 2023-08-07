@@ -164,9 +164,6 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
         ownerProperty.set(owner);
     }
 
-    /*
-    FIXME: get rid of this: the list with the items should know who the owner is and not add it
-     */
     public MidiInOutUi<?> getOwner() {
         return ownerProperty.get();
     }

@@ -11,11 +11,11 @@ import static nl.nlcode.m.engine.EqualToShortMessage.equalTo;
  *
  * @author leo
  */
-public class NoteGateTest extends DefaultMidiInOutTest<NoteGate> {
+public class NoteGateTest extends DefaultMidiInOutTest<NoteGateVelocity> {
 
     @Override
-    protected NoteGate createInstance() {
-        return new NoteGate();
+    protected NoteGateVelocity createInstance() {
+        return new NoteGateVelocity();
     }
 
     @Test

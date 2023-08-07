@@ -9,59 +9,6 @@
 }
 
 
-
-
-.root.midiInOut.focus .tab-header-background {
-    -fx-background-color: linear-gradient(to right, #0000FF, #FF7F00);
-}
-
-.root.midiInOut.connectedSender .tab-header-background {
-    -fx-background-color: #0000FF;
-}
-
-.combo-box-popup .list-cell:disabled  {
-    -fx-opacity: 0.4;
-}
-
-.list-cell:disabled  {
-    -fx-opacity: 0.4;
-}
-
-ControlUi, ProjectUi {
-    -fx-background-color: black;
-}
-
-ControlUi .logoText, ProjectUi .logoText {
-    -fx-text-fill: aqua;
-}
-
-ControlUi .version  {
-    -fx-text-fill: #00aaaa;
-}
-
-HBox.canvasContainer {
-    -fx-padding: 5px;
-    -fx-border-width: 2px;
-}
-MidiClockUi .position {
-    -fx-background-color: black;
-}
-MidiClockUi .position Label {
-    -fx-text-fill: aqua;
-}
-Label.numberFeedback {
-    /*-fx-text-fill: red; actual text color */
-    -fx-border-color: -fx-mid-text-color;
-    -fx-background-color: black; 
-}
-Field {
-    -fx-border-color: -fx-mid-text-color;
-}
-
-
-
-
-
 .root {
     -fx-font-size: 9pt;
 /*    -fx-font-family: sans-serif;
@@ -217,7 +164,7 @@ Label.numberFeedback {
     -fx-font-weight: bolder; 
     -fx-alignment: CENTER_RIGHT;
 }
-GridPane.channels {
+GridPane.channels, FieldGridPane {
     -fx-hgap: 0.5em;
     -fx-vgap: 0.5em;
 }
@@ -236,6 +183,9 @@ Field {
     -fx-padding: 0.4em;
     -fx-border-width: 1px;
     -fx-spacing: 0.2em;
+}
+Field Label {
+    -fx-alignment: center;
 }
 Label.numberFeedback {
     -fx-pref-width: 5em; 

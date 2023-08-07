@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -50,6 +49,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.JvmStuff;
 import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.MidiInOut;
@@ -66,7 +66,7 @@ import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.Sequencer;
-import nl.nlcode.m.engine.NoteGate;
+import nl.nlcode.m.engine.NoteGateVelocity;
 import nl.nlcode.m.engine.NoteHolder;
 import nl.nlcode.m.engine.NoteChannelSpreader;
 import nl.nlcode.m.engine.ProgramChanger;
@@ -113,8 +113,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private ControlUi controlUi;
 
     private ObjectProperty<Path> pathProperty = new SimpleObjectProperty<>();
-
-    public ExecutorService executor;
 
     private BooleanProperty dirtyProperty = new SimpleBooleanProperty();
 
@@ -167,8 +165,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         this.project = project;
         this.controlUi = controlUi;
         this.menuItem = menuItem;
-
-        executor = ForkJoinPool.commonPool();
 
         pathProperty.set(project.getPath());
 
@@ -282,7 +278,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     @FXML
     public void createNoteGate(ActionEvent event) {
-        activateAndCreateStage(new NoteGate());
+        activateAndCreateStage(new NoteGateVelocity());
     }
 
     @FXML
@@ -345,9 +341,6 @@ public final class ProjectUi extends BorderPane implements FxmlController {
                 LOGGER.debug("selectable inputs: <{}>", receiverUi.getInputListView().getItems());
                 LOGGER.debug("input pre: <{}>", receiverUi.getInputListView().getChecked());
                 receiverUi.getInputListView().setChecked(midiInOutUi, true);
-                LOGGER.debug("input post: <{}>", receiverUi.getInputListView().getChecked());
-                LOGGER.debug("and reversely adding <{}> to output list of <{}>", receiverUi, midiInOutUi);
-                midiInOutUi.getOutputListView().setChecked(receiverUi, true); //FIXME is this needed?
             }
         }
     }

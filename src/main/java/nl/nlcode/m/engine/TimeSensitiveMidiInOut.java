@@ -1,10 +1,10 @@
 package nl.nlcode.m.engine;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import nl.nlcode.m.JvmStuff;
 import nl.nlcode.m.linkui.ObjectUpdateProperty;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
@@ -24,8 +24,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
 
     protected transient final Object SYNCHRONIZATION_LOCK = new Object();
 
-    // FIXME: some shared pool?
-    private transient ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+    private static ScheduledExecutorService scheduledExecutorService = JvmStuff.getInstance().scheduledExecutorService();
 
     private ScheduledFuture<?> timerFuture;
 

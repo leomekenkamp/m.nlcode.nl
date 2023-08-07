@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author leo
  */
-public class MidiInOutUiStringConverter extends App.ListItemStringConverter<MidiInOutUi<?>> {
+public class MidiInOutUiStringConverter extends ListItemStringConverter<MidiInOutUi<?>> {
 
     public MidiInOutUiStringConverter(List<MidiInOutUi<?>> midiInOutUiList) {
         super(midiInOutUiList);
