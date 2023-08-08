@@ -12,6 +12,7 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.ToolBar?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldVBox?>
 <?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import javafx.scene.control.TextField?>
@@ -26,7 +27,14 @@
     styleClass="noteChannelSpreader"
 >
     <instrument>
-        <VBox>
+        <FieldVBox>
+            <Field labelText="%inputChannel">
+                <Spinner fx:id="inputChannel" editable="true">
+                    <valueFactory>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="15"/>
+                    </valueFactory>
+                </Spinner>
+            </Field>
             <Field labelText="%useAsOutput">
                 <GridPane styleClass="channels">
                     <CheckBox fx:id="useAsOutput0" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
@@ -47,13 +55,6 @@
                     <CheckBox fx:id="useAsOutput15" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
                 </GridPane>
             </Field>
-            <Field labelText="%inputChannel">
-                <Spinner fx:id="inputChannel" editable="true">
-                    <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="15"/>
-                    </valueFactory>
-                </Spinner>
-            </Field>
-        </VBox>
+        </FieldVBox>
     </instrument>
 </fx:root>

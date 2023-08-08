@@ -3,13 +3,14 @@ archetype = "default"
 title = "MIDI message dump"
 +++
 
-## generic description
+## description
 A *MIDI message dump* is a MidiInOut part that displays all (or most) of all incoming MIDI messages.
 Note that this MidiInOut part has no output, only input.
+![MIDI message dump](midi_message_dump.png)
 
 ## typical use case
-TODO
+A *MIDI message dump* is typically used for diagnostic purposes.
 
 ## example
-TODO
-
+Link a *MIDI message dump* to the *outputs* of a [MIDI device link](../midi_device_link/) that is
+linked to an external MIDI device to see which messages are send from that external device.

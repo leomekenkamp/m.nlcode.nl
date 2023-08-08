@@ -3,12 +3,14 @@ archetype = "default"
 title = "Program changer"
 +++
 
-## generic description
+## description
 A *Program changer* can select different patches, instruments, whatever you like to call it.
+![Program changer](program_changer.png)
 
 ## typical use case
-TODO
+Change the sounds that a synthesizer produces by changing the program.
 
 ## example
-TODO
-
+Connect the **outputs** of a *Program changer* to the **inputs** of a
+[MIDI device link](../midi_device_link/) that is linked to a synthesizer. Play a note, select a
+different program, and play the same note again. You hear a different sound.

@@ -17,15 +17,14 @@ belong to one project. I will take for granted that you know how saving and load
 example here on saving and loading a project.
 
 ## but first: specify which OS MIDI devices can be used
-**m.nlcode.nl** can work with other MIDI capable applications and drivers that are know to the
+**m.nlcode.nl** can work with other MIDI capable applications and drivers that are known to the
 operating system of your computer. But you first need to specify which ones you want to be able to
 work with in your projects.
 
-- Got to the main **m.nlcode.nl** application window.
-- Select **File | Settings | system MIDI devices**.
+- Got to the main **m.nlcode.nl** application window. 
+- Select **File | Settings | system MIDI devices**.![main | File | Settings](main_file_settings.png)
 - Switch on all devices that you would like to be able to use.
-- For this *first project* tutorial make sure you turn on *Gervill, Software MIDI synthesizer - OpenJDK (receiver)*
-TODO: screenshot
+- For this *first project* tutorial make sure you turn on *Gervill, Software MIDI synthesizer - OpenJDK (receiver)*.![Settings | system MIDI devices](settings_system_midi_devices.png)
 
 ## MidiInOut parts
 MidiInOut parts are the building blocks for building a project that can monitor, change, filter and
@@ -33,19 +32,16 @@ create MIDI data. That is basically it. A simple example will probably say more.
 
 - Open a new project. 
   - Go to the main **m.nlcode.nl** application window.
-  - Select **File | New project**.
-TODO: screenshot
+  - Select **File | New project**.![main | File | New project](main_file_new_project.png)
 - Go to the newly created *Project* window, probably called *noname00.m*.
-- Select **Create | Link to MIDI device**.
-TODO: screenshot
+- Select **Create | Link to MIDI device**.![project | Create | Link to MIDI device](project_create_link_to_midi_device.png)
 - Go to the newly created *Link to MIDI device* window, probably called *Link to MIDI device 0*.
 - On the *Link to MIDI device* tab, select *Gervill, Software MIDI synthesizer - OpenJDK (receiver)*.
-TODO: screenshot
+![Link to MIDI device| Gervill](link_to_midi_device_gervill.png)
 - Go back to your *Project* window, probably called *noname00.m*.
-- Select **Create | Keyboard MIDI keyboard**.
-TODO: screenshot
+- Select **Create | Keyboard MIDI keyboard**.![project | Create | Keyboard MIDI keyboard](project_create_keyboard_midi_keyboard.png)
 - Go to the newly created *Keyboard MIDI keyboard* window, probably called *Keyboard MIDI keyboard 0*.
-- On the *outputs* tab, select *Link to MIDI device 0*.
+- On the *outputs* tab, select *Link to MIDI device 0*.![Keyboard MIDI keyboard | outputs](keyboard_midi_keyboard_outputs.png)
 - On the *Keyboard MIDI keyboard* tab, click on the *D* button: you should hear a sound!
 
 If you hear no sound, check the volume. If the volume is ok but you do not hear any sound, then I am
@@ -62,18 +58,18 @@ well as multiple receivers. Use the *shift* or *control* keys while clicking to 
 
 Example: expanding on the same example as above, do the following.
 - Create a *MIDI Lights* MidiInOut part.
-- In its **input** tab, select **Keyboard MIDI Keyboard 0**.
-- Click (with the mouse) on A, S, D or any of the other keys of the *Keyboard MIDI keyboard* buttons.
+- In its **inputs** tab, select **Keyboard MIDI Keyboard 0**.
+- Click (with the mouse) on *A*, *S*, *D* or any of the other keys of the *Keyboard MIDI keyboard* buttons.
 - Be amazed by the sound, as well as the dazzling display of visuals in the MIDI Lights part.
 
 MIDI Lights is an example of a MidiInOut without any 'out'. It is simply something that gives a
 visual representation of MIDI data, but does nothing to the data it receives, not even sending it
 on. That also means that it has no 'output' tab and it cannot be selected as an input for other
-MidiInOut parts. Keyboard Keyboard is kind of related, but it can only send output and not receive
-input.
+MidiInOut parts. Keyboard Keyboard is kind of related, in that it can only send output and not
+receive input.
  
 ## Other MidiInOut components
 There is a number of other MidiInOut components. Now that you know the basics of creating them and
-linking them to each other, feel free to explore. The modularity of m.nlcode.nl combined with the 
+linking them to each other, feel free to explore. The modularity of **m.nlcode.nl** combined with the 
 simplistic interface should provide for a low barrier to entry.
  

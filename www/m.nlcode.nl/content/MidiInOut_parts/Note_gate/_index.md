@@ -1,15 +1,16 @@
 +++
 archetype = "default"
-title = "Note gate"
+title = "Note gate (velocity)"
 +++
 
-## generic description
-A *Note gate* acts as a gate in that it only sends out notes within certain velocity boundaries.
+## description
+A *Note gate (velocity)* acts as a gate in that it only sends out notes within certain velocity boundaries.
 So basically you use a *Note gate* as a filter for notes that are too 'soft' or too 'loud'.
+![Note gate (velocity)](note_gate_velocity.png)
 
 ## typical use case
-TODO
+Filtering notes based on their velocity.
 
 ## example
-TODO
+No inspiration, sorry.
 

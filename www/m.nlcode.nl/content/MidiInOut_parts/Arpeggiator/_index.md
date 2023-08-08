@@ -3,7 +3,7 @@ archetype = "default"
 title = "Arpeggiator"
 +++
 
-## generic description
+## description
 An *Arpeggiator* plays notes of a chord individually in a progressive rising or descending order.
 ![Arpeggiator](arpeggiator.png)
 
