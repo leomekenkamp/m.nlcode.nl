@@ -10,6 +10,4 @@ messages to other MidiInOut parts, or receive MIDI messages from other MidiInOut
 Use the **input** and **output** tabs to select the other MidiInOut parts to receive from and send
 to.
 
-TODO: screenshots
-
 {{% children %}}
