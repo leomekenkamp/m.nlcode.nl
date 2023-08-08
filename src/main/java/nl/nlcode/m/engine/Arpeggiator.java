@@ -117,7 +117,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         lengthPer = new ObjectUpdateProperty<>(ArpeggiatorLengthPer.CHORD);
         lengthPer.register(this);
         lengthPer.addListener(onChangeRecalculateNoteLength);
-        overrideAttackVelocity = new IntUpdateProperty<>(MIDI_DATA_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
+        overrideAttackVelocity = new IntUpdateProperty<>(64, MIDI_DATA_NONE, MIDI_DATA_MAX);
         overrideAttackVelocity.register(this);
         releaseVelocity = new IntUpdateProperty<>(64, MIDI_DATA_MIN, MIDI_DATA_MAX);
         releaseVelocity.register(this);

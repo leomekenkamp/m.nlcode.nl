@@ -2,11 +2,11 @@ package nl.nlcode.m.ui;
 
 import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.ArpeggiatorLengthPer;
+import nl.nlcode.m.engine.TickSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +17,10 @@ import org.slf4j.LoggerFactory;
 public class ArpeggiatorUi extends MidiInOutUi<Arpeggiator> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    @FXML
+    private EnumChoiceBox<TickSource> tickSource;
+    private ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
 
     @FXML
     private Spinner<Integer> channel;
@@ -41,15 +45,15 @@ public class ArpeggiatorUi extends MidiInOutUi<Arpeggiator> {
     @FXML
     private Spinner<Integer> overrideAttackVelocity;
     private IntUpdatePropertyBridge overrideAttackVelocityBackend;
-    
+
     @FXML
     private Spinner<Integer> releaseVelocity;
     private IntUpdatePropertyBridge releaseVelocityBackend;
-    
 
     public ArpeggiatorUi(ProjectUi projectUi, Arpeggiator arpeggiator, MenuItem menuItem) {
         super(projectUi, arpeggiator, menuItem);
         loadFxml(ArpeggiatorUi.class, App.MESSAGES);
+        tickSourceBackend = ObjectUpdatePropertyBridge.create(getMidiInOut().tickSource(), tickSource.valueProperty());
         channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channelProperty(), channel.getValueFactory().valueProperty());
         octaveUpBackend = IntUpdatePropertyBridge.create(getMidiInOut().octaveUpProperty(), octaveUp.getValueFactory().valueProperty());
         octaveDownBackend = IntUpdatePropertyBridge.create(getMidiInOut().octaveDownProperty(), octaveDown.getValueFactory().valueProperty());
