@@ -4,6 +4,7 @@ plugins {
     //id 'org.openjfx.javafxplugin' version '0.0.14'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id "org.beryx.jlink" version "2.26.0"
+    id "io.github.fstaudt.hugo" version "0.6.0"
 }
 
 defaultTasks 'build'
@@ -156,7 +157,7 @@ jlink {
 }
 
 task artifacts(type: Copy) {
-    description 'Copies all artifacts into one place.'
+    description 'Copies all (Github generated) artifacts into one place.'
     from jar
     from shadowJar
     from jpackage
@@ -168,4 +169,29 @@ task artifacts(type: Copy) {
     include '*.rpm'
     include '*.exe'
     include '*.msi'
+}
+
+hugo {
+    // Hugo version
+    version = "0.115.1"
+    // Relative path to sources of Hugo site in Gradle project
+    sourceDirectory = "www/m.nlcode.nl"
+    // Download URL for Windows ( {0} can be used to replace version )
+    windowsDownloadUrl = "https://github.com/gohugoio/hugo/releases/download/v{0}/hugo_extended_{0}_windows-amd64.zip"
+    // Download URL for Linux ( {0} can be used to replace version )
+    linuxDownloadUrl = "https://github.com/gohugoio/hugo/releases/download/v{0}/hugo_extended_{0}_linux-amd64.tar.gz"
+    // Download URL for macOS ( {0} can be used to replace version )
+    macOSDownloadUrl = "https://github.com/gohugoio/hugo/releases/download/v{0}/hugo_extended_{0}_darwin-universal.tar.gz"
+    // Operating system family (Windows, macOS or Unix)
+    // osFamily = io.github.fstaudt.hugo.OsFamily.CURRENT_SYSTEM // default value derived from system property "os.name"
+    // does not work:  No such property: CURRENT_SYSTEM for class: io.github.fstaudt.hugo.OsFamily
+    // value is one of: WINDOWS, MAC, UNIX
+    //osFamily = MAC
+}
+
+task packageWebsite(type: Zip) {
+    archiveFileName = "public.zip"
+    destinationDirectory = layout.buildDirectory.dir('www')
+    from 'www/m.nlcode.nl/public'
+    dependsOn hugoBuild
 }

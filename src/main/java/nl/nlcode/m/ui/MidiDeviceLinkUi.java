@@ -71,6 +71,7 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
     protected void handleInitialize() {
         super.handleInitialize();
         midiDeviceComboBox.getItems().add(NONE_MIDI_DEVICE);
+        midiDeviceComboBox.getItems().addAll(getProjectUi().getControlUi().getOpenMidiDevices());
         midiDeviceComboBox.setConverter(App.createMidiDeviceConverter(getProjectUi().getControlUi().getOpenMidiDevices()));
         listChangeListener = new MidiDeviceListChangeListener(midiDeviceComboBox);
         getProjectUi().getControlUi().getOpenMidiDevices().addListener(new WeakListChangeListener(listChangeListener));
@@ -83,6 +84,7 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
         });
         midiDeviceListProp = new SimpleListProperty(getProjectUi().getControlUi().getOpenMidiDevices());
         noOpenMidiDevices.visibleProperty().bind(midiDeviceListProp.emptyProperty());
+
     }
 
     @Override
