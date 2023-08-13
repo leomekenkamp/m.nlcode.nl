@@ -98,8 +98,6 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         );
     }
 
-    private transient LongUpdateProperty<U, MidiClock<U>> timerStartedWithTickTimeMicroseconds;
-
     private transient ScheduledExecutorService tickScheduler;
 
     private transient ScheduledFuture tickFuture;
@@ -121,10 +119,7 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         ticksPerBeat.setAfterChange(this, ui -> {
         });
         tickScheduler = Executors.newSingleThreadScheduledExecutor();
-        timerStartedWithTickTimeMicroseconds.setAfterChange(this, ui -> {
-        });
         tickTimerRunning = new AtomicBoolean(false);
-        timerStartedWithTickTimeMicroseconds = new LongUpdateProperty<>(this, 0);
 
         resetPosition();
     }
@@ -265,7 +260,6 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
     private void startTimer(boolean forceRestart) {
         if ((!tickTimerRunning.compareAndExchange(false, true) && !forceRestart) || (forceRestart && tickFuture.isCancelled())) {
             long scheduleInterval = getTickTimeMicroseconds();
-            timerStartedWithTickTimeMicroseconds.set(scheduleInterval);
             tickFuture = tickScheduler.scheduleAtFixedRate(() -> {
                 clockTick();
                 if (scheduleInterval != getTickTimeMicroseconds()) {

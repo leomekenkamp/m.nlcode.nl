@@ -39,7 +39,6 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
     private final IntUpdateProperty<U, Arpeggiator<U>> releaseVelocity;
 
     private final ObjectUpdateProperty<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffect;
-            
 
     public static record SaveData0(
             int id,
@@ -189,12 +188,10 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
                     int allNoteCount = octaveCount * receivedNotesOn.size();
                     noteLength = length.get() / allNoteCount;
                     int remainder = length.get() % allNoteCount;
-                    if (remainder > 0) {
-                        int octaveOffset = currentOctave + octaveDown.get();
-                        if (currentNote + (currentOctave * receivedNotesOn.size()) < remainder) {
-                            // similar to CHORD above
-                            noteLength += 1;
-                        }
+                    int octaveOffset = currentOctave + octaveDown.get();
+                    if (currentNote + (octaveOffset * receivedNotesOn.size()) < remainder) {
+                        // similar to CHORD above
+                        noteLength += 1;
                     }
                 }
             }
@@ -331,11 +328,11 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
     public ArpeggiatorActionTakesEffect getNewChordTakesEffect() {
         return newChordTakesEffect.get();
     }
-    
+
     public void setNewChordTakesEffect(ArpeggiatorActionTakesEffect newChordTakesEffect) {
         this.newChordTakesEffect.set(newChordTakesEffect);
     }
-    
+
     public ObjectUpdateProperty<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffectProperty() {
         return newChordTakesEffect;
     }
