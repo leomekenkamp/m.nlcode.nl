@@ -59,6 +59,10 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
     protected UpdateProperty() {
     }
 
+    protected UpdateProperty(H holder) {
+        register(holder);
+    }
+
     public abstract T getValue();
 
     public abstract void setValue(T newValue);

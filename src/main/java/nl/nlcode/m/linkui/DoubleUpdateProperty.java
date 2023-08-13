@@ -14,14 +14,15 @@ public class DoubleUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends
 
     private transient double max;
 
-    public DoubleUpdateProperty(double value) {
-        this(value, Double.MIN_VALUE, Double.MAX_VALUE);
+    public DoubleUpdateProperty(H holder, double value) {
+        this(holder, value, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
-    public DoubleUpdateProperty(double value, double min, double max) {
+    public DoubleUpdateProperty(H holder, double value, double min, double max) {
         this.min = min;
         this.max = max;
         set(value);
+        register(holder);
     }
 
     public double get() {

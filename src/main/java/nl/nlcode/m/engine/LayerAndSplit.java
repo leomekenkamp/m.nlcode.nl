@@ -74,11 +74,11 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
 
         private transient LayerAndSplit layerAndSplit;
 
-        private IntUpdateProperty<Layer.Ui, Layer> fromNote;
-        private IntUpdateProperty<Layer.Ui, Layer> toNote;
-        private IntUpdateProperty<Layer.Ui, Layer> inputChannel;
-        private IntUpdateProperty<Layer.Ui, Layer> outputChannel;
-        private IntUpdateProperty<Layer.Ui, Layer> transpose;
+        private final IntUpdateProperty<Layer.Ui, Layer> fromNote;
+        private final IntUpdateProperty<Layer.Ui, Layer> toNote;
+        private final IntUpdateProperty<Layer.Ui, Layer> inputChannel;
+        private final IntUpdateProperty<Layer.Ui, Layer> outputChannel;
+        private final IntUpdateProperty<Layer.Ui, Layer> transpose;
 
         public static final record SaveData0(
                 int id,
@@ -120,11 +120,11 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
         }
 
         public Layer(int channel) {
-            fromNote = new IntUpdateProperty<>(NOTE_MIN, NOTE_MIN, NOTE_MAX);
-            toNote = new IntUpdateProperty<>(NOTE_MAX, NOTE_MIN, NOTE_MAX);
-            inputChannel = new IntUpdateProperty<>(channel, CHANNEL_MIN, CHANNEL_MAX);
-            outputChannel = new IntUpdateProperty<>(channel, CHANNEL_MIN, CHANNEL_MAX);
-            transpose = new IntUpdateProperty<>(0);
+            fromNote = new IntUpdateProperty<>(this, NOTE_MIN, NOTE_MIN, NOTE_MAX);
+            toNote = new IntUpdateProperty<>(this, NOTE_MAX, NOTE_MIN, NOTE_MAX);
+            inputChannel = new IntUpdateProperty<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
+            outputChannel = new IntUpdateProperty<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
+            transpose = new IntUpdateProperty<>(this, 0);
         }
 
         public int getFromNote() {

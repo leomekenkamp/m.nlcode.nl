@@ -10,9 +10,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javax.sound.midi.MidiDevice;
 import nl.nlcode.m.engine.MidiDeviceLink;
-import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
 import static nl.nlcode.m.engine.MidiDeviceMgr.NONE_MIDI_DEVICE;
 
 /**

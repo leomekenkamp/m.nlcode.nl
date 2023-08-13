@@ -23,11 +23,9 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private IntUpdateProperty fromVelocity = new IntUpdateProperty(MIDI_DATA_MIN);
-
-    private IntUpdateProperty toVelocity = new IntUpdateProperty(MIDI_DATA_MAX);
-
-    private ObjectUpdateProperty<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure = new ObjectUpdateProperty(IntervalClosure.CLOSED);
+    private final IntUpdateProperty fromVelocity;
+    private final IntUpdateProperty toVelocity;
+    private final ObjectUpdateProperty<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure;
 
     public static record SaveData0(
             int id,
@@ -63,6 +61,9 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
     }
 
     public NoteGateVelocity() {
+        fromVelocity = new IntUpdateProperty(this, MIDI_DATA_MIN);
+        toVelocity = new IntUpdateProperty(this, MIDI_DATA_MAX);
+        intervalClosure = new ObjectUpdateProperty(this, IntervalClosure.CLOSED);
     }
 
     @Override

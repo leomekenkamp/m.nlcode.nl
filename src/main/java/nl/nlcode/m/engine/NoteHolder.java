@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import nl.nlcode.m.linkui.BooleanUpdateProperty;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,35 +27,40 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private transient Map<Integer, ShortMessage>[] bufferedNoteOffMessages;
-
-    private transient Set<Integer>[] receivedNotesOn;
+    private final BooleanUpdateProperty<U, NoteHolder<U>> newNoteOnBeforeOldNoteOff;
 
     public static record SaveData0(
             int id,
+            boolean newNoteOnBeforeOldNoteOff,
             Marshalled<MidiInOut> s) implements Marshalled<NoteHolder> {
 
         @Override
         public void unmarshalInto(Context context, NoteHolder target) {
             s.unmarshalInto(context, target);
+            target.setNewNoteOnBeforeOldNoteOff(newNoteOnBeforeOldNoteOff());
         }
 
         @Override
         public NoteHolder createMarshallable() {
             return new NoteHolder();
         }
-        
+
     }
+
+    private transient Map<Integer, ShortMessage>[] bufferedNoteOffMessages;
+
+    private transient Set<Integer>[] receivedNotesOn;
 
     @Override
     public Marshalled marshalInternal(int id, Context context) {
         return new SaveData0(
-        id,
-        super.marshalInternal(-1, context));
+                id,
+                newNoteOnBeforeOldNoteOff.get(),
+                super.marshalInternal(-1, context));
     }
-    
-    
+
     public NoteHolder() {
+        newNoteOnBeforeOldNoteOff = new BooleanUpdateProperty<>(this, false);
         bufferedNoteOffMessages = new LinkedHashMap[CHANNEL_COUNT];
         receivedNotesOn = new Set[CHANNEL_COUNT];
         for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
@@ -85,8 +91,13 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
                     receivedNotesOn[channel].add(note);
                     if (!noteOffBuffer.containsKey(note)) {
                         LOGGER.debug("note <{}> is not on, turning on", note);
-                        clearNotCurrentlyDownNotes(channel);
-                        send(incoming);
+                        if (newNoteOnBeforeOldNoteOff.get()) {
+                            send(incoming);
+                            clearNotCurrentlyDownNotes(channel);
+                        } else {
+                            clearNotCurrentlyDownNotes(channel);
+                            send(incoming);
+                        }
                         noteOffBuffer.put(note, null);
                         uiUpdate(ui -> ui.notesHeldChanged(channel, noteOffBuffer.size()));
                     }
@@ -138,14 +149,24 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
     }
 
     public void clearNotCurrentlyDownNotes() {
-        for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
-            NoteHolder.this.clearNotCurrentlyDownNotes(channel);
-        }
+        forAllChannels(channel -> clearNotCurrentlyDownNotes(channel));
     }
 
     public int countCurrentlyDownNotes(int channel) {
         verifyChannel(channel);
         return bufferedNoteOffMessages[channel].size();
+    }
+
+    public boolean getNewNoteOnBeforeOldNoteOff() {
+        return newNoteOnBeforeOldNoteOff.get();
+    }
+
+    public void setNewNoteOnBeforeOldNoteOff(boolean newNoteOnBeforeOldNoteOff) {
+        this.newNoteOnBeforeOldNoteOff.set(newNoteOnBeforeOldNoteOff);
+    }
+
+    public BooleanUpdateProperty<U, NoteHolder<U>> newNoteOnBeforeOldNoteOffProperty() {
+        return newNoteOnBeforeOldNoteOff;
     }
 
 }

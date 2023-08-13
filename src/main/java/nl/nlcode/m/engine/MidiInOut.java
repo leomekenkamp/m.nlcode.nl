@@ -676,7 +676,6 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     public static class SendReceiveLoopDetectedException extends RuntimeException {
-
     }
 
     public static String toString(ShortMessage msg) {

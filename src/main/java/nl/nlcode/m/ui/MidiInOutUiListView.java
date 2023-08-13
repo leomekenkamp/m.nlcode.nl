@@ -8,14 +8,10 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.cell.CheckBoxListCell;
 import nl.nlcode.javafxutil.FxmlController;
 import org.slf4j.Logger;
@@ -41,7 +37,7 @@ public class MidiInOutUiListView extends ListView<MidiInOutUi<?>> implements Fxm
     private final ObservableList<MidiInOutUi<?>> checked = FXCollections.observableArrayList();
 
     private final ObservableList<MidiInOutUi<?>> checkedReadonly = FXCollections.unmodifiableObservableList(checked);
-
+    
     private ListChangeListener<MidiInOutUi<?>> availableMidiInOutUiListChangeListener = new ListChangeListener<>() {
         @Override
         public void onChanged(ListChangeListener.Change<? extends MidiInOutUi<?>> change) {

@@ -19,19 +19,19 @@ public class EchoUi extends MidiInOutUi<Echo> implements Echo.Ui {
 
     @FXML
     private EnumChoiceBox<TickSource> tickSource;
-    private ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
+    private final ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
 
     @FXML
     private Spinner<Integer> echoLength;
-    private IntUpdatePropertyBridge echoLengthBackend;
+    private final IntUpdatePropertyBridge echoLengthBackend;
 
     @FXML
     private Spinner<Integer> absoluteVelocityDecrease;
-    private IntUpdatePropertyBridge absoluteVelocityDecreaseBackend;
+    private final IntUpdatePropertyBridge absoluteVelocityDecreaseBackend;
 
     @FXML
     private Spinner<Integer> relativeVelocityDecrease;
-    private IntUpdatePropertyBridge relativeVelocityDecreaseBackend;
+    private final IntUpdatePropertyBridge relativeVelocityDecreaseBackend;
 
     public EchoUi(ProjectUi projectUi, Echo echo, MenuItem menuItem) {
         super(projectUi, echo, menuItem);

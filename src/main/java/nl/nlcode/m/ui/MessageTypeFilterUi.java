@@ -1,7 +1,6 @@
 package nl.nlcode.m.ui;
 
 import java.lang.invoke.MethodHandles;
-import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;

@@ -21,7 +21,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     private volatile Set<Integer>[] channelToKeyDown;
 
-    private IntUpdateProperty<U, NoteChannelSpreader<U>> inputChannel;
+    private final IntUpdateProperty<U, NoteChannelSpreader<U>> inputChannel;
 
     private transient int prevChannelIndex = CHANNEL_MAX;
 
@@ -69,7 +69,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     public NoteChannelSpreader() {
         playingNoteToChannel = new HashMap<>();
-        inputChannel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
+        inputChannel = new IntUpdateProperty<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
         channelToKeyDown = new Set[CHANNEL_COUNT];
         setOutputChannel(0, true);
     }

@@ -40,7 +40,7 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
 
     }
 
-    private final ObjectUpdateProperty<MidiDevice, U, MidiDeviceLink<U>> midiDevice = new ObjectUpdateProperty<>(null);
+    private final ObjectUpdateProperty<MidiDevice, U, MidiDeviceLink<U>> midiDevice;
 
     private transient SendReceiver sendReceiver;
 
@@ -113,6 +113,7 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
 
     public MidiDeviceLink() {
         sendReceiver = new SendReceiver();
+        midiDevice = new ObjectUpdateProperty<>(this, null);
         midiDevice.setAfterChange(this, ui -> ui.midiDeviceChanged());
     }
 

@@ -35,7 +35,7 @@ public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> 
 
     private List<EnhancedMessage> enhancedMessageList = Collections.synchronizedList(new ArrayList<>());
 
-    private ObjectUpdateProperty<ShowTicks, U, MidiMessageDump<U>> showTicks = new ObjectUpdateProperty(ShowTicks.ALL);
+    private final ObjectUpdateProperty<ShowTicks, U, MidiMessageDump<U>> showTicks;
 
     public static record SaveData0(
             int id,
@@ -68,6 +68,7 @@ public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> 
     }
 
     public MidiMessageDump() {
+        showTicks = new ObjectUpdateProperty(this, ShowTicks.ALL);
     }
 
     @Override

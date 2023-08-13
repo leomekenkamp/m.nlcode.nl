@@ -11,8 +11,9 @@ public class ObjectUpdateProperty<T, U, H extends UpdateProperty.Holder<U>> exte
 
     private AtomicReference<T> ref = new AtomicReference<>();
 
-    public ObjectUpdateProperty(T value) {
+    public ObjectUpdateProperty(H holder, T value) {
         ref.set(value);
+        register(holder);
     }
 
     public T get() {

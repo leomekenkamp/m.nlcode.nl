@@ -15,8 +15,9 @@ public class LongUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends U
 
     private LongConsumer validator;
 
-    public LongUpdateProperty(long value) {
+    public LongUpdateProperty(H holder, long value) {
         ref.set(value);
+        register(holder);
     }
 
     public long get() {

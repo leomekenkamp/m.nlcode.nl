@@ -45,7 +45,7 @@ public class A42<U extends A42.Ui> extends MidiInOut<U> {
 
     @Override
     public boolean isActiveReceiver() {
-        return true;
+        return false;
     }
 
     @Override

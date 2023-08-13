@@ -4,6 +4,8 @@ import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.ArpeggiatorLengthPer;
 import nl.nlcode.m.engine.TickSource;
@@ -20,36 +22,49 @@ public class ArpeggiatorUi extends MidiInOutUi<Arpeggiator> {
 
     @FXML
     private EnumChoiceBox<TickSource> tickSource;
-    private ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
+    private final ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
 
     @FXML
     private Spinner<Integer> channel;
-    private IntUpdatePropertyBridge channelBackend;
+    private final IntUpdatePropertyBridge channelBackend;
 
     @FXML
     private Spinner<Integer> octaveUp;
-    private IntUpdatePropertyBridge octaveUpBackend;
+    private final IntUpdatePropertyBridge octaveUpBackend;
 
     @FXML
     private Spinner<Integer> octaveDown;
-    private IntUpdatePropertyBridge octaveDownBackend;
+    private final IntUpdatePropertyBridge octaveDownBackend;
 
     @FXML
     private Spinner<Integer> length;
-    private IntUpdatePropertyBridge lengthBackend;
+    private final IntUpdatePropertyBridge lengthBackend;
 
     @FXML
     private EnumChoiceBox<ArpeggiatorLengthPer> lengthPer;
-    private ObjectUpdatePropertyBridge<ArpeggiatorLengthPer> lengthPerBackend;
+    private final ObjectUpdatePropertyBridge<ArpeggiatorLengthPer> lengthPerBackend;
 
     @FXML
     private Spinner<Integer> overrideAttackVelocity;
-    private IntUpdatePropertyBridge overrideAttackVelocityBackend;
+    private final IntUpdatePropertyBridge overrideAttackVelocityBackend;
 
     @FXML
     private Spinner<Integer> releaseVelocity;
-    private IntUpdatePropertyBridge releaseVelocityBackend;
+    private final IntUpdatePropertyBridge releaseVelocityBackend;
+    
+//    @FXML
+//    private EnumChoiceBox<ArpeggiatorActionTakesEffect> newChordTakesEffect;
+//    private final ObjectUpdatePropertyBridge<TickSource> newChordTakesEffectBackend;
 
+    @FXML
+    private ToggleGroup directionChord;
+    
+    @FXML
+    private Toggle directionChordUp;
+    
+    @FXML
+    private Toggle directionChordDown;
+    
     public ArpeggiatorUi(ProjectUi projectUi, Arpeggiator arpeggiator, MenuItem menuItem) {
         super(projectUi, arpeggiator, menuItem);
         loadFxml(ArpeggiatorUi.class, App.MESSAGES);
@@ -61,6 +76,7 @@ public class ArpeggiatorUi extends MidiInOutUi<Arpeggiator> {
         lengthPerBackend = ObjectUpdatePropertyBridge.create(getMidiInOut().lengthPerProperty(), lengthPer.valueProperty());
         overrideAttackVelocityBackend = IntUpdatePropertyBridge.create(getMidiInOut().overrideAttackVelocityProperty(), overrideAttackVelocity.getValueFactory().valueProperty());
         releaseVelocityBackend = IntUpdatePropertyBridge.create(getMidiInOut().releaseVelocityProperty(), releaseVelocity.getValueFactory().valueProperty());
+        //newChordTakesEffectBackend = ObjectUpdatePropertyBridge.create(getMidiInOut().newChordTakesEffectProperty(), newChordTakesEffect.valueProperty());
     }
 
     @Override

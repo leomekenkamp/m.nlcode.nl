@@ -16,18 +16,19 @@ public class IntUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends Up
 
     private int max;
 
-    public IntUpdateProperty() {
-        this(0);
+    public IntUpdateProperty(H holder) {
+        super(holder);
     }
     
-    public IntUpdateProperty(int value) {
-        this(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    public IntUpdateProperty(H holder, int value) {
+        this(holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    public IntUpdateProperty(int value, int min, int max) {
+    public IntUpdateProperty(H holder, int value, int min, int max) {
         this.min = min;
         this.max = max;
         set(value);
+        register(holder);
     }
 
     public int get() {

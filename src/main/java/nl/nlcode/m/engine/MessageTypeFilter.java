@@ -21,12 +21,12 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final BooleanUpdateProperty filterNoteOn = new BooleanUpdateProperty(false);
-    private final BooleanUpdateProperty filterNoteOff = new BooleanUpdateProperty(false);
-    private final BooleanUpdateProperty filterTimerClock = new BooleanUpdateProperty(false);
-    private final BooleanUpdateProperty filterSysEx = new BooleanUpdateProperty(false);
-    private final BooleanUpdateProperty filterControllers = new BooleanUpdateProperty(false);
-    private final BooleanUpdateProperty filterProgramChange = new BooleanUpdateProperty(false);
+    private final BooleanUpdateProperty filterNoteOn;
+    private final BooleanUpdateProperty filterNoteOff;
+    private final BooleanUpdateProperty filterTimerClock;
+    private final BooleanUpdateProperty filterSysEx;
+    private final BooleanUpdateProperty filterControllers;
+    private final BooleanUpdateProperty filterProgramChange;
 
     public static record SaveData0(
             int id,
@@ -71,6 +71,12 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
     }
 
     public MessageTypeFilter() {
+        filterNoteOn = new BooleanUpdateProperty(this, false);
+        filterNoteOff = new BooleanUpdateProperty(this, false);
+        filterTimerClock = new BooleanUpdateProperty(this, false);
+        filterSysEx = new BooleanUpdateProperty(this, false);
+        filterControllers = new BooleanUpdateProperty(this, false);
+        filterProgramChange = new BooleanUpdateProperty(this, false);
     }
 
     @Override
@@ -107,25 +113,25 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
     public BooleanUpdateProperty filterNoteOn() {
         return filterNoteOn;
     }
-            
+
     public BooleanUpdateProperty filterNoteOff() {
         return filterNoteOff;
     }
-            
+
     public BooleanUpdateProperty filterTimerClock() {
         return filterTimerClock;
     }
-            
+
     public BooleanUpdateProperty filterSysEx() {
         return filterSysEx;
     }
-            
+
     public BooleanUpdateProperty filterControllers() {
         return filterControllers;
     }
-            
+
     public BooleanUpdateProperty filterProgramChange() {
         return filterProgramChange;
     }
-            
+
 }

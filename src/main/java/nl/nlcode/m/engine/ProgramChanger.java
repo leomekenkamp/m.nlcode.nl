@@ -42,9 +42,9 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
     // TODO: find out why we need Array.newInstance instead of line above
     private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = (BooleanUpdateProperty[]) Array.newInstance(BooleanUpdateProperty.class, CHANNEL_COUNT);
 
-    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnMidiDeviceChange = new BooleanUpdateProperty(true);
+    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnMidiDeviceChange;
 
-    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnConnect = new BooleanUpdateProperty(true);
+    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnConnect;
 
     public static record SaveData0(
             int id,
@@ -83,15 +83,19 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
     }
 
     public ProgramChanger() {
+        resendOnMidiDeviceChange = new BooleanUpdateProperty(this, true);
+
+        resendOnConnect = new BooleanUpdateProperty(this, true);
+
         forAllChannels(channel -> {
-            program[channel] = new IntUpdateProperty(PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
+            program[channel] = new IntUpdateProperty(this, PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
             program[channel].setAfterChange(this, ui -> {
                 ui.updateProgram(channel, getProgram(channel));
             });
         });
 
         forAllChannels(channel -> {
-            dropIncomingChanges[channel] = new BooleanUpdateProperty(false);
+            dropIncomingChanges[channel] = new BooleanUpdateProperty(this, false);
             dropIncomingChanges[channel].setAfterChange(this, ui -> ui.updateDropIncomingChanges(channel, getDropIncomingChanges(channel)));
         });
 

@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
@@ -28,6 +29,10 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
             channel8Field, channel9Field, channel10Field, channel11Field,
             channel12Field, channel13Field, channel14Field, channel15Field;
 
+    @FXML
+    private CheckBox newNoteOnBeforeOldNoteOff;
+    private BooleanUpdatePropertyBridge newNoteOnBeforeOldNoteOffBackend;
+
     public NoteHolderUi(ProjectUi projectUi, NoteHolder noteHolder, MenuItem menuItem) {
         super(projectUi, noteHolder, menuItem);
         notesHeldCountProperty = new IntegerProperty[CHANNEL_COUNT];
@@ -47,6 +52,8 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
             channel12Field, channel13Field, channel14Field, channel15Field
         };
         forAllChannels(channel -> channelFields[channel].labelTextProperty().bind(getProjectUi().channelTextProperty()[channel]));
+        newNoteOnBeforeOldNoteOffBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().newNoteOnBeforeOldNoteOffProperty(), newNoteOnBeforeOldNoteOff.selectedProperty());
+
     }
 
     @Override

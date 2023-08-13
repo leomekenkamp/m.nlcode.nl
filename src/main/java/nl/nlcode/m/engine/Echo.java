@@ -37,10 +37,9 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
 
     private volatile long currentTimeIndex;
 
-    private IntUpdateProperty echoLength = new IntUpdateProperty(20, 1, 480);
-
-    private IntUpdateProperty absoluteVelocityDecrease = new IntUpdateProperty(0, 0, 127);
-    private IntUpdateProperty relativeVelocityDecrease = new IntUpdateProperty(15, 0, 99);
+    private final IntUpdateProperty echoLength;
+    private final IntUpdateProperty absoluteVelocityDecrease;
+    private final IntUpdateProperty relativeVelocityDecrease;
 
     private volatile Bucket futureBucket;
 
@@ -83,6 +82,10 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
     }
 
     public Echo() {
+        echoLength = new IntUpdateProperty(this, 20, 1, 480);
+        absoluteVelocityDecrease = new IntUpdateProperty(this, 0, 0, 127);
+        relativeVelocityDecrease = new IntUpdateProperty(this, 15, 0, 99);
+
         notePlayCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
         forAllChannels(channel -> forAllNotes(note -> notePlayCount[channel][note] = new AtomicInteger()));
         notePlannedCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];

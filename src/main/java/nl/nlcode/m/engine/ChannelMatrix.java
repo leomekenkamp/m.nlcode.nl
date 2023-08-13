@@ -51,11 +51,11 @@ public class ChannelMatrix<U extends ChannelMatrix.Ui> extends MidiInOut<U> {
         return result;
     }
 
-    private BooleanUpdateProperty<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdateProperty[CHANNEL_COUNT][CHANNEL_COUNT];
+    private final BooleanUpdateProperty<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdateProperty[CHANNEL_COUNT][CHANNEL_COUNT];
 
     public ChannelMatrix() {
         forAllChannels(from -> forAllChannels(to -> {
-            fromTo[from][to] = new BooleanUpdateProperty(false);
+            fromTo[from][to] = new BooleanUpdateProperty(this, false);
             fromTo[from][to].setAfterChange(this, ui -> ui.matrixChanged(from, to, fromTo[from][to].get()));
         }));
         defaultFromTo();

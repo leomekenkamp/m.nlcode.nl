@@ -41,17 +41,17 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
 
     private volatile ClockSource clockSource;
 
-    private IntUpdateProperty<U, MidiClock<U>> bar = new IntUpdateProperty<>(0);
+    private final IntUpdateProperty<U, MidiClock<U>> bar;
 
-    private IntUpdateProperty<U, MidiClock<U>> beat = new IntUpdateProperty<>(0);
+    private final IntUpdateProperty<U, MidiClock<U>> beat;
 
-    private IntUpdateProperty<U, MidiClock<U>> tick = new IntUpdateProperty<>(0);
+    private final IntUpdateProperty<U, MidiClock<U>> tick;
 
-    private IntUpdateProperty<U, MidiClock<U>> beatsPerBar = new IntUpdateProperty<>(4);
+    private final IntUpdateProperty<U, MidiClock<U>> beatsPerBar;
 
-    private IntUpdateProperty<U, MidiClock<U>> ticksPerBeat = new IntUpdateProperty<>(24);
+    private final IntUpdateProperty<U, MidiClock<U>> ticksPerBeat;
 
-    private DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute = new DoubleUpdateProperty<>(120.00f);
+    private final DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute;
 
     public static record SaveData0(
             int id,
@@ -98,7 +98,7 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         );
     }
 
-    private transient LongUpdateProperty<U, MidiClock<U>> timerStartedWithTickTimeMicroseconds = new LongUpdateProperty<>(0);
+    private transient LongUpdateProperty<U, MidiClock<U>> timerStartedWithTickTimeMicroseconds;
 
     private transient ScheduledExecutorService tickScheduler;
 
@@ -107,6 +107,13 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
     private transient AtomicBoolean tickTimerRunning;
 
     public MidiClock() {
+        bar = new IntUpdateProperty<>(this, 0);
+        beat = new IntUpdateProperty<>(this, 0);
+        tick = new IntUpdateProperty<>(this, 0);
+        beatsPerBar = new IntUpdateProperty<>(this, 4);
+        ticksPerBeat = new IntUpdateProperty<>(this, 24);
+        beatsPerMinute = new DoubleUpdateProperty<>(this, 120.00f);
+
         clockSource = ClockSource.INTERNAL;
         bar.setAfterChange(this, (ui) -> ui.barChanged());
         beat.setAfterChange(this, ui -> ui.beatChanged());
@@ -117,6 +124,8 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         timerStartedWithTickTimeMicroseconds.setAfterChange(this, ui -> {
         });
         tickTimerRunning = new AtomicBoolean(false);
+        timerStartedWithTickTimeMicroseconds = new LongUpdateProperty<>(this, 0);
+
         resetPosition();
     }
 

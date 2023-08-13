@@ -10,8 +10,13 @@ public class BooleanUpdateProperty<U, H extends UpdateProperty.Holder<U>> extend
 
     private AtomicBoolean ref = new AtomicBoolean();
 
-    public BooleanUpdateProperty(boolean v) {
+    public BooleanUpdateProperty(H holder) {
+        super(holder);
+    }
+    
+    public BooleanUpdateProperty(H holder, boolean v) {
         ref.set(v);
+        register(holder);
     }
 
     public boolean get() {

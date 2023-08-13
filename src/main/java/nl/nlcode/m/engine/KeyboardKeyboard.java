@@ -19,11 +19,11 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     public static interface Ui extends MidiInOut.Ui {
     }
 
-    private IntUpdateProperty<U, KeyboardKeyboard<U>> channel;
+    private final IntUpdateProperty<U, KeyboardKeyboard<U>> channel;
 
-    private IntUpdateProperty<U, KeyboardKeyboard<U>> velocity;
+    private final IntUpdateProperty<U, KeyboardKeyboard<U>> velocity;
 
-    private IntUpdateProperty<U, KeyboardKeyboard<U>> octave;
+    private final IntUpdateProperty<U, KeyboardKeyboard<U>> octave;
 
     public static record SaveData0(
             int id,
@@ -58,12 +58,9 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     }
 
     public KeyboardKeyboard() {
-        channel = new IntUpdateProperty<>(0, CHANNEL_MIN, CHANNEL_MAX);
-        velocity = new IntUpdateProperty<>(63, MIDI_DATA_MIN, MIDI_DATA_MAX);
-        octave = new IntUpdateProperty<>(4);
-        channel.register(this);
-        velocity.register(this);
-        octave.register(this);
+        channel = new IntUpdateProperty<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
+        velocity = new IntUpdateProperty<>(this, 63, MIDI_DATA_MIN, MIDI_DATA_MAX);
+        octave = new IntUpdateProperty<>(this, 4);
     }
 
     @Override

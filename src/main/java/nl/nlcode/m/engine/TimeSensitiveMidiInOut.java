@@ -28,7 +28,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
 
     private ScheduledFuture<?> timerFuture;
 
-    protected final ObjectUpdateProperty<TickSource, U, TimeSensitiveMidiInOut<U>> tickSource = new ObjectUpdateProperty<>(TickSource.TIME);
+    protected final ObjectUpdateProperty<TickSource, U, TimeSensitiveMidiInOut<U>> tickSource;
 
     public static record SaveData0(
             int id,
@@ -58,7 +58,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
     }
 
     public TimeSensitiveMidiInOut() {
-        tickSource.register(this);
+           tickSource = new ObjectUpdateProperty<>(this, TickSource.TIME);
         tickSource.addListener((oldValue, newValue) -> {
             timer(newValue == TickSource.TIME);
         });
