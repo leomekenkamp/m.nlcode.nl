@@ -38,7 +38,7 @@
                         <MenuItem onAction="#createSequencer" mnemonicParsing="true" text="%nl.nlcode.m.engine.Sequencer" />
                         <SeparatorMenuItem/>
                         -->
-                        <MenuItem onAction="#createMidiClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
+                        <MenuItem onAction="#createTimingClock" mnemonicParsing="true" text="%nl.nlcode.m.engine.MidiClock" />
                         <MenuItem onAction="#createProgramChanger" mnemonicParsing="true" text="%nl.nlcode.m.engine.ProgramChanger" />
                         <SeparatorMenuItem/>
                         <MenuItem onAction="#createArpeggiator" mnemonicParsing="true" text="%nl.nlcode.m.engine.Arpeggiator" />

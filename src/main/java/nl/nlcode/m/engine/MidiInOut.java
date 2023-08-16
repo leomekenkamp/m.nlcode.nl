@@ -561,7 +561,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         return result.toString();
     }
 
-    public static final ShortMessage createMidiClock() {
+    public static final ShortMessage createTimingClock() {
         try {
             return new ShortMessage(ShortMessage.TIMING_CLOCK);
         } catch (InvalidMidiDataException e) {
@@ -569,6 +569,10 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         }
     }
 
+    public static final boolean isTimingClock(MidiMessage message) {
+        return message.getLength() == 1 && message.getStatus() == ShortMessage.TIMING_CLOCK;
+    }
+    
     public static final ShortMessage createShortMessage(int command, int channel, int note, int velocity) {
         try {
             return new ShortMessage(command, channel, note, velocity);

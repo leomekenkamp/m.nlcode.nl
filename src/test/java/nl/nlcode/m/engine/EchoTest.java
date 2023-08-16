@@ -4,7 +4,7 @@ import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.EqualToShortMessage.equalTo;
 import static nl.nlcode.m.engine.EqualToShortMessage.equalToButData2;
 import static nl.nlcode.m.engine.MidiInOut.createShortMessage;
-import static nl.nlcode.m.engine.IsMidiClock.isMidiClock;
+import static nl.nlcode.m.engine.IsTimingClock.isTimingClock;
 import nl.nlcode.m.ui.EnglishShortNoteStringConverter;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,7 +34,7 @@ public class EchoTest extends DefaultMidiInOutTest<Echo> {
 
         settle();
         for (int i = 0; i < 10; i++) {
-            assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+            assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         }
         assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
@@ -60,29 +60,29 @@ public class EchoTest extends DefaultMidiInOutTest<Echo> {
         settle();
 
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOn1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOff1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 21)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOff1, 5)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 11)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOff1, 1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOff1, 1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 
@@ -107,36 +107,36 @@ public class EchoTest extends DefaultMidiInOutTest<Echo> {
         settle();
 
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalTo(noteOn1)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 105)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 85)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 65)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 45)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 25)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOn1, 5)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.removeFifoShortMessage(), is(equalToButData2(noteOff1, 7)));
-        assertThat(defaultTestOut.removeFifoShortMessage(), isMidiClock());
+        assertThat(defaultTestOut.removeFifoShortMessage(), isTimingClock());
         assertThat(defaultTestOut.receivedBufferCount(), is(0));
     }
 

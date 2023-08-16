@@ -99,7 +99,7 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
                 filter = filterNoteOn.get();
             } else if (incoming.getCommand() == ShortMessage.NOTE_OFF) {
                 filter = filterNoteOff.get();
-            } else if (incoming.getCommand() == ShortMessage.TIMING_CLOCK) {
+            } else if (isTimingClock(incoming)) {
                 filter = filterTimerClock.get();
             } else if (incoming.getCommand() == ShortMessage.PROGRAM_CHANGE) {
                 filter = filterProgramChange.get();

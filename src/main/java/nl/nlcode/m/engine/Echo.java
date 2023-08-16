@@ -84,7 +84,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
     public Echo() {
         echoLength = new IntUpdateProperty(this, 20, 1, 480);
         absoluteVelocityDecrease = new IntUpdateProperty(this, 0, 0, 127);
-        relativeVelocityDecrease = new IntUpdateProperty(this, 15, 0, 99);
+        relativeVelocityDecrease = new IntUpdateProperty(this, 15, 0, 100);
 
         notePlayCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
         forAllChannels(channel -> forAllNotes(note -> notePlayCount[channel][note] = new AtomicInteger()));
@@ -106,7 +106,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
     protected void processReceive(MidiMessage message, long timeStamp) {
         if (message instanceof ShortMessage incoming) {
             synchronized (SYNCHRONIZATION_LOCK) {
-                if (incoming.getStatus() == ShortMessage.TIMING_CLOCK) {
+                if (isTimingClock(incoming)) {
                     send(message, timeStamp);
                     processReceiveTimingClock(timeStamp);
                 } else if (incoming.getCommand() == ShortMessage.NOTE_ON || incoming.getCommand() == ShortMessage.NOTE_OFF) {
@@ -121,7 +121,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
     }
 
     @Override
-    protected void synchronizedTick() {
+    protected void unsynchronizedTick() {
         futureBucket = null;
         currentTimeIndex += 1;
         while (!buckets.isEmpty() && buckets.getFirst().targetTimeIndex <= currentTimeIndex) {

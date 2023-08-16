@@ -272,7 +272,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     @FXML
-    public void createMidiClock(ActionEvent event) {
+    public void createTimingClock(ActionEvent event) {
         activateAndCreateStage(new MidiClock());
     }
 

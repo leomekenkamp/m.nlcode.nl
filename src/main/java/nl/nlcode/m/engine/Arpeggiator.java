@@ -88,13 +88,13 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         return result;
     }
 
-    private transient volatile List<Integer> receivedNotesOn;
+    private transient volatile List<Integer> chordNotes;
 
     private transient int velocity = 64;
 
     private transient int previousAction;
 
-    private transient int currentNote = -1;
+    private transient int playingNote = -1;
 
     private transient int currentIndex;
 
@@ -107,7 +107,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
     };
 
     public Arpeggiator() {
-        receivedNotesOn = new ArrayList<>();
+        chordNotes = new ArrayList<>();
         channel = new IntUpdateProperty<>(this, 0);
         octaveDown = new IntUpdateProperty<>(this, 1, 0, 10);
         octaveDown.addListener(onChangeRecalculateNoteLength);
@@ -133,83 +133,106 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
-        if (message instanceof ShortMessage shortMessage && shortMessage.getChannel() == channel.get()) {
-            synchronized (SYNCHRONIZATION_LOCK) {
-                switch (shortMessage.getCommand()) {
-                    case ShortMessage.NOTE_ON -> {
-                        if (receivedNotesOn.isEmpty()) {
-                            send(shortMessage);
-                            currentNote = shortMessage.getData1();
-                            previousAction = 0;
+        if (message instanceof ShortMessage shortMessage) {
+            if (isTimingClock(shortMessage)) {
+                processReceiveTimingClock(timeStamp);
+            } else if (shortMessage.getChannel() == channel.get()) {
+                synchronized (SYNCHRONIZATION_LOCK) {
+                    switch (shortMessage.getCommand()) {
+                        case ShortMessage.NOTE_ON -> {
+                            chordNotes.add(Integer.valueOf(shortMessage.getData1()));
+                            Collections.sort(chordNotes);
+                            if (chordNotes.size() == 1) {
+                                resetIndices();
+                            }
+                            recalculateNoteLength();
                         }
-                        receivedNotesOn.add(Integer.valueOf(shortMessage.getData1()));
-                        Collections.sort(receivedNotesOn);
-                        recalculateNoteLength();
-                    }
-                    case ShortMessage.NOTE_OFF -> {
-                        receivedNotesOn.remove(Integer.valueOf(shortMessage.getData1())); // explicit boxing needed
-                        recalculateNoteLength();
+                        case ShortMessage.NOTE_OFF -> {
+                            chordNotes.remove(Integer.valueOf(shortMessage.getData1())); // explicit boxing needed
+                            recalculateNoteLength();
 
-                    }
-                    case ShortMessage.TIMING_CLOCK -> {
-                        processReceiveTimingClock(timeStamp);
-                    }
-                    default -> {
-                        super.send(message, timeStamp);
+                        }
+                        default -> {
+                            super.send(message, timeStamp);
+                        }
                     }
                 }
+            } else {
+                super.send(message, timeStamp);
             }
         } else {
             super.send(message, timeStamp);
         }
     }
 
+    private void resetIndices() {
+        currentIndex = -1;
+        currentOctave = 0;
+    }
+
     private void recalculateNoteLength() {
-        switch (lengthPer.get()) {
+        noteLength = recalculateNoteLength(lengthPer.get(), length.get(), chordNotes, currentIndex, octaveDown.get(),
+                octaveUp.get(), currentOctave);
+    }
+
+    static int recalculateNoteLength(ArpeggiatorLengthPer lengthPer, int length, List<Integer> receivedNotesOn, int currentIndex,
+            int octaveDown, int octaveUp, int currentOctave) {
+        int result = 0;
+        switch (lengthPer) {
             case NOTE -> {
-                noteLength = length.get();
+                result = length;
             }
             case CHORD -> {
                 if (!receivedNotesOn.isEmpty()) {
-                    noteLength = length.get() / receivedNotesOn.size();
-                    int remainder = length.get() % receivedNotesOn.size();
-                    if (remainder > 0 && currentNote < remainder) {
-                        // example: length: 10, 4 notes on. So every note get 10 DIV 4 = 2 ticks.
+                    int notesInChord = receivedNotesOn.size();
+                    result = length / notesInChord;
+                    int remainder = length % notesInChord;
+                    if (currentIndex < remainder) {
+                        // example: length: 10, 4 notes on. So every note gets 10 DIV 4 = 2 ticks.
                         // but 10 - 2*4 = 2 ticks, so the whole arpeggio run gets shortened. Which
                         // is quite annoying in the long run. This statement divides the remaining
-                        // ticks over the first notes played.
-                        noteLength += 1;
+                        // ticks nicely over the notes played.
+                        result += 1;
                     }
                 }
             }
             case RANGE -> {
                 if (!receivedNotesOn.isEmpty()) {
-                    int octaveCount = 1 + octaveUp.get() + octaveDown.get();
+                    int octaveCount = 1 + octaveUp + octaveDown;
                     int allNoteCount = octaveCount * receivedNotesOn.size();
-                    noteLength = length.get() / allNoteCount;
-                    int remainder = length.get() % allNoteCount;
-                    int octaveOffset = currentOctave + octaveDown.get();
-                    if (currentNote + (octaveOffset * receivedNotesOn.size()) < remainder) {
+                    result = length / allNoteCount;
+                    int remainder = length % allNoteCount;
+                    int octaveOffset = currentOctave + octaveDown;
+                    if (currentIndex + octaveOffset * receivedNotesOn.size() < remainder) {
                         // similar to CHORD above
-                        noteLength += 1;
+                        result += 1;
                     }
                 }
             }
             default -> {
-                throw new IllegalStateException();
+                throw new UnknownException(lengthPer);
             }
         }
+        return result;
     }
 
+    static int evenlyDivideTicks(int notes, int ticks, int noteOffset) {
+        return 0;
+    }
+
+    /*
+     * Note that this method is called from the superclass within a synchronized block.
+     */
     @Override
-    protected void synchronizedTick() {
-        if (currentNote == -1 && receivedNotesOn.isEmpty()) {
+    protected void unsynchronizedTick() {
+        if (playingNote == -1 && chordNotes.isEmpty()) {
             return;
         }
-        if (previousAction++ >= noteLength) {
+        previousAction++;
+        while ((playingNote == -1 || previousAction >= noteLength) && !chordNotes.isEmpty()) {
             previousAction = 0;
-            if (currentNote != -1) {
-                int midiNote = currentNote + 12 * currentOctave;
+            if (playingNote == -1) {
+                int midiNote = playingNote + 12 * currentOctave;
                 if (validNote(midiNote)) {
                     send(createShortMessage(ShortMessage.NOTE_OFF, channel.get(), midiNote, velocity));
                 }
@@ -217,25 +240,25 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
 
             // NEXT NOTE
             currentIndex += 1;
-            if (currentIndex >= receivedNotesOn.size()) {
+            if (currentIndex >= chordNotes.size()) {
                 currentIndex = 0;
                 currentOctave += 1;
                 if (currentOctave > octaveUp.get()) {
                     currentOctave = -octaveDown.get();
                 }
             }
-            if (receivedNotesOn.isEmpty()) {
-                currentNote = -1;
+            if (chordNotes.isEmpty()) {
+                playingNote = -1;
                 currentOctave = 0;
             } else {
-                currentNote = receivedNotesOn.get(currentIndex);
+                playingNote = chordNotes.get(currentIndex);
                 recalculateNoteLength();
             }
 
-            if (currentNote != -1) {
-                int midiNote = currentNote + 12 * currentOctave;
+            if (playingNote != -1) {
+                int midiNote = playingNote + 12 * currentOctave;
                 if (validNote(midiNote) && noteLength > 0) {
-                    send(createShortMessage(ShortMessage.NOTE_ON, channel.get(), currentNote + 12 * currentOctave, velocity));
+                    send(createShortMessage(ShortMessage.NOTE_ON, channel.get(), playingNote + 12 * currentOctave, velocity));
                 }
             }
         }

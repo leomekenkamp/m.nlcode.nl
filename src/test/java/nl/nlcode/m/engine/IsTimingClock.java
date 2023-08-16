@@ -8,9 +8,9 @@ import org.hamcrest.TypeSafeDiagnosingMatcher;
  *
  * @author leo
  */
-public class IsMidiClock<T extends ShortMessage> extends TypeSafeDiagnosingMatcher<T> {
+public class IsTimingClock<T extends ShortMessage> extends TypeSafeDiagnosingMatcher<T> {
 
-    private static final ShortMessage MIDI_CLOCK = MidiInOut.createMidiClock();
+    private static final ShortMessage MIDI_CLOCK = MidiInOut.createTimingClock();
     
     @Override
     public void describeTo(Description description) {
@@ -28,8 +28,8 @@ public class IsMidiClock<T extends ShortMessage> extends TypeSafeDiagnosingMatch
        return result;
     }
     
-    public static <T extends ShortMessage> IsMidiClock<T> isMidiClock() {
-        return new IsMidiClock();
+    public static <T extends ShortMessage> IsTimingClock<T> isTimingClock() {
+        return new IsTimingClock();
     }
     
 }

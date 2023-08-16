@@ -117,7 +117,7 @@ public class DebugMidiInOut<U extends DebugMidiInOut.Ui> extends MidiInOut<U> {
     }
 
     public void processReceiveMidiClock() {
-        processReceive(createMidiClock(), -1);
+        processReceive(createTimingClock(), -1);
     }
 
     public void processReceiveMidiClock(int number) {

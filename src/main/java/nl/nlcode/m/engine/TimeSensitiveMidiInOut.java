@@ -58,7 +58,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
     }
 
     public TimeSensitiveMidiInOut() {
-           tickSource = new ObjectUpdateProperty<>(this, TickSource.TIME);
+        tickSource = new ObjectUpdateProperty<>(this, TickSource.TIME);
         tickSource.addListener((oldValue, newValue) -> {
             timer(newValue == TickSource.TIME);
         });
@@ -70,7 +70,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
             if (run) {
                 if (timerFuture == null || timerFuture.isDone()) {
                     // initialDelay because subcalsses will need to have finished their ctor. A bit shaky, this...
-                    timerFuture = scheduledExecutorService.scheduleAtFixedRate(() -> unsynchronizedTick(), 1000, 20, TimeUnit.MILLISECONDS);
+                    timerFuture = scheduledExecutorService.scheduleAtFixedRate(() -> synchronizedTick(), 1000, 20, TimeUnit.MILLISECONDS);
                 }
             } else {
                 if (timerFuture != null) {
@@ -81,19 +81,17 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
         }
     }
 
-    protected void unsynchronizedTick() {
+    protected void synchronizedTick() {
         try {
             synchronized (SYNCHRONIZATION_LOCK) {
-                synchronizedTick();
+                unsynchronizedTick();
             }
         } catch (RuntimeException e) {
             LOGGER.error("crash async", e);
         }
-     }
+    }
 
-    
-
-    protected abstract void synchronizedTick();
+    protected abstract void unsynchronizedTick();
 
     public ObjectUpdateProperty<TickSource, U, ? extends TimeSensitiveMidiInOut<U>> tickSource() {
         return tickSource;

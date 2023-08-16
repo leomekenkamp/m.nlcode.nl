@@ -74,7 +74,7 @@ public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> 
     @Override
     protected void processReceive(MidiMessage message, long timeStamp) {
         boolean addToList = false;
-        if (message.getStatus() == ShortMessage.TIMING_CLOCK) {
+        if (isTimingClock(message)) {
             switch (getShowTicks()) {
                 case NONE:
                     break;

@@ -29,7 +29,7 @@ jobs:
             {runs-on: "macos-12", name: "osx_x86", overrideJavaFxPlatform: "mac"},
             {runs-on: "macos-12", name: "osx_aarch64_UNVERIFIED", overrideJavaFxPlatform: "mac-aarch64"},
             {runs-on: "windows-2019", name: "windows_x86_UNVERIFIED", overrideJavaFxPlatform: "win-x86"},
-            {runs-on: "windows-2019", name: "windows_x64_UNVERIFIED", overrideJavaFxPlatform: "win"},
+            {runs-on: "windows-2019", name: "windows_x64", overrideJavaFxPlatform: "win"},
           ]
     runs-on: ${{matrix.platform.runs-on}}
     steps:

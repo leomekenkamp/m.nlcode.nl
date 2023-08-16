@@ -44,7 +44,7 @@
                 </Field>             
             </FieldHBox>
             <FieldVBox>
-                <Field labelText="%reach">
+                <Field labelText="%range">
                     <children>
                         <FieldHBox>
                             <Field labelText="%octaveDown">

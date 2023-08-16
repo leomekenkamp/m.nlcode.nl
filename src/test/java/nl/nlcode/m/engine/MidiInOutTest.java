@@ -2,6 +2,7 @@ package nl.nlcode.m.engine;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
+import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.EqualToShortMessage.equalTo;
 import nl.nlcode.m.engine.MidiInOut.SendReceiveLoopDetectedException;
 import static org.hamcrest.CoreMatchers.is;
@@ -104,6 +105,17 @@ public class MidiInOutTest extends DefaultMidiInOutTest<MidiInOut> {
     @Test
     public void no_self_loop_allowed() {
         assertThrows(SendReceiveLoopDetectedException.class, () -> instance.startSendingTo(instance));
+    }
+
+    @Test
+    public void test_createTimingClock() {
+        ShortMessage timingClock = MidiInOut.createTimingClock();
+        assertThat(timingClock.getLength(), is(1));
+        assertThat(timingClock.getStatus(), is(ShortMessage.TIMING_CLOCK));
+        assertThat(MidiInOut.isTimingClock(timingClock), is(true));
+    }
+    
+    public class MidiInOutImpl extends MidiInOut {
     }
 
 }

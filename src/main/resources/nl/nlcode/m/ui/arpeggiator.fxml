@@ -16,7 +16,7 @@
             <Spinner />
          </children>
       </Field>
-      <Field labelText="reach">
+      <Field labelText="range">
          <children>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>

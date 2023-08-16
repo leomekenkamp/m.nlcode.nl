@@ -197,7 +197,7 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
             }
         }
 
-        send(createMidiClock());
+        send(createTimingClock());
     }
 
     @Override
