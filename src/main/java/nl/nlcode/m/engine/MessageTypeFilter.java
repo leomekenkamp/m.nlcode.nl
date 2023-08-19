@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.SysexMessage;
-import nl.nlcode.m.linkui.BooleanUpdateProperty;
+import nl.nlcode.m.linkui.BooleanUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +21,12 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final BooleanUpdateProperty filterNoteOn;
-    private final BooleanUpdateProperty filterNoteOff;
-    private final BooleanUpdateProperty filterTimerClock;
-    private final BooleanUpdateProperty filterSysEx;
-    private final BooleanUpdateProperty filterControllers;
-    private final BooleanUpdateProperty filterProgramChange;
+    private final BooleanUpdater filterNoteOn;
+    private final BooleanUpdater filterNoteOff;
+    private final BooleanUpdater filterTimerClock;
+    private final BooleanUpdater filterSysEx;
+    private final BooleanUpdater filterControllers;
+    private final BooleanUpdater filterProgramChange;
 
     public static record SaveData0(
             int id,
@@ -71,12 +71,12 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
     }
 
     public MessageTypeFilter() {
-        filterNoteOn = new BooleanUpdateProperty(this, false);
-        filterNoteOff = new BooleanUpdateProperty(this, false);
-        filterTimerClock = new BooleanUpdateProperty(this, false);
-        filterSysEx = new BooleanUpdateProperty(this, false);
-        filterControllers = new BooleanUpdateProperty(this, false);
-        filterProgramChange = new BooleanUpdateProperty(this, false);
+        filterNoteOn = new BooleanUpdater(this, false);
+        filterNoteOff = new BooleanUpdater(this, false);
+        filterTimerClock = new BooleanUpdater(this, false);
+        filterSysEx = new BooleanUpdater(this, false);
+        filterControllers = new BooleanUpdater(this, false);
+        filterProgramChange = new BooleanUpdater(this, false);
     }
 
     @Override
@@ -110,27 +110,27 @@ public class MessageTypeFilter<U extends MessageTypeFilter.Ui> extends MidiInOut
         }
     }
 
-    public BooleanUpdateProperty filterNoteOn() {
+    public BooleanUpdater filterNoteOn() {
         return filterNoteOn;
     }
 
-    public BooleanUpdateProperty filterNoteOff() {
+    public BooleanUpdater filterNoteOff() {
         return filterNoteOff;
     }
 
-    public BooleanUpdateProperty filterTimerClock() {
+    public BooleanUpdater filterTimerClock() {
         return filterTimerClock;
     }
 
-    public BooleanUpdateProperty filterSysEx() {
+    public BooleanUpdater filterSysEx() {
         return filterSysEx;
     }
 
-    public BooleanUpdateProperty filterControllers() {
+    public BooleanUpdater filterControllers() {
         return filterControllers;
     }
 
-    public BooleanUpdateProperty filterProgramChange() {
+    public BooleanUpdater filterProgramChange() {
         return filterProgramChange;
     }
 

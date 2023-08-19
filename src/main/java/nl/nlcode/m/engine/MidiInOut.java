@@ -2,7 +2,7 @@ package nl.nlcode.m.engine;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import nl.nlcode.m.linkui.UpdateProperty;
+import nl.nlcode.m.linkui.Updater;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.time.format.DateTimeFormatter;
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<MidiInOut>, Marshallable, UpdateProperty.Holder<U> {
+public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<MidiInOut>, Marshallable, Updater.Holder<U> {
 
     public static void verify7Bit(int data) {
         if (data < 0 || data > 127) {
@@ -157,7 +157,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     private transient ExecutorService executorService;
 
-    private transient Set<UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>>> updateProperties;
+    private transient Set<Updater<?, U, ? extends Updater.Holder<U>>> updaters;
 
     private transient U ui;
 
@@ -216,7 +216,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         info = new HashMap<>();
         asyncReceiveQueue = new LinkedBlockingQueue();
         processing = new AtomicBoolean(false);
-        updateProperties = new HashSet<>();
+        updaters = new HashSet<>();
         sendingToReadonly = Collections.unmodifiableSet(sendingTo);
     }
 
@@ -260,7 +260,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     protected void syncUi() {
-        updateProperties.stream().forEach(updateProperty -> updateProperty.runAfterChange());
+        updaters.stream().forEach(updater -> updater.runAfterChange());
     }
 
     public void close() {
@@ -658,13 +658,13 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     @Override
-    public void unregister(UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>> updateProperty) {
-        updateProperties.remove(updateProperty);
+    public void unregister(Updater<?, U, ? extends Updater.Holder<U>> updater) {
+        updaters.remove(updater);
     }
 
     @Override
-    public void register(UpdateProperty<?, U, ? extends UpdateProperty.Holder<U>> updateProperty) {
-        updateProperties.add(updateProperty);
+    public void register(Updater<?, U, ? extends Updater.Holder<U>> updater) {
+        updaters.add(updater);
     }
 
     public PropertyChangeSupport getPropertyChangeSupport() {

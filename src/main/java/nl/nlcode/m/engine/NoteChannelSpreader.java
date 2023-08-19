@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
-import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     private volatile Set<Integer>[] channelToKeyDown;
 
-    private final IntUpdateProperty<U, NoteChannelSpreader<U>> inputChannel;
+    private final IntUpdater<U, NoteChannelSpreader<U>> inputChannel;
 
     private transient int prevChannelIndex = CHANNEL_MAX;
 
@@ -69,7 +69,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     public NoteChannelSpreader() {
         playingNoteToChannel = new HashMap<>();
-        inputChannel = new IntUpdateProperty<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
+        inputChannel = new IntUpdater<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
         channelToKeyDown = new Set[CHANNEL_COUNT];
         setOutputChannel(0, true);
     }
@@ -105,7 +105,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
         this.inputChannel.set(inputChannel);
     }
 
-    public IntUpdateProperty inputChannel() {
+    public IntUpdater inputChannel() {
         return inputChannel;
     }
 

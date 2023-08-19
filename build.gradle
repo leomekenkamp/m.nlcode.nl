@@ -191,8 +191,7 @@ hugo {
 }
 
 task packageWebsite(type: Zip) {
+    from hugoBuild
     archiveFileName = "public.zip"
     destinationDirectory = layout.buildDirectory.dir('www')
-    from 'www/m.nlcode.nl/public'
-    dependsOn hugoBuild
 }

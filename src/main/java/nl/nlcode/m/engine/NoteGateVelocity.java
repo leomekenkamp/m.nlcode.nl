@@ -3,8 +3,8 @@ package nl.nlcode.m.engine;
 import java.lang.invoke.MethodHandles;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.ObjectUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +23,9 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private final IntUpdateProperty fromVelocity;
-    private final IntUpdateProperty toVelocity;
-    private final ObjectUpdateProperty<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure;
+    private final IntUpdater fromVelocity;
+    private final IntUpdater toVelocity;
+    private final ObjectUpdater<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure;
 
     public static record SaveData0(
             int id,
@@ -61,9 +61,9 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
     }
 
     public NoteGateVelocity() {
-        fromVelocity = new IntUpdateProperty(this, MIDI_DATA_MIN);
-        toVelocity = new IntUpdateProperty(this, MIDI_DATA_MAX);
-        intervalClosure = new ObjectUpdateProperty(this, IntervalClosure.CLOSED);
+        fromVelocity = new IntUpdater(this, MIDI_DATA_MIN);
+        toVelocity = new IntUpdater(this, MIDI_DATA_MAX);
+        intervalClosure = new ObjectUpdater(this, IntervalClosure.CLOSED);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         this.fromVelocity.set(fromVelocity);
     }
 
-    public IntUpdateProperty<U, NoteGateVelocity<U>> fromVelocity() {
+    public IntUpdater<U, NoteGateVelocity<U>> fromVelocity() {
         return fromVelocity;
     }
 
@@ -117,7 +117,7 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         this.toVelocity.set(toVelocity);
     }
 
-    public IntUpdateProperty<U, NoteGateVelocity<U>> toVelocity() {
+    public IntUpdater<U, NoteGateVelocity<U>> toVelocity() {
         return toVelocity;
     }
 

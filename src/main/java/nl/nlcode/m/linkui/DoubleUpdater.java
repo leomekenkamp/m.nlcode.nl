@@ -6,7 +6,7 @@ import java.util.Objects;
  *
  * @author leo
  */
-public class DoubleUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends UpdateProperty<Double, U, H> {
+public class DoubleUpdater<U, H extends Updater.Holder<U>> extends Updater<Double, U, H> {
 
     private volatile double value;
 
@@ -14,11 +14,11 @@ public class DoubleUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends
 
     private transient double max;
 
-    public DoubleUpdateProperty(H holder, double value) {
+    public DoubleUpdater(H holder, double value) {
         this(holder, value, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
-    public DoubleUpdateProperty(H holder, double value, double min, double max) {
+    public DoubleUpdater(H holder, double value, double min, double max) {
         this.min = min;
         this.max = max;
         set(value);
@@ -42,7 +42,7 @@ public class DoubleUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends
         runAfterChange(oldValue, newValue, sendMeNoUpdate);
     }
 
-    public static final double[] toDoubleArray(DoubleUpdateProperty<?, ?>[] source) {
+    public static final double[] toDoubleArray(DoubleUpdater<?, ?>[] source) {
         double[] result = new double[source.length];
         for (int i = 0; i < source.length; i++) {
             result[i] = source[i].get();

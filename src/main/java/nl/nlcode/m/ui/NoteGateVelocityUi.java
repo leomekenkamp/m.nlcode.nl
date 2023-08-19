@@ -18,11 +18,11 @@ public class NoteGateVelocityUi extends MidiInOutUi<NoteGateVelocity> implements
 
     @FXML
     private Spinner<Integer> fromVelocity;
-    private IntUpdatePropertyBridge fromVelocityBacking;
+    private IntPropertyUpdaterBridge fromVelocityBacking;
 
     @FXML
     private Spinner<Integer> toVelocity;
-    private IntUpdatePropertyBridge toVelocityBacking;
+    private IntPropertyUpdaterBridge toVelocityBacking;
 
     public NoteGateVelocityUi(ProjectUi projectUi, NoteGateVelocity noteGate, MenuItem menuItem) {
         super(projectUi, noteGate, menuItem);
@@ -31,7 +31,7 @@ public class NoteGateVelocityUi extends MidiInOutUi<NoteGateVelocity> implements
 
     protected void handleInitialize() {
         super.handleInitialize();
-        fromVelocityBacking = IntUpdatePropertyBridge.create(getMidiInOut().fromVelocity(), fromVelocity.getValueFactory().valueProperty());
-        toVelocityBacking = IntUpdatePropertyBridge.create(getMidiInOut().toVelocity(), toVelocity.getValueFactory().valueProperty());
+        fromVelocityBacking = IntPropertyUpdaterBridge.create(getMidiInOut().fromVelocity(), fromVelocity.getValueFactory().valueProperty());
+        toVelocityBacking = IntPropertyUpdaterBridge.create(getMidiInOut().toVelocity(), toVelocity.getValueFactory().valueProperty());
     }
 }

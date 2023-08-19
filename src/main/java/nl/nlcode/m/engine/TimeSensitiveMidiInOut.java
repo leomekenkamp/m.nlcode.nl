@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import nl.nlcode.m.JvmStuff;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.m.linkui.ObjectUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
 
     private ScheduledFuture<?> timerFuture;
 
-    protected final ObjectUpdateProperty<TickSource, U, TimeSensitiveMidiInOut<U>> tickSource;
+    protected final ObjectUpdater<TickSource, U, TimeSensitiveMidiInOut<U>> tickSource;
 
     public static record SaveData0(
             int id,
@@ -58,7 +58,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
     }
 
     public TimeSensitiveMidiInOut() {
-        tickSource = new ObjectUpdateProperty<>(this, TickSource.TIME);
+        tickSource = new ObjectUpdater<>(this, TickSource.TIME);
         tickSource.addListener((oldValue, newValue) -> {
             timer(newValue == TickSource.TIME);
         });
@@ -93,7 +93,7 @@ public abstract class TimeSensitiveMidiInOut<U extends TimeSensitiveMidiInOut.Ui
 
     protected abstract void unsynchronizedTick();
 
-    public ObjectUpdateProperty<TickSource, U, ? extends TimeSensitiveMidiInOut<U>> tickSource() {
+    public ObjectUpdater<TickSource, U, ? extends TimeSensitiveMidiInOut<U>> tickSource() {
         return tickSource;
     }
 

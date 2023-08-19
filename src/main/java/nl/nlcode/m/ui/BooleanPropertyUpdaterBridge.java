@@ -3,33 +3,33 @@ package nl.nlcode.m.ui;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.Property;
-import nl.nlcode.m.linkui.BooleanUpdateProperty;
-import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.BooleanUpdater;
+import nl.nlcode.m.linkui.IntUpdater;
 
 /**
  *
  * @author leo
  */
-public class BooleanUpdatePropertyBridge extends BooleanPropertyBase implements IntUpdateProperty.Listener<Boolean> {
+public class BooleanPropertyUpdaterBridge extends BooleanPropertyBase implements IntUpdater.Listener<Boolean> {
 
-    private BooleanUpdateProperty backendUpdateProperty;
+    private BooleanUpdater backendUpdater;
     private Property<Boolean> fxThreadProperty;
 
-    protected BooleanUpdatePropertyBridge(boolean value) {
+    protected BooleanPropertyUpdaterBridge(boolean value) {
         super.set(value);
     }
 
-    public static BooleanUpdatePropertyBridge create(BooleanUpdateProperty backendUpdateProperty) {
-        BooleanUpdatePropertyBridge result = new BooleanUpdatePropertyBridge(backendUpdateProperty.get());
-        backendUpdateProperty.addListener(result);
-        result.backendUpdateProperty = backendUpdateProperty;
+    public static BooleanPropertyUpdaterBridge create(BooleanUpdater backendUpdater) {
+        BooleanPropertyUpdaterBridge result = new BooleanPropertyUpdaterBridge(backendUpdater.get());
+        backendUpdater.addListener(result);
+        result.backendUpdater = backendUpdater;
         return result;
     }
 
-    public static BooleanUpdatePropertyBridge create(BooleanUpdateProperty backendUpdateProperty, Property<Boolean> fxThreadProperty) {
-        BooleanUpdatePropertyBridge result = create(backendUpdateProperty);
+    public static BooleanPropertyUpdaterBridge create(BooleanUpdater backendUpdater, Property<Boolean> fxThreadProperty) {
+        BooleanPropertyUpdaterBridge result = create(backendUpdater);
         result.fxThreadProperty = fxThreadProperty;
-        fxThreadProperty.setValue(backendUpdateProperty.get());
+        fxThreadProperty.setValue(backendUpdater.get());
         fxThreadProperty.bindBidirectional(result);
         return result;
     }
@@ -55,7 +55,7 @@ public class BooleanUpdatePropertyBridge extends BooleanPropertyBase implements 
     @Override
     public void set(boolean i) {
         super.set(i);
-        backendUpdateProperty.set(i, this);
+        backendUpdater.set(i, this);
     }
 
     @Override
@@ -64,13 +64,13 @@ public class BooleanUpdatePropertyBridge extends BooleanPropertyBase implements 
     }
 
     /**
-     * Called by IntUpdateProperty, on actual value change.
+     * Called by IntUpdater, on actual value change.
      *
      * @param oldValue
      * @param newValue
      */
     @Override
-    public void updatePropertyValueChanged(Boolean oldValue, Boolean newValue) {
+    public void updaterValueChanged(Boolean oldValue, Boolean newValue) {
         Platform.runLater(() -> setValue(newValue));
     }
 }

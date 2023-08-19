@@ -3,7 +3,7 @@ package nl.nlcode.m.engine;
 import java.lang.invoke.MethodHandles;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +19,11 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     public static interface Ui extends MidiInOut.Ui {
     }
 
-    private final IntUpdateProperty<U, KeyboardKeyboard<U>> channel;
+    private final IntUpdater<U, KeyboardKeyboard<U>> channel;
 
-    private final IntUpdateProperty<U, KeyboardKeyboard<U>> velocity;
+    private final IntUpdater<U, KeyboardKeyboard<U>> velocity;
 
-    private final IntUpdateProperty<U, KeyboardKeyboard<U>> octave;
+    private final IntUpdater<U, KeyboardKeyboard<U>> octave;
 
     public static record SaveData0(
             int id,
@@ -58,9 +58,9 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     }
 
     public KeyboardKeyboard() {
-        channel = new IntUpdateProperty<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
-        velocity = new IntUpdateProperty<>(this, 63, MIDI_DATA_MIN, MIDI_DATA_MAX);
-        octave = new IntUpdateProperty<>(this, 4);
+        channel = new IntUpdater<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
+        velocity = new IntUpdater<>(this, 63, MIDI_DATA_MIN, MIDI_DATA_MAX);
+        octave = new IntUpdater<>(this, 4);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
         this.channel.set(channel);
     }
 
-    public IntUpdateProperty<U, KeyboardKeyboard<U>> channel() {
+    public IntUpdater<U, KeyboardKeyboard<U>> channel() {
         return channel;
     }
 
@@ -108,7 +108,7 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
         this.velocity.set(velocity);
     }
 
-    public IntUpdateProperty<U, KeyboardKeyboard<U>> velocity() {
+    public IntUpdater<U, KeyboardKeyboard<U>> velocity() {
         return velocity;
     }
 
@@ -120,7 +120,7 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
         this.octave.set(octave);
     }
 
-    public IntUpdateProperty<U, KeyboardKeyboard<U>> octave() {
+    public IntUpdater<U, KeyboardKeyboard<U>> octave() {
         return octave;
     }
 

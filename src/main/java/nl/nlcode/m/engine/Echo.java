@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +37,9 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
 
     private volatile long currentTimeIndex;
 
-    private final IntUpdateProperty echoLength;
-    private final IntUpdateProperty absoluteVelocityDecrease;
-    private final IntUpdateProperty relativeVelocityDecrease;
+    private final IntUpdater echoLength;
+    private final IntUpdater absoluteVelocityDecrease;
+    private final IntUpdater relativeVelocityDecrease;
 
     private volatile Bucket futureBucket;
 
@@ -82,9 +82,9 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
     }
 
     public Echo() {
-        echoLength = new IntUpdateProperty(this, 20, 1, 480);
-        absoluteVelocityDecrease = new IntUpdateProperty(this, 0, 0, 127);
-        relativeVelocityDecrease = new IntUpdateProperty(this, 15, 0, 100);
+        echoLength = new IntUpdater(this, 20, 1, 480);
+        absoluteVelocityDecrease = new IntUpdater(this, 0, 0, 127);
+        relativeVelocityDecrease = new IntUpdater(this, 15, 0, 100);
 
         notePlayCount = new AtomicInteger[CHANNEL_COUNT][NOTE_COUNT];
         forAllChannels(channel -> forAllNotes(note -> notePlayCount[channel][note] = new AtomicInteger()));
@@ -188,7 +188,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
         this.absoluteVelocityDecrease.set(absoluteVelocityDecrease);
     }
 
-    public IntUpdateProperty absoluteVelocityDecrease() {
+    public IntUpdater absoluteVelocityDecrease() {
         return absoluteVelocityDecrease;
     }
 
@@ -200,7 +200,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
         this.relativeVelocityDecrease.set(relativeVelocityDecrease);
     }
 
-    public IntUpdateProperty relativeVelocityDecrease() {
+    public IntUpdater relativeVelocityDecrease() {
         return relativeVelocityDecrease;
     }
 
@@ -212,7 +212,7 @@ public class Echo<U extends Echo.Ui> extends TimeSensitiveMidiInOut<U> {
         this.echoLength.set(echoLength);
     }
 
-    public IntUpdateProperty echoLength() {
+    public IntUpdater echoLength() {
         return echoLength;
     }
 }

@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.m.linkui.ObjectUpdater;
 import nl.nlcode.marshalling.Marshalled;
 
 /**
@@ -35,7 +35,7 @@ public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> 
 
     private List<EnhancedMessage> enhancedMessageList = Collections.synchronizedList(new ArrayList<>());
 
-    private final ObjectUpdateProperty<ShowTicks, U, MidiMessageDump<U>> showTicks;
+    private final ObjectUpdater<ShowTicks, U, MidiMessageDump<U>> showTicks;
 
     public static record SaveData0(
             int id,
@@ -68,7 +68,7 @@ public class MidiMessageDump<U extends MidiMessageDump.Ui> extends MidiInOut<U> 
     }
 
     public MidiMessageDump() {
-        showTicks = new ObjectUpdateProperty(this, ShowTicks.ALL);
+        showTicks = new ObjectUpdater(this, ShowTicks.ALL);
     }
 
     @Override

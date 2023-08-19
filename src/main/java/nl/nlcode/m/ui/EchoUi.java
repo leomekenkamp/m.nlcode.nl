@@ -19,27 +19,27 @@ public class EchoUi extends MidiInOutUi<Echo> implements Echo.Ui {
 
     @FXML
     private EnumChoiceBox<TickSource> tickSource;
-    private final ObjectUpdatePropertyBridge<TickSource> tickSourceBackend;
+    private final ObjectPropertyUpdaterBridge<TickSource> tickSourceBackend;
 
     @FXML
     private Spinner<Integer> echoLength;
-    private final IntUpdatePropertyBridge echoLengthBackend;
+    private final IntPropertyUpdaterBridge echoLengthBackend;
 
     @FXML
     private Spinner<Integer> absoluteVelocityDecrease;
-    private final IntUpdatePropertyBridge absoluteVelocityDecreaseBackend;
+    private final IntPropertyUpdaterBridge absoluteVelocityDecreaseBackend;
 
     @FXML
     private Spinner<Integer> relativeVelocityDecrease;
-    private final IntUpdatePropertyBridge relativeVelocityDecreaseBackend;
+    private final IntPropertyUpdaterBridge relativeVelocityDecreaseBackend;
 
     public EchoUi(ProjectUi projectUi, Echo echo, MenuItem menuItem) {
         super(projectUi, echo, menuItem);
         loadFxml(EchoUi.class, App.MESSAGES);
-        tickSourceBackend = ObjectUpdatePropertyBridge.create(getMidiInOut().tickSource(), tickSource.valueProperty());
-        echoLengthBackend = IntUpdatePropertyBridge.create(getMidiInOut().echoLength(), echoLength.getValueFactory().valueProperty());
-        absoluteVelocityDecreaseBackend = IntUpdatePropertyBridge.create(getMidiInOut().absoluteVelocityDecrease(), absoluteVelocityDecrease.getValueFactory().valueProperty());
-        relativeVelocityDecreaseBackend = IntUpdatePropertyBridge.create(getMidiInOut().relativeVelocityDecrease(), relativeVelocityDecrease.getValueFactory().valueProperty());
+        tickSourceBackend = ObjectPropertyUpdaterBridge.create(getMidiInOut().tickSource(), tickSource.valueProperty());
+        echoLengthBackend = IntPropertyUpdaterBridge.create(getMidiInOut().echoLength(), echoLength.getValueFactory().valueProperty());
+        absoluteVelocityDecreaseBackend = IntPropertyUpdaterBridge.create(getMidiInOut().absoluteVelocityDecrease(), absoluteVelocityDecrease.getValueFactory().valueProperty());
+        relativeVelocityDecreaseBackend = IntPropertyUpdaterBridge.create(getMidiInOut().relativeVelocityDecrease(), relativeVelocityDecrease.getValueFactory().valueProperty());
     }
 
     @Override

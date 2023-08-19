@@ -1,7 +1,7 @@
 package nl.nlcode.m.engine;
 
-import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.BooleanUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.BooleanUpdater;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import javax.sound.midi.InvalidMidiDataException;
@@ -36,15 +36,15 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
 
     //private final IntUpdateProperty<U, ProgramChanger<U>>[] program = new IntUpdateProperty[CHANNEL_COUNT];
     // TODO: find out why we need Array.newInstance instead of line above
-    private final IntUpdateProperty<U, ProgramChanger<U>>[] program = (IntUpdateProperty[]) Array.newInstance(IntUpdateProperty.class, CHANNEL_COUNT);
+    private final IntUpdater<U, ProgramChanger<U>>[] program = (IntUpdater[]) Array.newInstance(IntUpdater.class, CHANNEL_COUNT);
 
     // private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = new BooleanUpdateProperty[CHANNEL_COUNT];
     // TODO: find out why we need Array.newInstance instead of line above
-    private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = (BooleanUpdateProperty[]) Array.newInstance(BooleanUpdateProperty.class, CHANNEL_COUNT);
+    private final BooleanUpdater<U, ProgramChanger<U>>[] dropIncomingChanges = (BooleanUpdater[]) Array.newInstance(BooleanUpdater.class, CHANNEL_COUNT);
 
-    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnMidiDeviceChange;
+    private final BooleanUpdater<U, ProgramChanger<U>> resendOnMidiDeviceChange;
 
-    private final BooleanUpdateProperty<U, ProgramChanger<U>> resendOnConnect;
+    private final BooleanUpdater<U, ProgramChanger<U>> resendOnConnect;
 
     public static record SaveData0(
             int id,
@@ -76,26 +76,26 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
                 id,
                 getResendOnConnect(),
                 getResendOnMidiDeviceChange(),
-                IntUpdateProperty.toIntArray(program),
-                BooleanUpdateProperty.toBooleanArray(dropIncomingChanges),
+                IntUpdater.toIntArray(program),
+                BooleanUpdater.toBooleanArray(dropIncomingChanges),
                 super.marshalInternal(-1, context)
         );
     }
 
     public ProgramChanger() {
-        resendOnMidiDeviceChange = new BooleanUpdateProperty(this, true);
+        resendOnMidiDeviceChange = new BooleanUpdater(this, true);
 
-        resendOnConnect = new BooleanUpdateProperty(this, true);
+        resendOnConnect = new BooleanUpdater(this, true);
 
         forAllChannels(channel -> {
-            program[channel] = new IntUpdateProperty(this, PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
+            program[channel] = new IntUpdater(this, PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
             program[channel].setAfterChange(this, ui -> {
                 ui.updateProgram(channel, getProgram(channel));
             });
         });
 
         forAllChannels(channel -> {
-            dropIncomingChanges[channel] = new BooleanUpdateProperty(this, false);
+            dropIncomingChanges[channel] = new BooleanUpdater(this, false);
             dropIncomingChanges[channel].setAfterChange(this, ui -> ui.updateDropIncomingChanges(channel, getDropIncomingChanges(channel)));
         });
 

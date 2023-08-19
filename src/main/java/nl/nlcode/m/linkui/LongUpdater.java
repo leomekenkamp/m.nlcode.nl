@@ -9,13 +9,13 @@ import java.util.function.LongConsumer;
  *
  * @author leo
  */
-public class LongUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends UpdateProperty<Long, U, H> {
+public class LongUpdater<U, H extends Updater.Holder<U>> extends Updater<Long, U, H> {
 
     private AtomicLong ref = new AtomicLong();
 
     private LongConsumer validator;
 
-    public LongUpdateProperty(H holder, long value) {
+    public LongUpdater(H holder, long value) {
         ref.set(value);
         register(holder);
     }
@@ -60,7 +60,7 @@ public class LongUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends U
         return result;
     }
     
-    public static final long[] toLongArray(LongUpdateProperty<?, ?>[] source) {
+    public static final long[] toLongArray(LongUpdater<?, ?>[] source) {
         long[] result = new long[source.length];
         for (int i = 0; i < source.length; i++) {
             result[i] = source[i].get();

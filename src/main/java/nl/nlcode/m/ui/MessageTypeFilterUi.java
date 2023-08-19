@@ -18,27 +18,27 @@ public class MessageTypeFilterUi extends MidiInOutUi<MessageTypeFilter> implemen
 
     @FXML
     private CheckBox filterNoteOn;
-    private BooleanUpdatePropertyBridge filterNoteOnBackend;
+    private BooleanPropertyUpdaterBridge filterNoteOnBackend;
 
     @FXML
     private CheckBox filterNoteOff;
-    private BooleanUpdatePropertyBridge filterNoteOffBackend;
+    private BooleanPropertyUpdaterBridge filterNoteOffBackend;
 
     @FXML
     private CheckBox filterTimerClock;
-    private BooleanUpdatePropertyBridge filterTimerClockBackend;
+    private BooleanPropertyUpdaterBridge filterTimerClockBackend;
 
     @FXML
     private CheckBox filterSysEx;
-    private BooleanUpdatePropertyBridge filterSysExBackend;
+    private BooleanPropertyUpdaterBridge filterSysExBackend;
 
     @FXML
     private CheckBox filterControllers;
-    private BooleanUpdatePropertyBridge filterControllersBackend;
+    private BooleanPropertyUpdaterBridge filterControllersBackend;
 
     @FXML
     private CheckBox filterProgramChange;
-    private BooleanUpdatePropertyBridge filterProgramChangeBackend;
+    private BooleanPropertyUpdaterBridge filterProgramChangeBackend;
 
     public MessageTypeFilterUi(ProjectUi projectUi, MessageTypeFilter messageTypeFilter, MenuItem menuItem) {
         super(projectUi, messageTypeFilter, menuItem);
@@ -48,11 +48,11 @@ public class MessageTypeFilterUi extends MidiInOutUi<MessageTypeFilter> implemen
     @Override
     protected void handleInitialize() {
         super.handleInitialize();
-        filterNoteOnBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().filterNoteOn(), filterNoteOn.selectedProperty());
-        filterNoteOffBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().filterNoteOff(), filterNoteOff.selectedProperty());
-        filterTimerClockBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().filterTimerClock(), filterTimerClock.selectedProperty());
-        filterControllersBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().filterControllers(), filterNoteOff.selectedProperty());
-        filterProgramChangeBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().filterProgramChange(), filterNoteOff.selectedProperty());
+        filterNoteOnBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().filterNoteOn(), filterNoteOn.selectedProperty());
+        filterNoteOffBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().filterNoteOff(), filterNoteOff.selectedProperty());
+        filterTimerClockBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().filterTimerClock(), filterTimerClock.selectedProperty());
+        filterControllersBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().filterControllers(), filterNoteOff.selectedProperty());
+        filterProgramChangeBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().filterProgramChange(), filterNoteOff.selectedProperty());
     }
 
 }

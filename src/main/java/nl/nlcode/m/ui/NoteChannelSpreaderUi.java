@@ -20,7 +20,7 @@ public class NoteChannelSpreaderUi extends MidiInOutUi<NoteChannelSpreader> impl
 
     @FXML
     private Spinner<Integer> inputChannel;
-    private IntUpdatePropertyBridge channelBackend;
+    private IntPropertyUpdaterBridge channelBackend;
 
     @FXML
     private CheckBox useAsOutput0;
@@ -92,7 +92,7 @@ public class NoteChannelSpreaderUi extends MidiInOutUi<NoteChannelSpreader> impl
                     -> getMidiInOut().setOutputChannel(channel, newValue));
             useAsOutputs[channel].textProperty().bind(getProjectUi().channelTextProperty()[channel]);
         });
-        channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().inputChannel(), inputChannel.getValueFactory().valueProperty());
+        channelBackend = IntPropertyUpdaterBridge.create(getMidiInOut().inputChannel(), inputChannel.getValueFactory().valueProperty());
         inputChannel.getValueFactory().setConverter(getMidiChannelStringConverter());
 
         getMidiChannelStringConverter().offsetProperty().addListener((ov, oldValue, newValue) -> {

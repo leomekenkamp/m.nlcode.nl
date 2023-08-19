@@ -10,9 +10,9 @@ import java.util.function.Consumer;
  *
  * @author leo
  * @param <U> user interface component to manipulate when this property has changed.
- * @param <H> acts as link between {@code UpdateProperty} and the UI component(s)
+ * @param <H> acts as link between {@code Updater} and the UI component(s)
  */
-public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
+public abstract class Updater<T, U, H extends Updater.Holder<U>> {
 
     /**
      * The holder for the UI component. The holder can hold any non-negative number of UI
@@ -29,9 +29,9 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
          */
         void uiUpdate(Consumer<U> action);
 
-        void register(UpdateProperty<?, U, ? extends Holder<U>> updateProperty);
+        void register(Updater<?, U, ? extends Holder<U>> updater);
 
-        void unregister(UpdateProperty<?, U, ? extends Holder<U>> updateProperty);
+        void unregister(Updater<?, U, ? extends Holder<U>> updater);
 
         void setDirty();
 
@@ -45,7 +45,7 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
      */
     public static interface Listener<T> {
 
-        void updatePropertyValueChanged(T oldValue, T newValue);
+        void updaterValueChanged(T oldValue, T newValue);
     }
 
     private H holder;
@@ -56,10 +56,10 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
 
     private final Map<Listener, ?> listeners = new HashMap<>(); // new WeakHashMap<>();
 
-    protected UpdateProperty() {
+    protected Updater() {
     }
 
-    protected UpdateProperty(H holder) {
+    protected Updater(H holder) {
         register(holder);
     }
 
@@ -129,7 +129,7 @@ public abstract class UpdateProperty<T, U, H extends UpdateProperty.Holder<U>> {
             }
             listeners.keySet().stream().forEach(cl -> {
                 if (cl != sendMeNoUpdate) {
-                    cl.updatePropertyValueChanged(oldValue, newValue);
+                    cl.updaterValueChanged(oldValue, newValue);
                 }
             });
         }

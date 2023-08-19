@@ -4,9 +4,8 @@ title = "Introduction"
 weight = "1"
 +++
 
-{{% notice style="primary" title="WARNING: early alpha" icon="skull-crossbones" %}}
-This project is in early alfa stage. Which means that if you eventually succeed in getting this
-application to run, it will have cost you your sanity, marriage and what have you not.
+{{% notice style="primary" title="WARNING: early beta" icon="skull-crossbones" %}}
+This project is in early beta stage. Which means that you should expect some hurdles and bugs.
 
 Please note that although the version may be something like 1.0.*x*, with *x* being some digit,
 this does not mean that **m.nlcode.nl** is out of alpha/beta stage. The first golden release will

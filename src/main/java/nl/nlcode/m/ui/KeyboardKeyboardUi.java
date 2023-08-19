@@ -93,7 +93,7 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
 
     @FXML
     private Spinner<Integer> channel;
-    private IntUpdatePropertyBridge channelBackend;
+    private IntPropertyUpdaterBridge channelBackend;
 
     @FXML
     private Spinner<Integer> octave;
@@ -150,9 +150,9 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
             }
         });
 
-        velocityBackend = IntUpdatePropertyBridge.create(getMidiInOut().velocity(), velocity.getValueFactory().valueProperty());
-        octaveBackend = IntUpdatePropertyBridge.create(getMidiInOut().octave(), octave.getValueFactory().valueProperty());
-        channelBackend = IntUpdatePropertyBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
+        velocityBackend = IntPropertyUpdaterBridge.create(getMidiInOut().velocity(), velocity.getValueFactory().valueProperty());
+        octaveBackend = IntPropertyUpdaterBridge.create(getMidiInOut().octave(), octave.getValueFactory().valueProperty());
+        channelBackend = IntPropertyUpdaterBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
         channel.getValueFactory().setConverter(getMidiChannelStringConverter());
 
         getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));

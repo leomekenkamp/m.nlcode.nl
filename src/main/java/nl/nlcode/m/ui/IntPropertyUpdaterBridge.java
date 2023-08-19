@@ -4,34 +4,34 @@ import javafx.application.Platform;
 import javafx.beans.property.IntegerPropertyBase;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import nl.nlcode.m.linkui.IntUpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
 
 /**
  *
  * @author leo
  */
-public class IntUpdatePropertyBridge extends IntegerPropertyBase implements IntUpdateProperty.Listener<Integer> {
+public class IntPropertyUpdaterBridge extends IntegerPropertyBase implements IntUpdater.Listener<Integer> {
 
-    private IntUpdateProperty backendUpdateProperty;
+    private IntUpdater backendUpdater;
     private Property<Integer> fxThreadProperty;
     private ObjectProperty<Integer> objectProperty;
 
-    protected IntUpdatePropertyBridge(int value) {
+    protected IntPropertyUpdaterBridge(int value) {
         super.set(value);
     }
 
-    public static IntUpdatePropertyBridge create(IntUpdateProperty backendUpdateProperty) {
-        IntUpdatePropertyBridge result = new IntUpdatePropertyBridge(backendUpdateProperty.get());
-        backendUpdateProperty.addListener(result);
-        result.backendUpdateProperty = backendUpdateProperty;
+    public static IntPropertyUpdaterBridge create(IntUpdater backendUpdater) {
+        IntPropertyUpdaterBridge result = new IntPropertyUpdaterBridge(backendUpdater.get());
+        backendUpdater.addListener(result);
+        result.backendUpdater = backendUpdater;
         return result;
     }
 
-    public static IntUpdatePropertyBridge create(IntUpdateProperty backendUpdateProperty, Property<Integer> fxThreadProperty) {
-        IntUpdatePropertyBridge result = create(backendUpdateProperty);
+    public static IntPropertyUpdaterBridge create(IntUpdater backendUpdater, Property<Integer> fxThreadProperty) {
+        IntPropertyUpdaterBridge result = create(backendUpdater);
         result.fxThreadProperty = fxThreadProperty;
         result.objectProperty = result.asObject();
-        fxThreadProperty.setValue(backendUpdateProperty.get());
+        fxThreadProperty.setValue(backendUpdater.get());
         fxThreadProperty.bindBidirectional(result.objectProperty);
         return result;
     }
@@ -57,7 +57,7 @@ public class IntUpdatePropertyBridge extends IntegerPropertyBase implements IntU
     @Override
     public void set(int i) {
         super.set(i);
-        backendUpdateProperty.set(i, this);
+        backendUpdater.set(i, this);
     }
 
     @Override
@@ -66,13 +66,13 @@ public class IntUpdatePropertyBridge extends IntegerPropertyBase implements IntU
     }
 
     /**
-     * Called by IntUpdateProperty, on actual value change.
+     * Called by IntUpdater, on actual value change.
      *
      * @param oldValue
      * @param newValue
      */
     @Override
-    public void updatePropertyValueChanged(Integer oldValue, Integer newValue) {
+    public void updaterValueChanged(Integer oldValue, Integer newValue) {
         Platform.runLater(() -> setValue(newValue));
     }
 }

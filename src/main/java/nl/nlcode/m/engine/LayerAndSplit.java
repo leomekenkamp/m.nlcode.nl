@@ -9,8 +9,8 @@ import java.util.function.Consumer;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.UpdateProperty;
+import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.Updater;
 import nl.nlcode.marshalling.MarshalHelper;
 import nl.nlcode.marshalling.Marshallable;
 import nl.nlcode.marshalling.Marshalled;
@@ -39,7 +39,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    public static class Layer implements Marshallable, UpdateProperty.Holder<Layer.Ui> {
+    public static class Layer implements Marshallable, Updater.Holder<Layer.Ui> {
 
         @Override
         public void uiUpdate(Consumer<Ui> action) {
@@ -47,12 +47,12 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
         }
 
         @Override
-        public void register(UpdateProperty<?, Ui, ? extends UpdateProperty.Holder<Ui>> updateProperty) {
+        public void register(Updater<?, Ui, ? extends Updater.Holder<Ui>> updater) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public void unregister(UpdateProperty<?, Ui, ? extends UpdateProperty.Holder<Ui>> updateProperty) {
+        public void unregister(Updater<?, Ui, ? extends Updater.Holder<Ui>> updater) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -74,11 +74,11 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
 
         private transient LayerAndSplit layerAndSplit;
 
-        private final IntUpdateProperty<Layer.Ui, Layer> fromNote;
-        private final IntUpdateProperty<Layer.Ui, Layer> toNote;
-        private final IntUpdateProperty<Layer.Ui, Layer> inputChannel;
-        private final IntUpdateProperty<Layer.Ui, Layer> outputChannel;
-        private final IntUpdateProperty<Layer.Ui, Layer> transpose;
+        private final IntUpdater<Layer.Ui, Layer> fromNote;
+        private final IntUpdater<Layer.Ui, Layer> toNote;
+        private final IntUpdater<Layer.Ui, Layer> inputChannel;
+        private final IntUpdater<Layer.Ui, Layer> outputChannel;
+        private final IntUpdater<Layer.Ui, Layer> transpose;
 
         public static final record SaveData0(
                 int id,
@@ -120,11 +120,11 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
         }
 
         public Layer(int channel) {
-            fromNote = new IntUpdateProperty<>(this, NOTE_MIN, NOTE_MIN, NOTE_MAX);
-            toNote = new IntUpdateProperty<>(this, NOTE_MAX, NOTE_MIN, NOTE_MAX);
-            inputChannel = new IntUpdateProperty<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
-            outputChannel = new IntUpdateProperty<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
-            transpose = new IntUpdateProperty<>(this, 0);
+            fromNote = new IntUpdater<>(this, NOTE_MIN, NOTE_MIN, NOTE_MAX);
+            toNote = new IntUpdater<>(this, NOTE_MAX, NOTE_MIN, NOTE_MAX);
+            inputChannel = new IntUpdater<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
+            outputChannel = new IntUpdater<>(this, channel, CHANNEL_MIN, CHANNEL_MAX);
+            transpose = new IntUpdater<>(this, 0);
         }
 
         public int getFromNote() {
@@ -135,7 +135,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             this.fromNote.set(fromNote);
         }
 
-        public IntUpdateProperty<Layer.Ui, Layer> fromNote() {
+        public IntUpdater<Layer.Ui, Layer> fromNote() {
             return fromNote;
         }
 
@@ -147,7 +147,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             this.toNote.set(toNote);
         }
 
-        public IntUpdateProperty<Layer.Ui, Layer> toNote() {
+        public IntUpdater<Layer.Ui, Layer> toNote() {
             return toNote;
         }
 
@@ -159,7 +159,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             this.inputChannel.set(inputChannel);
         }
 
-        public IntUpdateProperty<Layer.Ui, Layer> inputChannel() {
+        public IntUpdater<Layer.Ui, Layer> inputChannel() {
             return inputChannel;
         }
 
@@ -171,7 +171,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             this.outputChannel.set(outputChannel);
         }
 
-        public IntUpdateProperty<Layer.Ui, Layer> outputChannel() {
+        public IntUpdater<Layer.Ui, Layer> outputChannel() {
             return outputChannel;
         }
 
@@ -183,7 +183,7 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             this.transpose.set(transpose);
         }
 
-        public IntUpdateProperty<Layer.Ui, Layer> transpose() {
+        public IntUpdater<Layer.Ui, Layer> transpose() {
             return transpose;
         }
 

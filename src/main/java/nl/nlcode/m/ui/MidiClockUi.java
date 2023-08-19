@@ -71,14 +71,14 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
         beatsPerMinute.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setBeatsPerMinute(newValue);
         });
-        beatsPerMinuteBridge = DoubleUpdatePropertyBridge.create(getMidiInOut().beatsPerMinute(), beatsPerMinute.getValueFactory().valueProperty());
+        beatsPerMinuteBridge = DoublePropertyUpdaterBridge.create(getMidiInOut().beatsPerMinute(), beatsPerMinute.getValueFactory().valueProperty());
 
         beatsPerBar.editorProperty().get().setAlignment(Pos.CENTER_RIGHT);
         beatsPerBar.getValueFactory().setValue(getMidiInOut().getBeatsPerBar());
         beatsPerBar.getValueFactory().valueProperty().addListener((ov, oldValue, newValue) -> {
             getMidiInOut().setBeatsPerBar(newValue);
         });
-        beatsPerBarBridge = IntUpdatePropertyBridge.create(getMidiInOut().beatsPerBar(), beatsPerBar.getValueFactory().valueProperty());
+        beatsPerBarBridge = IntPropertyUpdaterBridge.create(getMidiInOut().beatsPerBar(), beatsPerBar.getValueFactory().valueProperty());
     }
 
     public ObjectProperty<ClockSource> clockSourceProperty() {

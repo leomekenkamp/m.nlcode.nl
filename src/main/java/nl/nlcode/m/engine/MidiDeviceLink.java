@@ -1,7 +1,7 @@
 package nl.nlcode.m.engine;
 
 import java.lang.invoke.MethodHandles;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
+import nl.nlcode.m.linkui.ObjectUpdater;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiUnavailableException;
@@ -40,7 +40,7 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
 
     }
 
-    private final ObjectUpdateProperty<MidiDevice, U, MidiDeviceLink<U>> midiDevice;
+    private final ObjectUpdater<MidiDevice, U, MidiDeviceLink<U>> midiDevice;
 
     private transient SendReceiver sendReceiver;
 
@@ -113,7 +113,7 @@ public final class MidiDeviceLink<U extends MidiDeviceLink.Ui> extends MidiInOut
 
     public MidiDeviceLink() {
         sendReceiver = new SendReceiver();
-        midiDevice = new ObjectUpdateProperty<>(this, null);
+        midiDevice = new ObjectUpdater<>(this, null);
         midiDevice.setAfterChange(this, ui -> ui.midiDeviceChanged());
     }
 

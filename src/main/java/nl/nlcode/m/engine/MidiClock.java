@@ -13,9 +13,9 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.ClockSource.EXTERNAL;
 import static nl.nlcode.m.engine.ClockSource.INTERNAL;
-import nl.nlcode.m.linkui.DoubleUpdateProperty;
-import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.LongUpdateProperty;
+import nl.nlcode.m.linkui.DoubleUpdater;
+import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.LongUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,17 +41,17 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
 
     private volatile ClockSource clockSource;
 
-    private final IntUpdateProperty<U, MidiClock<U>> bar;
+    private final IntUpdater<U, MidiClock<U>> bar;
 
-    private final IntUpdateProperty<U, MidiClock<U>> beat;
+    private final IntUpdater<U, MidiClock<U>> beat;
 
-    private final IntUpdateProperty<U, MidiClock<U>> tick;
+    private final IntUpdater<U, MidiClock<U>> tick;
 
-    private final IntUpdateProperty<U, MidiClock<U>> beatsPerBar;
+    private final IntUpdater<U, MidiClock<U>> beatsPerBar;
 
-    private final IntUpdateProperty<U, MidiClock<U>> ticksPerBeat;
+    private final IntUpdater<U, MidiClock<U>> ticksPerBeat;
 
-    private final DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute;
+    private final DoubleUpdater<U, MidiClock<U>> beatsPerMinute;
 
     public static record SaveData0(
             int id,
@@ -105,12 +105,12 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
     private transient AtomicBoolean tickTimerRunning;
 
     public MidiClock() {
-        bar = new IntUpdateProperty<>(this, 0);
-        beat = new IntUpdateProperty<>(this, 0);
-        tick = new IntUpdateProperty<>(this, 0);
-        beatsPerBar = new IntUpdateProperty<>(this, 4);
-        ticksPerBeat = new IntUpdateProperty<>(this, 24);
-        beatsPerMinute = new DoubleUpdateProperty<>(this, 120.00f);
+        bar = new IntUpdater<>(this, 0);
+        beat = new IntUpdater<>(this, 0);
+        tick = new IntUpdater<>(this, 0);
+        beatsPerBar = new IntUpdater<>(this, 4);
+        ticksPerBeat = new IntUpdater<>(this, 24);
+        beatsPerMinute = new DoubleUpdater<>(this, 120.00f);
 
         clockSource = ClockSource.INTERNAL;
         bar.setAfterChange(this, (ui) -> ui.barChanged());
@@ -154,7 +154,7 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         return beatsPerBar.get();
     }
 
-    public IntUpdateProperty<U, MidiClock<U>> beatsPerBar() {
+    public IntUpdater<U, MidiClock<U>> beatsPerBar() {
         return beatsPerBar;
     }
 
@@ -166,7 +166,7 @@ public class MidiClock<U extends MidiClock.Ui> extends MidiInOut<U> {
         this.beatsPerMinute.set(beatsPerMinute);
     }
 
-    public DoubleUpdateProperty<U, MidiClock<U>> beatsPerMinute() {
+    public DoubleUpdater<U, MidiClock<U>> beatsPerMinute() {
         return beatsPerMinute;
     }
 

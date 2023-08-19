@@ -5,7 +5,7 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
-import nl.nlcode.m.linkui.BooleanUpdateProperty;
+import nl.nlcode.m.linkui.BooleanUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +51,11 @@ public class ChannelMatrix<U extends ChannelMatrix.Ui> extends MidiInOut<U> {
         return result;
     }
 
-    private final BooleanUpdateProperty<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdateProperty[CHANNEL_COUNT][CHANNEL_COUNT];
+    private final BooleanUpdater<U, ChannelMatrix<U>> fromTo[][] = new BooleanUpdater[CHANNEL_COUNT][CHANNEL_COUNT];
 
     public ChannelMatrix() {
         forAllChannels(from -> forAllChannels(to -> {
-            fromTo[from][to] = new BooleanUpdateProperty(this, false);
+            fromTo[from][to] = new BooleanUpdater(this, false);
             fromTo[from][to].setAfterChange(this, ui -> ui.matrixChanged(from, to, fromTo[from][to].get()));
         }));
         defaultFromTo();

@@ -31,7 +31,7 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
 
     @FXML
     private CheckBox newNoteOnBeforeOldNoteOff;
-    private BooleanUpdatePropertyBridge newNoteOnBeforeOldNoteOffBackend;
+    private BooleanPropertyUpdaterBridge newNoteOnBeforeOldNoteOffBackend;
 
     public NoteHolderUi(ProjectUi projectUi, NoteHolder noteHolder, MenuItem menuItem) {
         super(projectUi, noteHolder, menuItem);
@@ -52,7 +52,7 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
             channel12Field, channel13Field, channel14Field, channel15Field
         };
         forAllChannels(channel -> channelFields[channel].labelTextProperty().bind(getProjectUi().channelTextProperty()[channel]));
-        newNoteOnBeforeOldNoteOffBackend = BooleanUpdatePropertyBridge.create(getMidiInOut().newNoteOnBeforeOldNoteOffProperty(), newNoteOnBeforeOldNoteOff.selectedProperty());
+        newNoteOnBeforeOldNoteOffBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().newNoteOnBeforeOldNoteOffProperty(), newNoteOnBeforeOldNoteOff.selectedProperty());
 
     }
 

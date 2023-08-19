@@ -6,15 +6,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author leo
  */
-public class BooleanUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends UpdateProperty<Boolean, U, H> {
+public class BooleanUpdater<U, H extends Updater.Holder<U>> extends Updater<Boolean, U, H> {
 
     private AtomicBoolean ref = new AtomicBoolean();
 
-    public BooleanUpdateProperty(H holder) {
+    public BooleanUpdater(H holder) {
         super(holder);
     }
     
-    public BooleanUpdateProperty(H holder, boolean v) {
+    public BooleanUpdater(H holder, boolean v) {
         ref.set(v);
         register(holder);
     }
@@ -32,7 +32,7 @@ public class BooleanUpdateProperty<U, H extends UpdateProperty.Holder<U>> extend
         runAfterChange(oldValue, newValue, sendMeNoUpdate);
     }
 
-    public static final boolean[] toBooleanArray(BooleanUpdateProperty<?, ?>[] source) {
+    public static final boolean[] toBooleanArray(BooleanUpdater<?, ?>[] source) {
         boolean[] result = new boolean[source.length];
         for (int i = 0; i < source.length; i++) {
             result[i] = source[i].get();

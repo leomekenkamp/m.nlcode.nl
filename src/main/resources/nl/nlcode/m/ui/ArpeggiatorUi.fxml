@@ -63,20 +63,17 @@
                             </Field>
                         </FieldHBox>
                     </children>
-                </Field><!--
+                </Field>
                 <Field labelText="%direction">
-                    <HBox>
-                        <fx:define>
-                            <ToggleGroup fx:id="directionChord" />
-                        </fx:define>
+                    <FieldHBox>
                         <Field labelText="%chord">
-                            <HBox>
-                                <ToggleButton fx:id="directionChordDown" text="%down" toggleGroup="$directionChord"/>
-                                <ToggleButton fx:id="directionChordUp" text="%up" toggleGroup="$directionChord"/>
-                            </HBox>
+                            <EnumChoiceBox fx:id="chordDirection" enumClass="nl.nlcode.m.engine.Direction" />
                         </Field>
-                    </HBox>
-                </Field>-->
+                        <Field labelText="%range">
+                            <EnumChoiceBox fx:id="rangeDirection" enumClass="nl.nlcode.m.engine.Direction" />
+                        </Field>
+                    </FieldHBox>
+                </Field>
                 <Field labelText="%length">
                     <FieldHBox>
                         <Spinner fx:id="length">

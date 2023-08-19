@@ -60,11 +60,11 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
 
         public LayerUi(LayerAndSplit.Layer layer) {
             this.layer = layer;
-            fromNote = IntUpdatePropertyBridge.create(layer.fromNote());
-            toNote = IntUpdatePropertyBridge.create(layer.toNote());
-            inputChannel = IntUpdatePropertyBridge.create(layer.inputChannel());
-            outputChannel = IntUpdatePropertyBridge.create(layer.outputChannel());
-            transpose = IntUpdatePropertyBridge.create(layer.transpose());
+            fromNote = IntPropertyUpdaterBridge.create(layer.fromNote());
+            toNote = IntPropertyUpdaterBridge.create(layer.toNote());
+            inputChannel = IntPropertyUpdaterBridge.create(layer.inputChannel());
+            outputChannel = IntPropertyUpdaterBridge.create(layer.outputChannel());
+            transpose = IntPropertyUpdaterBridge.create(layer.transpose());
         }
 
         public IntegerProperty fromNoteProperty() {

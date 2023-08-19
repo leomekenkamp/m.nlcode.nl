@@ -8,7 +8,7 @@ import java.util.function.Function;
  *
  * @author leo
  */
-public class IntUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends UpdateProperty<Integer, U, H> {
+public class IntUpdater<U, H extends Updater.Holder<U>> extends Updater<Integer, U, H> {
 
     private AtomicInteger ref = new AtomicInteger();
 
@@ -16,15 +16,15 @@ public class IntUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends Up
 
     private int max;
 
-    public IntUpdateProperty(H holder) {
+    public IntUpdater(H holder) {
         super(holder);
     }
     
-    public IntUpdateProperty(H holder, int value) {
+    public IntUpdater(H holder, int value) {
         this(holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    public IntUpdateProperty(H holder, int value, int min, int max) {
+    public IntUpdater(H holder, int value, int min, int max) {
         this.min = min;
         this.max = max;
         set(value);
@@ -60,7 +60,7 @@ public class IntUpdateProperty<U, H extends UpdateProperty.Holder<U>> extends Up
         return result;
     }
 
-    public static final int[] toIntArray(IntUpdateProperty<?, ?>[] source) {
+    public static final int[] toIntArray(IntUpdater<?, ?>[] source) {
         int[] result = new int[source.length];
         for (int i = 0; i < source.length; i++) {
             result[i] = source[i].get();

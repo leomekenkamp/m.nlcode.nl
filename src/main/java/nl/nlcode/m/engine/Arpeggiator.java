@@ -6,9 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdateProperty;
-import nl.nlcode.m.linkui.ObjectUpdateProperty;
-import nl.nlcode.m.linkui.UpdateProperty;
+import static nl.nlcode.m.engine.Direction.DOWN;
+import static nl.nlcode.m.engine.Direction.UP;
+import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.ObjectUpdater;
+import nl.nlcode.m.linkui.Updater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,21 +26,25 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
     public static interface Ui extends TimeSensitiveMidiInOut.Ui {
     }
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> channel;
+    private final IntUpdater<U, Arpeggiator<U>> channel;
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> octaveUp;
+    private final IntUpdater<U, Arpeggiator<U>> octaveUp;
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> octaveDown;
+    private final IntUpdater<U, Arpeggiator<U>> octaveDown;
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> length;
+    private final IntUpdater<U, Arpeggiator<U>> length;
 
-    private final ObjectUpdateProperty<ArpeggiatorLengthPer, U, Arpeggiator<U>> lengthPer;
+    private final ObjectUpdater<ArpeggiatorLengthPer, U, Arpeggiator<U>> lengthPer;
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> overrideAttackVelocity;
+    private final IntUpdater<U, Arpeggiator<U>> overrideAttackVelocity;
 
-    private final IntUpdateProperty<U, Arpeggiator<U>> releaseVelocity;
+    private final IntUpdater<U, Arpeggiator<U>> releaseVelocity;
 
-    private final ObjectUpdateProperty<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffect;
+    private final ObjectUpdater<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffect;
+
+    private final ObjectUpdater<Direction, U, Arpeggiator<U>> chordDirection;
+
+    private final ObjectUpdater<Direction, U, Arpeggiator<U>> rangeDirection;
 
     public static record SaveData0(
             int id,
@@ -50,6 +56,8 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
             int overrideAttackVelocity,
             int releaseVelocity,
             ArpeggiatorActionTakesEffect newChordTakesEffect,
+            String chordDirection,
+            String rangeDirection,
             Marshalled<MidiInOut> s) implements Marshalled<Arpeggiator> {
 
         @Override
@@ -63,6 +71,12 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
             target.overrideAttackVelocity.set(overrideAttackVelocity());
             target.releaseVelocity.set(releaseVelocity());
             target.newChordTakesEffect.set(newChordTakesEffect());
+            if (chordDirection() != null) {
+                target.chordDirection.set(Direction.valueOf(chordDirection()));
+            }
+            if (rangeDirection() != null) {
+                target.rangeDirection.set(Direction.valueOf(rangeDirection()));
+            }
         }
 
         @Override
@@ -83,6 +97,8 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
                 overrideAttackVelocity.get(),
                 releaseVelocity.get(),
                 newChordTakesEffect.get(),
+                chordDirection.get().name(),
+                rangeDirection.get().name(),
                 super.marshalInternal(-1, context)
         );
         return result;
@@ -96,29 +112,31 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
 
     private transient int playingNote = -1;
 
-    private transient int currentIndex;
+    private transient int chordNoteIndex;
 
     private transient int currentOctave;
 
     private transient int noteLength = 24;
 
-    private transient UpdateProperty.Listener onChangeRecalculateNoteLength = (oldValue, newValue) -> {
+    private transient Updater.Listener onChangeRecalculateNoteLength = (oldValue, newValue) -> {
         recalculateNoteLength();
     };
 
     public Arpeggiator() {
         chordNotes = new ArrayList<>();
-        channel = new IntUpdateProperty<>(this, 0);
-        octaveDown = new IntUpdateProperty<>(this, 1, 0, 10);
+        channel = new IntUpdater<>(this, 0);
+        octaveDown = new IntUpdater<>(this, 1, 0, 10);
         octaveDown.addListener(onChangeRecalculateNoteLength);
-        octaveUp = new IntUpdateProperty<>(this, 1, 0, 10);
+        octaveUp = new IntUpdater<>(this, 1, 0, 10);
         octaveDown.addListener(onChangeRecalculateNoteLength);
-        length = new IntUpdateProperty<>(this, 24, 1, 24 * 16); // max bit arbitrary: 16 quarter notes
-        lengthPer = new ObjectUpdateProperty<>(this, ArpeggiatorLengthPer.CHORD);
+        length = new IntUpdater<>(this, 24, 1, 24 * 16); // max bit arbitrary: 16 quarter notes
+        lengthPer = new ObjectUpdater<>(this, ArpeggiatorLengthPer.CHORD);
         lengthPer.addListener(onChangeRecalculateNoteLength);
-        overrideAttackVelocity = new IntUpdateProperty<>(this, 64, MIDI_DATA_NONE, MIDI_DATA_MAX);
-        releaseVelocity = new IntUpdateProperty<>(this, 64, MIDI_DATA_MIN, MIDI_DATA_MAX);
-        newChordTakesEffect = new ObjectUpdateProperty<>(this, ArpeggiatorActionTakesEffect.RANGE);
+        overrideAttackVelocity = new IntUpdater<>(this, 64, MIDI_DATA_NONE, MIDI_DATA_MAX);
+        releaseVelocity = new IntUpdater<>(this, 64, MIDI_DATA_MIN, MIDI_DATA_MAX);
+        newChordTakesEffect = new ObjectUpdater<>(this, ArpeggiatorActionTakesEffect.RANGE);
+        chordDirection = new ObjectUpdater(this, Direction.DOWN);
+        rangeDirection = new ObjectUpdater(this, Direction.UP);
     }
 
     @Override
@@ -166,16 +184,21 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
     }
 
     private void resetIndices() {
-        currentIndex = -1;
+        chordNoteIndex = switch (chordDirection.get()) {
+            case UP ->
+                -1;
+            case DOWN ->
+                Integer.MAX_VALUE;
+        };
         currentOctave = 0;
     }
 
     private void recalculateNoteLength() {
-        noteLength = recalculateNoteLength(lengthPer.get(), length.get(), chordNotes, currentIndex, octaveDown.get(),
+        noteLength = recalculateNoteLength(lengthPer.get(), length.get(), chordNotes, chordNoteIndex, octaveDown.get(),
                 octaveUp.get(), currentOctave);
     }
 
-    static int recalculateNoteLength(ArpeggiatorLengthPer lengthPer, int length, List<Integer> receivedNotesOn, int currentIndex,
+    static int recalculateNoteLength(ArpeggiatorLengthPer lengthPer, int length, List<Integer> chordNotes, int currentIndex,
             int octaveDown, int octaveUp, int currentOctave) {
         int result = 0;
         switch (lengthPer) {
@@ -183,8 +206,8 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
                 result = length;
             }
             case CHORD -> {
-                if (!receivedNotesOn.isEmpty()) {
-                    int notesInChord = receivedNotesOn.size();
+                if (!chordNotes.isEmpty()) {
+                    int notesInChord = chordNotes.size();
                     result = length / notesInChord;
                     int remainder = length % notesInChord;
                     if (currentIndex < remainder) {
@@ -197,13 +220,13 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
                 }
             }
             case RANGE -> {
-                if (!receivedNotesOn.isEmpty()) {
+                if (!chordNotes.isEmpty()) {
                     int octaveCount = 1 + octaveUp + octaveDown;
-                    int allNoteCount = octaveCount * receivedNotesOn.size();
+                    int allNoteCount = octaveCount * chordNotes.size();
                     result = length / allNoteCount;
                     int remainder = length % allNoteCount;
                     int octaveOffset = currentOctave + octaveDown;
-                    if (currentIndex + octaveOffset * receivedNotesOn.size() < remainder) {
+                    if (currentIndex + octaveOffset * chordNotes.size() < remainder) {
                         // similar to CHORD above
                         result += 1;
                     }
@@ -239,19 +262,12 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
             }
 
             // NEXT NOTE
-            currentIndex += 1;
-            if (currentIndex >= chordNotes.size()) {
-                currentIndex = 0;
-                currentOctave += 1;
-                if (currentOctave > octaveUp.get()) {
-                    currentOctave = -octaveDown.get();
-                }
-            }
+            selectNextNote();
             if (chordNotes.isEmpty()) {
                 playingNote = -1;
                 currentOctave = 0;
             } else {
-                playingNote = chordNotes.get(currentIndex);
+                playingNote = chordNotes.get(chordNoteIndex);
                 recalculateNoteLength();
             }
 
@@ -264,6 +280,49 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         }
     }
 
+    private void selectNextNote() {
+        switch (chordDirection.get()) {
+            case UP:
+                chordNoteIndex += 1;
+                if (chordNoteIndex >= chordNotes.size()) {
+                    chordNoteIndex = 0;
+                    selectNextOctave();
+                }
+                break;
+            case DOWN:
+                chordNoteIndex -= 1;
+                if (chordNoteIndex >= chordNotes.size()) {
+                    chordNoteIndex = chordNotes.size() - 1;
+                }
+                if (chordNoteIndex <= -1) {
+                    chordNoteIndex = chordNotes.size() - 1;
+                    selectNextOctave();
+                }
+                break;
+            default:
+                throw new UnknownException(chordDirection.get());
+        }
+    }
+
+    private void selectNextOctave() {
+        switch (rangeDirection.get()) {
+            case UP:
+                currentOctave += 1;
+                if (currentOctave > octaveUp.get()) {
+                    currentOctave = -octaveDown.get();
+                }
+                break;
+            case DOWN:
+                currentOctave -= 1;
+                if (currentOctave < -octaveDown.get()) {
+                    currentOctave = octaveUp.get();
+                }
+                break;
+            default:
+                throw new UnknownException(rangeDirection.get());
+        }
+    }
+
     public int getChannel() {
         return channel.get();
     }
@@ -272,7 +331,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.channel.set(channel);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> channelProperty() {
+    public IntUpdater<U, Arpeggiator<U>> channelProperty() {
         return channel;
     }
 
@@ -284,7 +343,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.octaveDown.set(octaveDown);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> octaveDownProperty() {
+    public IntUpdater<U, Arpeggiator<U>> octaveDownProperty() {
         return octaveDown;
     }
 
@@ -296,7 +355,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.octaveUp.set(octaveUp);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> octaveUpProperty() {
+    public IntUpdater<U, Arpeggiator<U>> octaveUpProperty() {
         return octaveUp;
     }
 
@@ -308,7 +367,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.length.set(length);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> lengthProperty() {
+    public IntUpdater<U, Arpeggiator<U>> lengthProperty() {
         return length;
     }
 
@@ -320,7 +379,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.lengthPer.set(lengthPer);
     }
 
-    public ObjectUpdateProperty<ArpeggiatorLengthPer, U, Arpeggiator<U>> lengthPerProperty() {
+    public ObjectUpdater<ArpeggiatorLengthPer, U, Arpeggiator<U>> lengthPerProperty() {
         return lengthPer;
     }
 
@@ -332,7 +391,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.overrideAttackVelocity.set(overrideAttackVelocity);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> overrideAttackVelocityProperty() {
+    public IntUpdater<U, Arpeggiator<U>> overrideAttackVelocityProperty() {
         return overrideAttackVelocity;
     }
 
@@ -344,7 +403,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.releaseVelocity.set(releaseVelocity);
     }
 
-    public IntUpdateProperty<U, Arpeggiator<U>> releaseVelocityProperty() {
+    public IntUpdater<U, Arpeggiator<U>> releaseVelocityProperty() {
         return releaseVelocity;
     }
 
@@ -356,7 +415,32 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         this.newChordTakesEffect.set(newChordTakesEffect);
     }
 
-    public ObjectUpdateProperty<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffectProperty() {
+    public ObjectUpdater<ArpeggiatorActionTakesEffect, U, Arpeggiator<U>> newChordTakesEffectProperty() {
         return newChordTakesEffect;
     }
+    
+    public Direction getRangeDirection() {
+        return rangeDirection.get();
+    }
+    
+    public void setRangeDirection(Direction direction) {
+        rangeDirection.set(direction);
+    }
+    
+    public ObjectUpdater<Direction, U, Arpeggiator<U>> rangeDirectionUpdater() {
+        return rangeDirection;
+    }
+    
+    public Direction getChordDirection() {
+        return chordDirection.get();
+    }
+    
+    public void setChordDirection(Direction direction) {
+        chordDirection.set(direction);
+    }
+    
+    public ObjectUpdater<Direction, U, Arpeggiator<U>> chordDirectionUpdater() {
+        return chordDirection;
+    }
+    
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.BooleanUpdateProperty;
+import nl.nlcode.m.linkui.BooleanUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final BooleanUpdateProperty<U, NoteHolder<U>> newNoteOnBeforeOldNoteOff;
+    private final BooleanUpdater<U, NoteHolder<U>> newNoteOnBeforeOldNoteOff;
 
     public static record SaveData0(
             int id,
@@ -60,7 +60,7 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
     }
 
     public NoteHolder() {
-        newNoteOnBeforeOldNoteOff = new BooleanUpdateProperty<>(this, false);
+        newNoteOnBeforeOldNoteOff = new BooleanUpdater<>(this, false);
         bufferedNoteOffMessages = new LinkedHashMap[CHANNEL_COUNT];
         receivedNotesOn = new Set[CHANNEL_COUNT];
         for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
@@ -165,7 +165,7 @@ public class NoteHolder<U extends NoteHolder.Ui> extends MidiInOut<U> {
         this.newNoteOnBeforeOldNoteOff.set(newNoteOnBeforeOldNoteOff);
     }
 
-    public BooleanUpdateProperty<U, NoteHolder<U>> newNoteOnBeforeOldNoteOffProperty() {
+    public BooleanUpdater<U, NoteHolder<U>> newNoteOnBeforeOldNoteOffProperty() {
         return newNoteOnBeforeOldNoteOff;
     }
 
