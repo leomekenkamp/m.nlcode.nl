@@ -6,8 +6,8 @@
 @import "chroma-relearn-dark.css";
 
 :root {
-    --PRIMARY-color: cyan; /*rgba( 40, 40, 40, 1 ); /* brand primary color */
-    --SECONDARY-color: darkcyan; /*( 108, 140, 227, 1 ); /* brand secondary color */
+    --PRIMARY-color: #00C0C0; /*rgba( 40, 40, 40, 1 ); /* brand primary color */
+    --SECONDARY-color: #00A0A0; /*( 108, 140, 227, 1 ); /* brand secondary color */
     --ACCENT-color: rgba( 255, 68, 255, 1 ); /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: rgba( 224, 224, 224, 1 ); /* text color of content and h1 titles */

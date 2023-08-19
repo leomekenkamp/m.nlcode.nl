@@ -4,8 +4,6 @@ import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.ArpeggiatorLengthPer;
 import nl.nlcode.m.engine.Direction;
