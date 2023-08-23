@@ -34,13 +34,9 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
 
     }
 
-    //private final IntUpdateProperty<U, ProgramChanger<U>>[] program = new IntUpdateProperty[CHANNEL_COUNT];
-    // TODO: find out why we need Array.newInstance instead of line above
-    private final IntUpdater<U, ProgramChanger<U>>[] program = (IntUpdater[]) Array.newInstance(IntUpdater.class, CHANNEL_COUNT);
+    private final IntUpdater<U, ProgramChanger<U>>[] program;
 
-    // private final BooleanUpdateProperty<U, ProgramChanger<U>>[] dropIncomingChanges = new BooleanUpdateProperty[CHANNEL_COUNT];
-    // TODO: find out why we need Array.newInstance instead of line above
-    private final BooleanUpdater<U, ProgramChanger<U>>[] dropIncomingChanges = (BooleanUpdater[]) Array.newInstance(BooleanUpdater.class, CHANNEL_COUNT);
+    private final BooleanUpdater<U, ProgramChanger<U>>[] dropIncomingChanges;
 
     private final BooleanUpdater<U, ProgramChanger<U>> resendOnMidiDeviceChange;
 
@@ -83,10 +79,12 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
     }
 
     public ProgramChanger() {
+
         resendOnMidiDeviceChange = new BooleanUpdater(this, true);
 
         resendOnConnect = new BooleanUpdater(this, true);
 
+        program = new IntUpdater[CHANNEL_COUNT];
         forAllChannels(channel -> {
             program[channel] = new IntUpdater(this, PROGRAM_NONE, MIDI_DATA_NONE, MIDI_DATA_MAX);
             program[channel].setAfterChange(this, ui -> {
@@ -94,6 +92,7 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
             });
         });
 
+        dropIncomingChanges = new BooleanUpdater[CHANNEL_COUNT];
         forAllChannels(channel -> {
             dropIncomingChanges[channel] = new BooleanUpdater(this, false);
             dropIncomingChanges[channel].setAfterChange(this, ui -> ui.updateDropIncomingChanges(channel, getDropIncomingChanges(channel)));
@@ -181,12 +180,12 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
             throw new IllegalStateException(e);
         }
     }
-    
+
     public int getProgram(int channel) {
         verifyChannel(channel);
         return program[channel].get();
     }
-    
+
     public void setProgram(int channel, int prog) {
         verifyChannel(channel);
         MidiInOut.verify7BitPlusNone(prog);
@@ -200,12 +199,12 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
         verifyChannel(channel);
         return dropIncomingChanges[channel].get();
     }
-    
+
     public void setDropIncomingChanges(int channel, boolean drop) {
         verifyChannel(channel);
         dropIncomingChanges[channel].set(drop);
     }
-    
+
     public boolean getResendOnMidiDeviceChange() {
         return resendOnMidiDeviceChange.get();
     }
@@ -213,7 +212,7 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
     public void setResendOnMidiDeviceChange(boolean resend) {
         resendOnMidiDeviceChange.set(resend);
     }
-    
+
     public boolean getResendOnConnect() {
         return resendOnConnect.get();
     }

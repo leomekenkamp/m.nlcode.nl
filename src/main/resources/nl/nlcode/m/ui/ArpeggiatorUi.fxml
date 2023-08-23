@@ -76,7 +76,7 @@
                 </Field>
                 <Field labelText="%length">
                     <FieldHBox>
-                        <Spinner fx:id="length">
+                        <Spinner fx:id="length" editable="true">
                             <valueFactory>
                                 <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="384"/>
                             </valueFactory>
@@ -89,14 +89,14 @@
                     <children>
                         <FieldHBox>
                             <Field labelText="%attack">
-                                <Spinner fx:id="overrideAttackVelocity">
+                                <Spinner fx:id="overrideAttackVelocity" editable="true">
                                     <valueFactory>
                                         <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/> <!-- FIXME implement NONE, use keydown velocity -->
                                     </valueFactory>
                                 </Spinner>
                             </Field>
                             <Field labelText="%release">
-                                <Spinner fx:id="releaseVelocity">
+                                <Spinner fx:id="releaseVelocity" editable="true">
                                     <valueFactory>
                                         <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
                                     </valueFactory>

@@ -71,6 +71,7 @@ import nl.nlcode.m.engine.NoteHolder;
 import nl.nlcode.m.engine.NoteChannelSpreader;
 import nl.nlcode.m.engine.ProgramChanger;
 import nl.nlcode.m.engine.Project;
+import nl.nlcode.m.engine.Transposer;
 import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +124,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private MenuItem menuItem;
 
     private StringProperty[] channelTextProperty = new StringProperty[CHANNEL_COUNT];
+    
+    private StringProperty[] channelNumberProperty = new StringProperty[CHANNEL_COUNT];
 
     private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {
         updateChannelTextProperties();
@@ -198,6 +201,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         );
 
         forAllChannels(channel -> channelTextProperty[channel] = new SimpleStringProperty());
+        forAllChannels(channel -> channelNumberProperty[channel] = new SimpleStringProperty());
         updateChannelTextProperties();
         getControlUi().getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
     }
@@ -206,10 +210,15 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         return channelTextProperty;
     }
 
+    public StringProperty[] channelNumberProperty() {
+        return channelNumberProperty;
+    }
+
     private void updateChannelTextProperties() {
         MessageFormat messageFormat = new MessageFormat(App.MESSAGES.getString("channel%"));
         int offset = getControlUi().getMidiChannelStringConverter().offsetProperty().get();
         forAllChannels(channel -> channelTextProperty[channel].set(messageFormat.format(new Object[]{channel + offset})));
+        forAllChannels(channel -> channelNumberProperty[channel].set(Integer.toString(channel + offset)));
     }
 
     @FXML
@@ -284,6 +293,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     @FXML
     public void createNoteHolder(ActionEvent event) {
         activateAndCreateStage(new NoteHolder());
+    }
+
+    @FXML
+    public void createTransposer(ActionEvent event) {
+        activateAndCreateStage(new Transposer());
     }
 
     @FXML

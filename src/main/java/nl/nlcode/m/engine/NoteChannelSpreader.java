@@ -57,6 +57,7 @@ public class NoteChannelSpreader<U extends NoteChannelSpreader.Ui> extends MidiI
 
     @Override
     public Marshalled marshalInternal(int id, Context context) {
+        // FIXME: this should be an Updader construction of some sort.
         boolean[] outputChannels = new boolean[CHANNEL_COUNT];
         forAllChannels(channel -> outputChannels[channel] = isOutputChannel(channel));
         return new SaveData0(

@@ -154,7 +154,6 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
         octaveBackend = IntPropertyUpdaterBridge.create(getMidiInOut().octave(), octave.getValueFactory().valueProperty());
         channelBackend = IntPropertyUpdaterBridge.create(getMidiInOut().channel(), channel.getValueFactory().valueProperty());
         channel.getValueFactory().setConverter(getMidiChannelStringConverter());
-
         getMidiChannelStringConverter().offsetProperty().addListener(new WeakChangeListener(midiChannelStringRepresentationChanged));
     }
 

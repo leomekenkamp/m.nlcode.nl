@@ -595,6 +595,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         verify7Bit(data);
     }
 
+        
     public static void forAllChannels(IntConsumer intConsumer) {
         for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             intConsumer.accept(channel);

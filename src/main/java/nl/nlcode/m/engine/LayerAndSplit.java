@@ -48,7 +48,6 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
 
         @Override
         public void register(Updater<?, Ui, ? extends Updater.Holder<Ui>> updater) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
