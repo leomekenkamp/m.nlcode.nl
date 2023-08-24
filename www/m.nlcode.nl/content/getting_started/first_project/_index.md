@@ -60,7 +60,7 @@ Example: expanding on the same example as above, do the following.
 - Create a *MIDI Lights* MidiInOut part.
 - In its **inputs** tab, select **Keyboard MIDI Keyboard 0**.
 - Click (with the mouse) on *A*, *S*, *D* or any of the other keys of the *Keyboard MIDI keyboard* buttons.
-- Be amazed by the sound, as well as the dazzling display of visuals in the MIDI Lights part.
+- Be amazed by the sound, as well as the dazzling display of visuals in the MIDI Lights part. /s
 
 MIDI Lights is an example of a MidiInOut without any 'out'. It is simply something that gives a
 visual representation of MIDI data, but does nothing to the data it receives, not even sending it

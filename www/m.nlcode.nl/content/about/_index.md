@@ -7,6 +7,7 @@ weight = "4"
 ## Copyright
 **m.nlcode.nl** and this site: Copyright (c) 2023 - Leo Mekenkamp
 
+## License
 **m.nlcode.nl** is (currently) available under the [GNU General Purpose Licence version 3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## Software
