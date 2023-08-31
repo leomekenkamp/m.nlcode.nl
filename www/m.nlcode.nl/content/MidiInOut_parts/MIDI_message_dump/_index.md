@@ -5,6 +5,8 @@ title = "MIDI message dump"
 
 ## description
 A *MIDI message dump* is a MidiInOut part that displays all (or most) of all incoming MIDI messages.
+When you set the *write to file* option, all new incoming messages will be written to file. The
+file(s) can be found in the same directoy as the project file.
 Note that this MidiInOut part has no output, only input.
 ![MIDI message dump](midi_message_dump.png)
 

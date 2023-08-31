@@ -118,6 +118,18 @@ public final class Project implements Serializable, Marshallable {
         return path;
     }
 
+    public Path getProjectExtPath(String name) {
+         Path parent = getPath().getParent();
+         String projectName = getPath().getName(getPath().getNameCount() - 1).toString();
+         String baseName;
+         if (projectName.endsWith(Control.FILE_EXTENTION)) {
+             baseName = projectName.substring(0, projectName.length() - Control.FILE_EXTENTION.length());
+         } else {
+             baseName = projectName;
+         }
+         return Path.of(parent.toString(), baseName + name);
+    }
+    
     public Control getControl() {
         return control;
     }

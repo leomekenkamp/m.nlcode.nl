@@ -8,15 +8,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class BooleanUpdater<U, H extends Updater.Holder<U>> extends Updater<Boolean, U, H> {
 
-    private AtomicBoolean ref = new AtomicBoolean();
+    private AtomicBoolean ref;
 
     public BooleanUpdater(H holder) {
-        super(holder);
+        ref = new AtomicBoolean();
+        register(holder);
     }
     
     public BooleanUpdater(H holder, boolean v) {
+        this(holder);
         ref.set(v);
-        register(holder);
     }
 
     public boolean get() {

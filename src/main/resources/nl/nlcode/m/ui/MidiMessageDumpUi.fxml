@@ -7,6 +7,8 @@
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -19,6 +21,7 @@
 <?import javafx.scene.control.TextField?>
 <?import nl.nlcode.m.ui.MidiMessageDumpUi?>
 <?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 
 <fx:root
@@ -28,9 +31,21 @@
     <instrument>
         <BorderPane>
             <top>
-                <Field labelText="%tick">
-                    <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
-                </Field>
+                <FieldHBox>
+                    <Field labelText="%tick">
+                        <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
+                    </Field>
+                    <Field labelText="%writeToFile">
+                        <CheckBox fx:id="writeToFile" text="%writeToFile"/>
+                    </Field>
+                    <Field labelText="%maxMessagesInFile">
+                        <Spinner fx:id="maxMessagesInFile" editable="true" minWidth="80">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory initialValue="1000" min="1" max="2147483647" amountToStepBy="1000"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                </FieldHBox>
             </top>
             <center>
                 <TableView fx:id="midiMessageTable">

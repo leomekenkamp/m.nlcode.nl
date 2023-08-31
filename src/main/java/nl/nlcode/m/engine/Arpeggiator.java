@@ -254,7 +254,7 @@ public class Arpeggiator<U extends Arpeggiator.Ui> extends TimeSensitiveMidiInOu
         previousAction++;
         while ((playingNote == -1 || previousAction >= noteLength) && !chordNotes.isEmpty()) {
             previousAction = 0;
-            if (playingNote == -1) {
+            if (playingNote != -1) {
                 int midiNote = playingNote + 12 * currentOctave;
                 if (validNote(midiNote)) {
                     send(createShortMessage(ShortMessage.NOTE_OFF, channel.get(), midiNote, velocity));

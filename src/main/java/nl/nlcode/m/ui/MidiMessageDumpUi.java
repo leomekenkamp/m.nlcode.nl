@@ -7,9 +7,12 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.MidiInOut;
@@ -17,6 +20,7 @@ import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.MidiMessageDump.EnhancedMessage;
 import nl.nlcode.m.engine.MidiMessageFormat;
 import nl.nlcode.m.engine.ShowTicks;
+import nl.nlcode.m.engine.TickSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +51,15 @@ public class MidiMessageDumpUi extends MidiInOutUi<MidiMessageDump> implements M
 
     @FXML
     private EnumChoiceBox<ShowTicks> showTicks;
+    
+    @FXML
+    private Spinner<Integer> maxMessagesInFile;
+    private final IntPropertyUpdaterBridge maxMessagesInFileBackend;
+    
+    @FXML
+    private CheckBox writeToFile;
+    private final BooleanPropertyUpdaterBridge writeToFileBackend;
+            
 
     public MidiMessageDumpUi(ProjectUi projectUi, MidiMessageDump midiMessageDump, MenuItem menuItem) {
         super(projectUi, midiMessageDump, menuItem);
@@ -84,6 +97,9 @@ public class MidiMessageDumpUi extends MidiInOutUi<MidiMessageDump> implements M
             getMidiInOut().setShowTicks(newValue);
         });
         showTicks.setValue(getMidiInOut().getShowTicks());
+        
+        maxMessagesInFileBackend = IntPropertyUpdaterBridge.create(getMidiInOut().maxMessagesInFileUpdater(), maxMessagesInFile.getValueFactory().valueProperty());
+        writeToFileBackend = BooleanPropertyUpdaterBridge.create(getMidiInOut().writeToFileUpdater(), writeToFile.selectedProperty());
     }
 
     @Override

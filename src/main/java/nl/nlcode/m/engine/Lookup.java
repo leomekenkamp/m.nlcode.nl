@@ -94,8 +94,8 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         if (name.isBlank()) {
             throw new FunctionalException("name must contain at least one non-whitespace character");
         }
-        if (name.length() > 255) {
-            throw new FunctionalException("name size cannot exceed 255 characters");
+        if (name.length() > 64) {
+            throw new FunctionalException("name size cannot exceed 64 characters");
         }
     }
 

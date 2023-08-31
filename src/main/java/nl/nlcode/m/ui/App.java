@@ -152,8 +152,10 @@ public class App extends Application {
             Toolkit.getDefaultToolkit().beep();
             LOGGER.info("probably user error", e);
         } else if (!Platform.isFxApplicationThread()) {
+            showErrorDialog(e);
             LOGGER.info("error in background", e);
         } else {
+            showErrorDialog(e);
             e.printStackTrace(System.out);
             LOGGER.warn("An unexpected error occurred in {}", t);
         }
