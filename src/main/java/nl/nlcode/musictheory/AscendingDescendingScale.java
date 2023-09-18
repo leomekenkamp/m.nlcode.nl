@@ -20,8 +20,8 @@ public class AscendingDescendingScale implements IntervalSequence {
         this.descendingScale = descendingScale;
         Set<Integer> offsets = new HashSet<>();
         for (int degree = 1; degree <= ascendingScale.toneCount(); degree++) {
-            offsets.add(noteOffsetToTonicByDegreeUp(degree));
-            offsets.add(noteOffsetToTonicByDegreeDown(degree));
+            offsets.add(semitonesFromTonicByDegreeUp(degree));
+            offsets.add(semitonesFromTonicByDegreeDown(degree));
         }
         toneCount = offsets.size();
     }
@@ -37,13 +37,13 @@ public class AscendingDescendingScale implements IntervalSequence {
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeUp(int degree) {
-        return ascendingScale.noteOffsetToTonicByDegree(degree);
+    public int semitonesFromTonicByDegreeUp(int degree) {
+        return ascendingScale.semitonesFromTonicByDegree(degree);
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeDown(int degree) {
-        return descendingScale.noteOffsetToTonicByDegree(degree);
+    public int semitonesFromTonicByDegreeDown(int degree) {
+        return descendingScale.semitonesFromTonicByDegree(degree);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class AscendingDescendingScale implements IntervalSequence {
     }
 
     @Override
-    public int noteOffsetToTonicByDegree(int degree) {
-        return noteOffsetToTonicByDegreeUp(degree);
+    public int semitonesFromTonicByDegree(int degree) {
+        return semitonesFromTonicByDegreeUp(degree);
     }
 
     @Override

@@ -47,8 +47,8 @@ public class ScalesAndModes {
     public static final Mode LOCRIAN = new Mode("Locrian", MAJOR_SCALE, 7);
 // dark to bright        LOCRIAN, PHRYGIAN, AEOLIAN, DORIAN, MIXOLYDIAN, IONIAN, LYDIAN
     
-    public static final NoteScale C_MAJOR = new NoteScale("C Major", Note.C, MAJOR_SCALE);
-    public static final NoteScale C_MIXOLYDIAN = new NoteScale("C Myxolydian", Note.C, MIXOLYDIAN);
+    public static final NoteScale C_MAJOR = new NoteScale(ChromaticNote.C, MAJOR_SCALE);
+    public static final NoteScale C_MIXOLYDIAN = new NoteScale(ChromaticNote.C, MIXOLYDIAN);
 
     public static final Set<IntervalSequence> DIATONIC_SCALES = Set.of(IONIAN, DORIAN, PHRYGIAN, LYDIAN, MIXOLYDIAN, AEOLIAN, LOCRIAN);
     

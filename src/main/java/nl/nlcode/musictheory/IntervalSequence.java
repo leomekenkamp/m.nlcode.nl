@@ -11,11 +11,11 @@ public interface IntervalSequence {
     /**
      * @return offsets (in semitones) to the tonic of the note with given {@code degree}
      */
-    int noteOffsetToTonicByDegree(int degree);
+    int semitonesFromTonicByDegree(int degree);
 
-    int noteOffsetToTonicByDegreeUp(int degree);
+    int semitonesFromTonicByDegreeUp(int degree);
 
-    int noteOffsetToTonicByDegreeDown(int degree);
+    int semitonesFromTonicByDegreeDown(int degree);
 
     /**
      * @return semitones from the given {@code degree} to the following degree
@@ -38,7 +38,7 @@ public interface IntervalSequence {
             return false;
         }
         for (int degree = 1; degree <= toneCount(); degree++) {
-            if (noteOffsetToTonicByDegree(degree) != other.noteOffsetToTonicByDegree(degree)) {
+            if (semitonesFromTonicByDegree(degree) != other.semitonesFromTonicByDegree(degree)) {
                 return false;
             }
         }
@@ -112,10 +112,10 @@ public interface IntervalSequence {
     }
 
     default boolean isMajor() {
-        return noteOffsetToTonicByDegree(3) == Interval.MAJOR_THIRD.semitones();
+        return semitonesFromTonicByDegree(3) == Interval.MAJOR_THIRD.semitones();
     }
 
     default boolean isMinor() {
-        return noteOffsetToTonicByDegree(3) == Interval.MINOR_THIRD.semitones();
+        return semitonesFromTonicByDegree(3) == Interval.MINOR_THIRD.semitones();
     }
 }

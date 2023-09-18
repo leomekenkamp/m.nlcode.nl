@@ -45,18 +45,18 @@ public class Mode implements IntervalSequence {
     }
 
     @Override
-    public int noteOffsetToTonicByDegree(int degree) {
+    public int semitonesFromTonicByDegree(int degree) {
         return basedOn.noteOffsetToTonicByDegree(degree, modeNumber);
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeUp(int degree) {
-        return basedOn.noteOffsetToTonicByDegreeUp(degree + modeNumber);
+    public int semitonesFromTonicByDegreeUp(int degree) {
+        return basedOn.semitonesFromTonicByDegreeUp(degree + modeNumber);
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeDown(int degree) {
-        return basedOn.noteOffsetToTonicByDegreeDown(degree + modeNumber);
+    public int semitonesFromTonicByDegreeDown(int degree) {
+        return basedOn.semitonesFromTonicByDegreeDown(degree + modeNumber);
     }
 
     @Override

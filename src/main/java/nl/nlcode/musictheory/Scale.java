@@ -44,23 +44,23 @@ public class Scale implements IntervalSequence {
     /**
      * @return offsets (in semitones) to the tonic of the note with given {@code degree}
      */
-    public int noteOffsetToTonicByDegree(int degree) {
+    public int semitonesFromTonicByDegree(int degree) {
         int octaveOffset = semitonesPerOctave() * ((degree - 1) / toneCount());
         return octaveOffset + noteOffsetToTonic[((degree - 1) % toneCount())];
     }
 
     public int noteOffsetToTonicByDegree(int degree, int modeNumber) {
-        return noteOffsetToTonicByDegree(modeNumber + degree - 1) - noteOffsetToTonicByDegree(modeNumber);
+        return semitonesFromTonicByDegree(modeNumber + degree - 1) - semitonesFromTonicByDegree(modeNumber);
 //        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / toneCount())
 //        return octaveOffset + noteOffsetToTonic[((degree + modeNumber - 2) % toneCount())] - noteOffsetToTonic[modeNumber - 1];
     }
 
-    public int noteOffsetToTonicByDegreeUp(int degree) {
-        return noteOffsetToTonicByDegree(degree);
+    public int semitonesFromTonicByDegreeUp(int degree) {
+        return semitonesFromTonicByDegree(degree);
     }
 
-    public int noteOffsetToTonicByDegreeDown(int degree) {
-        return noteOffsetToTonicByDegree(degree);
+    public int semitonesFromTonicByDegreeDown(int degree) {
+        return semitonesFromTonicByDegree(degree);
     }
 
     /**

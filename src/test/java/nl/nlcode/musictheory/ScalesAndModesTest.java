@@ -58,14 +58,14 @@ public class ScalesAndModesTest {
 
     @Test
     public void Ionian_distance_to_tonic() {
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(1), is(0));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(2), is(2));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(3), is(4));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(4), is(5));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(5), is(7));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(6), is(9));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(7), is(11));
-        assertThat(ScalesAndModes.IONIAN.noteOffsetToTonicByDegree(8), is(12));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(1), is(0));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(2), is(2));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(3), is(4));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(4), is(5));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(5), is(7));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(6), is(9));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(7), is(11));
+        assertThat(ScalesAndModes.IONIAN.semitonesFromTonicByDegree(8), is(12));
     }
 
     @Test
@@ -81,14 +81,14 @@ public class ScalesAndModesTest {
 
     @Test
     public void Phrygian_distance_to_tonic() {
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(1), is(0));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(2), is(1));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(3), is(3));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(4), is(5));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(5), is(7));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(6), is(8));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(7), is(10));
-        assertThat(ScalesAndModes.PHRYGIAN.noteOffsetToTonicByDegree(8), is(12));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(1), is(0));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(2), is(1));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(3), is(3));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(4), is(5));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(5), is(7));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(6), is(8));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(7), is(10));
+        assertThat(ScalesAndModes.PHRYGIAN.semitonesFromTonicByDegree(8), is(12));
     }
 
     @Test

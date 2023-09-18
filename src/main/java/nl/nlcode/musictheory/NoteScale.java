@@ -7,12 +7,10 @@ package nl.nlcode.musictheory;
  */
 public class NoteScale implements IntervalSequence {
 
-    private String name;
-    private Note tonic;
+    private ChromaticNote tonic;
     private IntervalSequence basedOn;
 
-    public NoteScale(String name, Note tonic, IntervalSequence basedOn) {
-        this.name = name;
+    public NoteScale(ChromaticNote tonic, IntervalSequence basedOn) {
         this.tonic = tonic;
         this.basedOn = basedOn;
     }
@@ -23,18 +21,18 @@ public class NoteScale implements IntervalSequence {
     }
 
     @Override
-    public int noteOffsetToTonicByDegree(int degree) {
-        return basedOn.noteOffsetToTonicByDegree(degree);
+    public int semitonesFromTonicByDegree(int degree) {
+        return basedOn.semitonesFromTonicByDegree(degree);
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeUp(int degree) {
-        return basedOn.noteOffsetToTonicByDegreeUp(degree);
+    public int semitonesFromTonicByDegreeUp(int degree) {
+        return basedOn.semitonesFromTonicByDegreeUp(degree);
     }
 
     @Override
-    public int noteOffsetToTonicByDegreeDown(int degree) {
-        return basedOn.noteOffsetToTonicByDegreeDown(degree);
+    public int semitonesFromTonicByDegreeDown(int degree) {
+        return basedOn.semitonesFromTonicByDegreeDown(degree);
     }
 
     @Override
@@ -49,6 +47,18 @@ public class NoteScale implements IntervalSequence {
 
     @Override
     public String name() {
-        return name;
+        return tonic.toString() + " " + basedOn.name();
+    }
+    
+    public PitchedNote createPitchedNote(int degree, int tonicOctave) {
+        int semis = tonic.getSemitonesFromC() + basedOn.semitonesFromTonicByDegree(degree);
+        int pitchedOctave = tonicOctave + semis / PitchedNote.SEMITONES_PER_OCTAVE;
+        ChromaticNote resultChromatic;
+        if (tonic.getAccidental() == ChromaticNote.Accidental.FLAT) {
+            resultChromatic = ChromaticNote.fromSemitoneFromCPreferFlat(semis % PitchedNote.SEMITONES_PER_OCTAVE);
+        } else {
+            resultChromatic = ChromaticNote.fromSemitoneFromCPreferSharp(semis % PitchedNote.SEMITONES_PER_OCTAVE);
+        }
+        return new PitchedNote(resultChromatic, tonicOctave);
     }
 }
