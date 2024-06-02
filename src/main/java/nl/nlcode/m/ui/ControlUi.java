@@ -236,6 +236,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     public SettingsUi settings() {
         if (settings == null) {
             settings = App.createStage(new SettingsUi(this));
+            settings.setResizable(true);
             settings.initOwner(this.getScene().getWindow());
             settings.setTitle(App.MESSAGES.getString("settings"));
             restoreWindowPositionAndSetAutosave(settings, Control.PREFERENCES.node("settings"));
