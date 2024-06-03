@@ -2,6 +2,7 @@ baseURL = 'https://nlcode.nl/'
 languageCode = 'en-us'
 title = 'm.nlcode.nl'
 theme = "hugo-theme-relearn"
+enableRobotsTXT = true
 
 [outputs]
 home = ["HTML", "RSS", "PRINT", "SEARCH"]
