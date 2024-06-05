@@ -48,15 +48,15 @@ javafx {
     } else {
         project.logger.lifecycle("using autodetect for determining javafx platform")
     }
-    version = '17.0.7'
+    version = '21.0.3'
     modules = [ \
         'javafx.controls',
         'javafx.fxml',
     ]
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 application {
     mainClass = 'nl.nlcode.m.JfxLauncher'
