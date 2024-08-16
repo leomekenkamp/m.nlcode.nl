@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.m.engine.Echo;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.TickSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class EchoUi extends MidiInOutUi<Echo> implements Echo.Ui {
 
     public EchoUi(ProjectUi projectUi, Echo echo, MenuItem menuItem) {
         super(projectUi, echo, menuItem);
-        loadFxml(EchoUi.class, App.MESSAGES);
+        loadFxml(EchoUi.class, I18n.msg());
         tickSourceBackend = ObjectPropertyUpdaterBridge.create(getMidiInOut().tickSource(), tickSource.valueProperty());
         echoLengthBackend = IntPropertyUpdaterBridge.create(getMidiInOut().echoLength(), echoLength.getValueFactory().valueProperty());
         absoluteVelocityDecreaseBackend = IntPropertyUpdaterBridge.create(getMidiInOut().absoluteVelocityDecrease(), absoluteVelocityDecrease.getValueFactory().valueProperty());

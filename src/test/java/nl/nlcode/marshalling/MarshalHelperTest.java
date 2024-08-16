@@ -7,10 +7,6 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -139,18 +135,6 @@ public class MarshalHelperTest {
     ObjectMapper objectMapper;
 
     public MarshalHelperTest() {
-    }
-
-    @BeforeAll
-    public static void setUpClass() {
-    }
-
-    @AfterAll
-    public static void tearDownClass() {
-    }
-
-    @BeforeEach
-    public void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
@@ -168,10 +152,6 @@ public class MarshalHelperTest {
         typeResolver.inclusion(JsonTypeInfo.As.WRAPPER_OBJECT);
         //typeResolver.typeProperty("@CLASS");
         objectMapper.setDefaultTyping(typeResolver);
-    }
-
-    @AfterEach
-    public void tearDown() {
     }
 
     static class Trivial implements Marshallable {

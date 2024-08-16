@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.Lights;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class LightsUi extends MidiInOutUi<Lights> implements FxmlController, Lig
 
     public LightsUi(ProjectUi projectUi, Lights lights, MenuItem menuItem) {
         super(projectUi, lights, menuItem);
-        loadFxml(LightsUi.class, App.MESSAGES);
+        loadFxml(LightsUi.class, I18n.msg());
     }
 
     @Override

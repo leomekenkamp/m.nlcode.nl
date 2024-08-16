@@ -4,6 +4,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -15,7 +16,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import org.controlsfx.control.ToggleSwitch?>
-<?import nl.nlcode.m.ui.App?>
 <?import nl.nlcode.m.ui.EnumChoiceBox?>
 <?import nl.nlcode.m.ui.Field?>
 <?import nl.nlcode.m.ui.FieldHBox?>
@@ -25,11 +25,17 @@
 <fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
          type="SettingsUi" tabClosingPolicy="UNAVAILABLE">
     <Tab text="%midiDevices" styleClass="midiDevices">
-        <VBox>            
-            <Button text="%refresh" onAction="#refreshMidiDevices"/>
-            <FieldVBox fx:id="midiDevicesPane" styleClass="midiDevices">
-            </FieldVBox>
-        </VBox>
+        <BorderPane>
+            <top>
+                <VBox styleClass="buttons" maxWidth="-Infinity">
+                    <Button text="%refresh" onAction="#refreshMidiDevices"/>
+                </VBox>
+            </top>
+            <center>
+                <FieldVBox fx:id="midiDevicesPane" styleClass="midiDevices">
+                </FieldVBox>
+            </center>
+        </BorderPane>
     </Tab>
     <Tab text="%style">
         <VBox styleClass="buttons" maxWidth="-Infinity">

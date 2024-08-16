@@ -669,14 +669,17 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     public PropertyChangeSupport getPropertyChangeSupport() {
+        if (true) throw new RuntimeException("is this code even used?");
         return propertyChangeSupport;
-    }
+   }
 
     public void addPropertyChangeListener(String name, PropertyChangeListener listener) {
+        if (true) throw new RuntimeException("is this code even used?");
         propertyChangeSupport.addPropertyChangeListener(name, listener);
     }
 
     public void removePropertyChangeListener(String name, PropertyChangeListener listener) {
+        if (true) throw new RuntimeException("is this code even used?");
         propertyChangeSupport.removePropertyChangeListener(name, listener);
     }
 

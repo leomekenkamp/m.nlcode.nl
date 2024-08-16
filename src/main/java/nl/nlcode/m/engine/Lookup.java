@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import nl.nlcode.m.ui.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +65,8 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
 
         default String getGenericName() {
             String key = getClass().getName();
-            if (App.MESSAGES.containsKey(key)) {
-                return App.MESSAGES.getString(key);
+            if (I18n.msg().containsKey(key)) {
+                return I18n.msg().getString(key);
             } else {
                 return getClass().getSimpleName();
             }

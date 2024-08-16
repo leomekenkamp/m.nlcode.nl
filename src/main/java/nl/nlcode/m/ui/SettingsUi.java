@@ -18,7 +18,8 @@ import javafx.stage.FileChooser;
 import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.Control;
-import static nl.nlcode.m.ui.App.DEFAULT_CSS_FILENAME;
+import nl.nlcode.m.engine.I18n;
+import static nl.nlcode.m.ui.FxApp.DEFAULT_CSS_FILENAME;
 import static nl.nlcode.m.ui.ControlUi.ALL_FILTER;
 
 import nl.nlcode.m.engine.MidiDeviceMgr;
@@ -38,7 +39,7 @@ public final class SettingsUi extends TabPane implements FxmlController {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final FileChooser.ExtensionFilter CSS_FILTER
-            = new FileChooser.ExtensionFilter(App.MESSAGES.getString("css.files"), "*.css");
+            = new FileChooser.ExtensionFilter(I18n.msg().getString("css.files"), "*.css");
     @FXML
     private Pane midiDevicesPane;
 
@@ -55,10 +56,15 @@ public final class SettingsUi extends TabPane implements FxmlController {
     
     @FXML
     private EnumChoiceBox<SaveFileEncoding> saveFileEncoding;
-            
+    
+    // SceneBuider use ONLY
+    public SettingsUi() {
+        this(ControlUi.getInstance(Control.getInstance()));
+    }
+    
     public SettingsUi(ControlUi controlUi) {
         this.controlUi = controlUi;
-        loadFxml(App.MESSAGES);
+        loadFxml(I18n.msg());
     }
 
     private Control getControl() {
@@ -115,20 +121,20 @@ public final class SettingsUi extends TabPane implements FxmlController {
         File file = fileChooser.showOpenDialog(getScene().getWindow());
         if (file != null) {
             URL url = file.toURI().toURL();
-            App.setStyleSheet(url.toExternalForm());
+            FxApp.setStyleSheet(url.toExternalForm());
             replaceStyleSheetOnAllWindows();
         }
     }
 
     @FXML
     private void replaceStyleSheetOnAllWindows() {
-        App.replaceStyleSheetOnAllWindows();
+        FxApp.replaceStyleSheetOnAllWindows();
     }
 
     @FXML
     private void defaultCss() {
-        App.setStyleSheet(App.DEFAULT_STYLE_SHEET);
-        App.replaceStyleSheetOnAllWindows();
+        FxApp.setStyleSheet(FxApp.DEFAULT_STYLE_SHEET);
+        FxApp.replaceStyleSheetOnAllWindows();
     }
 
     @FXML
@@ -139,7 +145,7 @@ public final class SettingsUi extends TabPane implements FxmlController {
         fileChooser.setInitialFileName(DEFAULT_CSS_FILENAME);
         File file = fileChooser.showSaveDialog(getScene().getWindow());
         if (file != null) {
-            InputStream cssStream = App.class.getResourceAsStream(DEFAULT_CSS_FILENAME);
+            InputStream cssStream = FxApp.class.getResourceAsStream(DEFAULT_CSS_FILENAME);
             Files.copy(cssStream, file.toPath());
         }
     }
@@ -149,7 +155,6 @@ public final class SettingsUi extends TabPane implements FxmlController {
         midiDeviceMgr.refreshMidiDevices();
         midiDevicesPane.getChildren().clear();
         for (MidiDevice device : getControlUi().getMidiDeviceMgr().getMidiDevices()) {
-            LOGGER.debug("device <{}>", device);
             ToggleSwitch deviceSwitch = new ToggleSwitch();
             Label deviceLabel = new Label(MidiDeviceMgr.getDisplayName(device), deviceSwitch);
             deviceSwitch.selectedProperty().set(device.isOpen());
@@ -161,7 +166,7 @@ public final class SettingsUi extends TabPane implements FxmlController {
                     } else {
                         midiDeviceMgr.close(device);
                     }
-                    ControlUi.prefs(device).putBoolean(ControlUi.OPEN, newValue);
+                    getControl().getPreferences(device).putBoolean(Control.OPEN, newValue);
                 }
             });
             deviceSwitch.setAlignment(Pos.CENTER_RIGHT);
@@ -170,7 +175,7 @@ public final class SettingsUi extends TabPane implements FxmlController {
     }
 
     public String getStyleSheet() {
-        return App.getStyleSheet();
+        return FxApp.getStyleSheet();
     }
 
 }

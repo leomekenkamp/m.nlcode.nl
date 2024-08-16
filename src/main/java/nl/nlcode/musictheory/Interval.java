@@ -17,7 +17,7 @@ public enum Interval {
     MINOR_SIXTH(8, "m6"),
     MAJOR_SIXTH(9, "M6"),
     MINOR_SEVENTH(10, "m7"),
-    MAJOR_SEVENT(11, "M7"),
+    MAJOR_SEVENTH(11, "M7"),
     PERFECT_OCTAVE(12, "P8"),
     ;
 

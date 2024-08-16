@@ -7,6 +7,7 @@ import javafx.scene.control.Spinner;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.ArpeggiatorLengthPer;
 import nl.nlcode.m.engine.Direction;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.TickSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class ArpeggiatorUi extends MidiInOutUi<Arpeggiator> {
     
     public ArpeggiatorUi(ProjectUi projectUi, Arpeggiator arpeggiator, MenuItem menuItem) {
         super(projectUi, arpeggiator, menuItem);
-        loadFxml(ArpeggiatorUi.class, App.MESSAGES);
+        loadFxml(ArpeggiatorUi.class, I18n.msg());
         tickSourceBackend = ObjectPropertyUpdaterBridge.create(getMidiInOut().tickSource(), tickSource.valueProperty());
         channelBackend = IntPropertyUpdaterBridge.create(getMidiInOut().channelProperty(), channel.getValueFactory().valueProperty());
         octaveUpBackend = IntPropertyUpdaterBridge.create(getMidiInOut().octaveUpProperty(), octaveUp.getValueFactory().valueProperty());

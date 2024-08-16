@@ -1,9 +1,10 @@
 package nl.nlcode.m.linkui;
 
 import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -54,7 +55,7 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
 
     private Consumer<U> afterSet;
 
-    private final Map<Listener, ?> listeners = new HashMap<>(); // new WeakHashMap<>();
+    private final Set<Listener> listeners = Collections.newSetFromMap(new WeakHashMap<>());
 
     protected Updater() {
     }
@@ -76,13 +77,8 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
         setAfterChange(afterSet);
     }
 
-    /**
-     * FIXME: add support for WeakListeners
-     *
-     * @param listener
-     */
     public void addListener(Listener listener) {
-        listeners.put(listener, null);
+        listeners.add(listener);
     }
 
     public void removeListener(Listener listener) {
@@ -127,7 +123,7 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
                     holder.uiUpdate(afterSet);
                 }
             }
-            listeners.keySet().stream().forEach(cl -> {
+            listeners.stream().forEach(cl -> {
                 if (cl != sendMeNoUpdate) {
                     cl.updaterValueChanged(oldValue, newValue);
                 }

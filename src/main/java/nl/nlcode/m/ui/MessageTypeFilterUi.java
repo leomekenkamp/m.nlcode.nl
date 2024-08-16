@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MessageTypeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public class MessageTypeFilterUi extends MidiInOutUi<MessageTypeFilter> implemen
 
     public MessageTypeFilterUi(ProjectUi projectUi, MessageTypeFilter messageTypeFilter, MenuItem menuItem) {
         super(projectUi, messageTypeFilter, menuItem);
-        loadFxml(MessageTypeFilterUi.class, App.MESSAGES);
+        loadFxml(MessageTypeFilterUi.class, I18n.msg());
     }
 
     @Override

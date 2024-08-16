@@ -31,6 +31,7 @@ import javafx.util.Callback;
 import nl.nlcode.javafxutil.CtorParamControllerFactory;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.FunctionalException;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiInOut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     }
 
     public String getInstrumentTypeName() {
-        return App.MESSAGES.getString(getMidiInOut().getClass().getName());
+        return I18n.msg().getString(getMidiInOut().getClass().getName());
     }
 
     private T midiInOut;
@@ -114,7 +115,7 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         activeSenderWrapper = new ReadOnlyBooleanWrapper(this, "activeSenderWrapper");
         activeReceiverWrapper = new ReadOnlyBooleanWrapper(this, "activeReceiverWrapper");
         runOnce = new FxmlController.RunOnce(distance(getClass(), MidiInOutUi.class));
-        loadFxml(MidiInOutUi.class, new CtorParamControllerFactory(projectUi), App.MESSAGES);
+        loadFxml(MidiInOutUi.class, new CtorParamControllerFactory(projectUi), I18n.msg());
         nameProperty.set(midiInOut.getName());
     }
 
@@ -228,9 +229,9 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
                 getMidiInOut().startSendingTo(added.getMidiInOut());
             } catch (MidiInOut.SendReceiveLoopDetectedException e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle(App.MESSAGES.getString("loopDetected"));
-                alert.setContentText(String.format(App.MESSAGES.getString("loopDetectedExplanation"), getName(), added.getName()));
-                ButtonType close = new ButtonType(App.MESSAGES.getString("ok"), ButtonBar.ButtonData.OK_DONE);
+                alert.setTitle(I18n.msg().getString("loopDetected"));
+                alert.setContentText(String.format(I18n.msg().getString("loopDetectedExplanation"), getName(), added.getName()));
+                ButtonType close = new ButtonType(I18n.msg().getString("ok"), ButtonBar.ButtonData.OK_DONE);
                 alert.getButtonTypes().setAll(close);
                 alert.showAndWait();
             }
@@ -307,8 +308,8 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     public void beforeSave() {
         double x = getScene().getWindow().getX();
         double y = getScene().getWindow().getY();
-        getMidiInOut().getInfo().put(App.PREF_X, x);
-        getMidiInOut().getInfo().put(App.PREF_Y, y);
+        getMidiInOut().getInfo().put(FxApp.PREF_X, x);
+        getMidiInOut().getInfo().put(FxApp.PREF_Y, y);
         LOGGER.info("moved X,Y to {} {}", x, y);
     }
 
@@ -404,11 +405,11 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
         boolean result = false;
         if (isConnected()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle(App.MESSAGES.getString("cannotClose"));
-            alert.setContentText(App.MESSAGES.getString("disconnectMidiInOutFirst")
+            alert.setTitle(I18n.msg().getString("cannotClose"));
+            alert.setContentText(I18n.msg().getString("disconnectMidiInOutFirst")
                     + "\n\n" + connectedDebugInfo()
             );
-            ButtonType ok = new ButtonType(App.MESSAGES.getString("ok"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType ok = new ButtonType(I18n.msg().getString("ok"), ButtonBar.ButtonData.OK_DONE);
             alert.getButtonTypes().setAll(ok);
             alert.showAndWait();
         } else {
@@ -448,10 +449,10 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
     @FXML
     private void changeName() {
         TextInputDialog dialog = new TextInputDialog(getName());
-        dialog.setTitle(App.MESSAGES.getString("changeName"));
-        dialog.setContentText(String.format(App.MESSAGES.getString("enterNewNameFor"), getName()));
-        ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText(App.MESSAGES.getString("changeName"));
-        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText(App.MESSAGES.getString("neverMind"));
+        dialog.setTitle(I18n.msg().getString("changeName"));
+        dialog.setContentText(String.format(I18n.msg().getString("enterNewNameFor"), getName()));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText(I18n.msg().getString("changeName"));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText(I18n.msg().getString("neverMind"));
         Optional<String> newName = dialog.showAndWait();
         try {
             newName.ifPresent(name -> {
@@ -460,9 +461,9 @@ public class MidiInOutUi<T extends MidiInOut> extends TabPane implements FxmlCon
             });
         } catch (FunctionalException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(App.MESSAGES.getString("nameNotChanged"));
-            alert.setContentText(String.format(App.MESSAGES.getString("nameAlreadyInUse"), newName.get()));
-            ButtonType close = new ButtonType(App.MESSAGES.getString("close"), ButtonBar.ButtonData.OK_DONE);
+            alert.setTitle(I18n.msg().getString("nameNotChanged"));
+            alert.setContentText(String.format(I18n.msg().getString("nameAlreadyInUse"), newName.get()));
+            ButtonType close = new ButtonType(I18n.msg().getString("close"), ButtonBar.ButtonData.OK_DONE);
             alert.getButtonTypes().setAll(close);
             alert.showAndWait();
         }

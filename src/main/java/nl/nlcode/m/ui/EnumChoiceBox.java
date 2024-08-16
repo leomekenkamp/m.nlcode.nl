@@ -3,7 +3,8 @@ package nl.nlcode.m.ui;
 import javafx.beans.NamedArg;
 import javafx.scene.control.ChoiceBox;
 import javafx.util.StringConverter;
-import nl.nlcode.m.ui.App;
+import nl.nlcode.m.engine.I18n;
+import nl.nlcode.m.ui.FxApp;
 
 /**
  *
@@ -18,7 +19,7 @@ public class EnumChoiceBox<E extends Enum<E>> extends ChoiceBox<E> {
             if (t == null) {
                 return "<null>";
             }
-            return App.MESSAGES.getString(t.getClass().getName() + "." + t.name());
+            return I18n.msg().getString(t.getClass().getName() + "." + t.name());
         }
 
         @Override

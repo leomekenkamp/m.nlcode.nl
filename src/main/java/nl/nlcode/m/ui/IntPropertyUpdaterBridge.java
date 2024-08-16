@@ -4,13 +4,14 @@ import javafx.application.Platform;
 import javafx.beans.property.IntegerPropertyBase;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import nl.nlcode.m.linkui.IntUpdater;
 
 /**
  *
  * @author leo
  */
-public class IntPropertyUpdaterBridge extends IntegerPropertyBase implements IntUpdater.Listener<Integer> {
+public class IntPropertyUpdaterBridge extends IntegerPropertyBase implements IntUpdater.Listener<Integer>, ObservableValue<Number> {
 
     private IntUpdater backendUpdater;
     private Property<Integer> fxThreadProperty;

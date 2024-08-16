@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.NoteGateVelocity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class NoteGateVelocityUi extends MidiInOutUi<NoteGateVelocity> implements
 
     public NoteGateVelocityUi(ProjectUi projectUi, NoteGateVelocity noteGate, MenuItem menuItem) {
         super(projectUi, noteGate, menuItem);
-        loadFxml(NoteGateVelocityUi.class, App.MESSAGES);
+        loadFxml(NoteGateVelocityUi.class, I18n.msg());
     }
 
     protected void handleInitialize() {

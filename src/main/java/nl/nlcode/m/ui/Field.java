@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.engine.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class Field extends VBox implements FxmlController {
     private StringProperty labelTextProperty;
 
     public Field() {
-        loadFxml(App.MESSAGES);
+        loadFxml(I18n.msg());
         labelTextProperty = new SimpleStringProperty();
     }
 
@@ -48,7 +49,7 @@ public class Field extends VBox implements FxmlController {
                     break;
                 }
                 String i18key = labelText.substring(first + 2, second);
-                String value = App.MESSAGES.getString(i18key);
+                String value = I18n.msg().getString(i18key);
                 labelText = labelText.substring(0, first) + value + labelText.substring(second + 2, labelText.length());
             }
         }

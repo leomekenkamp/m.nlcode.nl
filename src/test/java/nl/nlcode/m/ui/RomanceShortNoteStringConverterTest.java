@@ -19,22 +19,6 @@ public class RomanceShortNoteStringConverterTest {
     public RomanceShortNoteStringConverterTest() {
     }
 
-    @BeforeAll
-    public static void setUpClass() {
-    }
-
-    @AfterAll
-    public static void tearDownClass() {
-    }
-
-    @BeforeEach
-    public void setUp() {
-    }
-
-    @AfterEach
-    public void tearDown() {
-    }
-
     @Test
     public void trivial_to_string() {
         assertThat(instance.toString(60), is("do4"));

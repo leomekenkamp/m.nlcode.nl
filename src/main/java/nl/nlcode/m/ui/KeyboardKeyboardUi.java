@@ -13,6 +13,7 @@ import javafx.scene.control.Spinner;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.KeyboardKeyboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +105,7 @@ public class KeyboardKeyboardUi extends MidiInOutUi<KeyboardKeyboard> implements
 
     public KeyboardKeyboardUi(ProjectUi projectUi, KeyboardKeyboard keyboardKeyboard, MenuItem menuItem) {
         super(projectUi, keyboardKeyboard, menuItem);
-        loadFxml(KeyboardKeyboardUi.class, App.MESSAGES);
+        loadFxml(KeyboardKeyboardUi.class, I18n.msg());
     }
 
     private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {

@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
 import nl.nlcode.m.engine.ChannelMatrix;
+import nl.nlcode.m.engine.I18n;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class ChannelMatrixUi extends MidiInOutUi<ChannelMatrix> implements Chann
 
     public ChannelMatrixUi(ProjectUi projectUi, ChannelMatrix channelMatrix, MenuItem menuItem) {
         super(projectUi, channelMatrix, menuItem);
-        loadFxml(ChannelMatrixUi.class, App.MESSAGES);
+        loadFxml(ChannelMatrixUi.class, I18n.msg());
     }
 
     @Override

@@ -7,7 +7,8 @@ plugins {
     id "io.github.fstaudt.hugo" version "0.6.0"
 }
 
-defaultTasks 'build'
+// defaultTasks 'build'
+defaultTasks 'copyForSceneBuilder'
 
 repositories {
     mavenCentral()
@@ -55,11 +56,20 @@ javafx {
     ]
 }
 
+task copyForSceneBuilder(type: Copy, dependsOn:build) {
+    from('build/libs/') {
+        include '**/*.*'
+    }
+    into 'scenebuilder'
+
+    includeEmptyDirs = false
+}
+
 sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 
 application {
-    mainClass = 'nl.nlcode.m.JfxLauncher'
+    mainClass = 'nl.nlcode.m.Launcher'
     mainModule = 'nl.nlcode.m'
     applicationName = 'm_nlcode_nl'
 }
@@ -87,6 +97,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "$jacksonVersion"
     implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.10.0'
+    implementation group: 'org.jline', name: 'jline', version: '3.26.3'
 
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.hamcrest:hamcrest:2.2'

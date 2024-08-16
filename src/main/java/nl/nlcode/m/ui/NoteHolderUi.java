@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import nl.nlcode.m.engine.I18n;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.NoteHolder;
@@ -39,7 +40,7 @@ public class NoteHolderUi extends MidiInOutUi<NoteHolder> implements NoteHolder.
         for (int i = 0; i < CHANNEL_COUNT; i++) {
             notesHeldCountProperty[i] = new SimpleIntegerProperty(0);
         }
-        loadFxml(NoteHolderUi.class, App.MESSAGES);
+        loadFxml(NoteHolderUi.class, I18n.msg());
     }
 
     @Override

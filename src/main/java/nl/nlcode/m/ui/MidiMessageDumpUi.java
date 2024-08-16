@@ -15,6 +15,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import nl.nlcode.javafxutil.FxmlController;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.MidiMessageDump.EnhancedMessage;
@@ -63,7 +64,7 @@ public class MidiMessageDumpUi extends MidiInOutUi<MidiMessageDump> implements M
 
     public MidiMessageDumpUi(ProjectUi projectUi, MidiMessageDump midiMessageDump, MenuItem menuItem) {
         super(projectUi, midiMessageDump, menuItem);
-        loadFxml(MidiMessageDumpUi.class, App.MESSAGES);
+        loadFxml(MidiMessageDumpUi.class, I18n.msg());
 
         messageReceivedAtColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<MidiMessageDump.EnhancedMessage, StringProperty>, StringProperty>() {
             @Override

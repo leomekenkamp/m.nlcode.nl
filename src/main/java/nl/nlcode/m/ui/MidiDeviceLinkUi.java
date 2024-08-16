@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javax.sound.midi.MidiDevice;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiDeviceLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,14 +66,14 @@ public class MidiDeviceLinkUi extends MidiInOutUi<MidiDeviceLink> implements Mid
 
     public MidiDeviceLinkUi(ProjectUi projectUi, MidiDeviceLink midiDeviceLink, MenuItem menuItem) {
         super(projectUi, midiDeviceLink, menuItem);
-        loadFxml(MidiDeviceLinkUi.class, App.MESSAGES);
+        loadFxml(MidiDeviceLinkUi.class, I18n.msg());
     }
 
     protected void handleInitialize() {
         super.handleInitialize();
         midiDeviceComboBox.getItems().add(NONE_MIDI_DEVICE);
         midiDeviceComboBox.getItems().addAll(getProjectUi().getControlUi().getOpenMidiDevices());
-        midiDeviceComboBox.setConverter(App.createMidiDeviceConverter(getProjectUi().getControlUi().getOpenMidiDevices()));
+        midiDeviceComboBox.setConverter(FxApp.createMidiDeviceConverter(getProjectUi().getControlUi().getOpenMidiDevices()));
         listChangeListener = new MidiDeviceListChangeListener(midiDeviceComboBox);
         getProjectUi().getControlUi().getOpenMidiDevices().addListener(new WeakListChangeListener(listChangeListener));
         midiDeviceChanged();

@@ -1,6 +1,15 @@
 package nl.nlcode.m.engine;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
@@ -9,17 +18,15 @@ import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import java.util.*;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Transmitter;
-import nl.nlcode.m.ui.App;
 
 /**
  * @author leo
  */
 public final class MidiDeviceMgr {
 
-        private static class NoneMidiDevice implements MidiDevice {
+    private static class NoneMidiDevice implements MidiDevice {
 
         private class DefaultInfo extends MidiDevice.Info {
 
@@ -91,7 +98,7 @@ public final class MidiDeviceMgr {
 
     }
 
-    public static MidiDevice NONE_MIDI_DEVICE = new NoneMidiDevice(App.MESSAGES.getString("none"));
+    public static MidiDevice NONE_MIDI_DEVICE = new NoneMidiDevice(I18n.msg().getString("none"));
 
     public interface Listener {
 
@@ -126,14 +133,13 @@ public final class MidiDeviceMgr {
 
     private final List<MidiDevice> openMidiDevices = new ArrayList<>();
 
-    private static final MidiDeviceMgr instance = new MidiDeviceMgr();
+    private static MidiDeviceMgr instance;
 
     private static final int MAX_PREFS_KEY_AND_NAME_LENGTH = 80;
 
     private Set<Listener> listeners = new HashSet<>();
 
     private MidiDeviceMgr() {
-        refreshMidiDevices();
         if (USE_COREMIDI4j) {
             try {
                 CoreMidiDeviceProvider.addNotificationListener(() -> refreshMidiDevices());
@@ -155,7 +161,10 @@ public final class MidiDeviceMgr {
         }
     }
 
-    public static MidiDeviceMgr getInstance() {
+    public static synchronized MidiDeviceMgr getInstance() {
+        if (instance == null) {
+            instance = new MidiDeviceMgr();
+        }
         return instance;
     }
 
@@ -168,9 +177,13 @@ public final class MidiDeviceMgr {
     public final void refreshMidiDevices() {
         Collection<String> errors = new ArrayList<>();
         MidiDevice.Info[] midiDeviceInfos = getMidiDeviceInfo();
+        System.out.println("0y");
         List<MidiDevice> newList = new ArrayList();
         int retried = 0;
+        System.out.println("0b");
+
         for (MidiDevice.Info info : midiDeviceInfos) {
+            System.out.println(1);
             LOGGER.info("adding/refreshing <{}>", info);
             try {
                 MidiDevice midiDevice = MidiSystem.getMidiDevice(info);
@@ -184,6 +197,8 @@ public final class MidiDeviceMgr {
                     continue;
                 }
                 LOGGER.info("retrying");
+                System.out.println(2);
+
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException i) {
@@ -225,7 +240,7 @@ public final class MidiDeviceMgr {
         midiDevices.removeAll(deltaRemoveList);
         midiDevices.addAll(deltaAddList);
         midiDevices.sort(COMPARE_BY_DISPLAY_NAME);
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.forEach(listener -> {
                 for (MidiDevice removed : deltaRemoveList) {
                     listener.midiDeviceClosed(removed);
@@ -367,6 +382,5 @@ public final class MidiDeviceMgr {
             throw new IllegalArgumentException("already closed: <" + device + ">");
         }
     }
-    
 
 }

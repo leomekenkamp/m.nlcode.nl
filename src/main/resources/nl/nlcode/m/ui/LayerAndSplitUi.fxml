@@ -21,7 +21,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import nl.nlcode.m.ui.LayerAndSplitUi?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.cell.TextFieldTableCell?>
 <?import javafx.util.converter.IntegerStringConverter?>
 <?import nl.nlcode.m.ui.ControlUi?>
@@ -45,7 +44,8 @@
                     </TableColumn>
                     <TableColumn text="%fromNote">
                         <columns>
-                            <TableColumn text="%number" fx:id="fromNoteNumberColumn"/>
+                            <TableColumn text="%number" fx:id="fromNoteNumberColumn">
+                            </TableColumn>                                   
                             <TableColumn text="%name" fx:id="fromNoteNameColumn"/>
                         </columns>
                     </TableColumn>

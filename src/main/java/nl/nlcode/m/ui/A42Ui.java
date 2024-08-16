@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import nl.nlcode.m.engine.A42;
+import nl.nlcode.m.engine.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class A42Ui extends MidiInOutUi<A42> implements A42.Ui {
 
     public A42Ui(ProjectUi projectUi, A42 a42, MenuItem menuItem) {
         super(projectUi, a42, menuItem);
-        loadFxml(A42Ui.class, App.MESSAGES);
+        loadFxml(A42Ui.class, I18n.msg());
     }
 
     @Override

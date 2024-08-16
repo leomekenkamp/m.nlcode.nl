@@ -13,9 +13,9 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.LayerAndSplit;
 import nl.nlcode.m.engine.LayerAndSplit.Layer;
 import org.slf4j.Logger;
@@ -145,25 +145,25 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
     private Button removeButton;
 
     @FXML
-    private TableColumn inputChannelColumn;
+    private TableColumn<LayerUi, Integer> inputChannelColumn;
 
     @FXML
-    private TableColumn fromNoteNumberColumn;
+    private TableColumn<LayerUi, Integer> fromNoteNumberColumn;
 
     @FXML
-    private TableColumn fromNoteNameColumn;
+    private TableColumn<LayerUi, Integer> fromNoteNameColumn;
 
     @FXML
-    private TableColumn toNoteNumberColumn;
+    private TableColumn<LayerUi, Integer> toNoteNumberColumn;
 
     @FXML
-    private TableColumn toNoteNameColumn;
+    private TableColumn<LayerUi, Integer> toNoteNameColumn;
 
     @FXML
-    private TableColumn transposeColumn;
+    private TableColumn<LayerUi, Integer> transposeColumn;
 
     @FXML
-    private TableColumn outputChannelColumn;
+    private TableColumn<LayerUi, Integer> outputChannelColumn;
 
     private ChangeListener<Integer> midiChannelStringRepresentationChanged = (ov, oldValue, newValue) -> {
         inputChannelColumn.getTableView().refresh();
@@ -172,7 +172,7 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
 
     public LayerAndSplitUi(ProjectUi projectUi, LayerAndSplit layerAndSplit, MenuItem menuItem) {
         super(projectUi, layerAndSplit, menuItem);
-        loadFxml(App.MESSAGES);
+        loadFxml(I18n.msg());
         layersView.setEditable(true);
         for (Layer layer : (List<Layer>) layerAndSplit.getLayers()) { // TODO: why tf is a cast needed?
             layersView.getItems().add(new LayerUi(layer));
@@ -196,24 +196,25 @@ public class LayerAndSplitUi extends MidiInOutUi<LayerAndSplit> implements Layer
             setDirty();
         });
 
-        inputChannelColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("inputChannel"));
+        inputChannelColumn.setCellValueFactory(data -> data.getValue().inputChannelProperty().asObject());           
         inputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiChannelStringConverter()));
 
-        fromNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNote"));
+        fromNoteNumberColumn.setCellValueFactory(data -> data.getValue().fromNoteProperty().asObject());
         fromNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNumberStringConverter()));
 
-        fromNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("fromNote"));
+        fromNoteNameColumn.setCellValueFactory(data -> data.getValue().fromNoteProperty().asObject());
         fromNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNameStringConverter()));
 
-        toNoteNumberColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("toNote"));
+        toNoteNumberColumn.setCellValueFactory(data -> data.getValue().toNoteProperty().asObject());
         toNoteNumberColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNumberStringConverter()));
 
-        toNoteNameColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, String>("toNote"));
+        toNoteNameColumn.setCellValueFactory(data -> data.getValue().toNoteProperty().asObject());
         toNoteNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiNoteNameStringConverter()));
 
-        transposeColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("transpose"));
+        transposeColumn.setCellValueFactory(data -> data.getValue().transposeProperty().asObject());
         transposeColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-        outputChannelColumn.setCellValueFactory(new PropertyValueFactory<LayerUi, Integer>("outputChannel"));
+        
+        outputChannelColumn.setCellValueFactory(data -> data.getValue().outputChannelProperty().asObject());
         outputChannelColumn.setCellFactory(TextFieldTableCell.forTableColumn(getMidiChannelStringConverter()));
 
         TableView table = inputChannelColumn.getTableView();

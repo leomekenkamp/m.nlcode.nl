@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import nl.nlcode.m.engine.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public interface FxmlObject {
         }
         for (URL url : toBeLoaded) {
             LOGGER.debug("loading <{}>", url);
-            FXMLLoader fxmlLoader = new FXMLLoader(url, App.MESSAGES);
+            FXMLLoader fxmlLoader = new FXMLLoader(url, I18n.msg());
             fxmlLoader.setController(this);
             fxmlLoader.setRoot(this);
             try {

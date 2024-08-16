@@ -1,6 +1,5 @@
 package nl.nlcode.m.ui;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,6 +35,7 @@ import javax.sound.midi.MidiDevice;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.Props;
 import nl.nlcode.m.engine.Control;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiDeviceMgr;
 import static nl.nlcode.m.engine.MidiDeviceMgr.COMPARE_BY_DISPLAY_NAME;
 import nl.nlcode.m.engine.Project;
@@ -53,18 +53,15 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final FileChooser.ExtensionFilter ALL_FILTER
-            = new FileChooser.ExtensionFilter(App.MESSAGES.getString("allFiles"), "*.*");
+            = new FileChooser.ExtensionFilter(I18n.msg().getString("allFiles"), "*.*");
 
     public static final FileChooser.ExtensionFilter CSS_FILTER
-            = new FileChooser.ExtensionFilter(App.MESSAGES.getString("cssFiles"), "*.css");
+            = new FileChooser.ExtensionFilter(I18n.msg().getString("cssFiles"), "*.css");
 
-    public static final String OPEN = "open";
 
     public static final int TABLE_VIEW_PREF_HEIGHT = 150;
 
-    private static final Preferences systemMidiPrefs = Control.PREFERENCES.node("systemMidi");
-
-    private static final Preferences openProjectsPrefs = Control.PREFERENCES.node("openProjects");
+    private final Preferences openProjectsPrefs;
 
     public static final StringConverter<Double> BPM_CONVERTER = new StringConverter<Double>() {
         private final String format = "###.00";
@@ -102,7 +99,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
 
     @FXML
     private MenuItem newProject;
-    
+
     @FXML
     private Label versionLabel;
 
@@ -126,32 +123,31 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
 
     private final ObservableList<MidiDevice> openMidiDevices;
 
-    public static ControlUi createInstance(Control control) {
-        ControlUi result = new ControlUi(control);
-        control.getMidiDeviceMgr().addListener(instance);
-        for (MidiDevice midiDevice : control.getMidiDeviceMgr().getMidiDevices()) {
-            if (prefs(midiDevice).getBoolean(OPEN, false)) {
-                control.getMidiDeviceMgr().open(midiDevice);
-            }
-        }
+    // SceneBuider use ONLY
+    public static ControlUi getInstance(Control control) {
+        return instance != null ? instance : createInstance(control);
+    }
 
-        return result;
+    public static ControlUi createInstance(Control control) {
+        if (instance != null) {
+            throw new IllegalStateException("cannot have two ControlUi instances...");
+        }
+        instance = new ControlUi(control);
+        control.getMidiDeviceMgr().addListener(instance);
+        return instance;
     }
 
     private ControlUi(Control control) {
+        openProjectsPrefs = control.getPreferences().node("openProjects");
+
         midiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
         midiDevices = FXCollections.unmodifiableObservableList(midiDevicesBacking);
         openMidiDevicesBacking = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
         openMidiDevices = FXCollections.unmodifiableObservableList(openMidiDevicesBacking);
 
-        loadFxml(App.MESSAGES);
+        loadFxml(I18n.msg());
 
         projectUis = new CopyOnWriteArrayList<>();
-
-        if (instance != null) {
-            throw new IllegalStateException("cannot have two ControlControllers...");
-        }
-        instance = this;
 
 //        final String os = System.getProperty("os.name");
 //        if (os != null && os.startsWith("Mac")) {
@@ -191,18 +187,6 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
         );
     }
 
-    public static Preferences prefs(MidiDevice midiDevice) {
-        Preferences result = systemMidiPrefs.node(MidiDeviceMgr.getPrefsName(midiDevice));
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        try {
-            result.exportNode(stream);
-            LOGGER.debug(stream.toString("UTF-8"));
-        } catch (BackingStoreException | IOException e) {
-            LOGGER.error("this is weird, cannot stream prefs?...", e);
-        }
-        return result;
-    }
-
     public Control getControl() {
         return control;
     }
@@ -235,11 +219,11 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     @FXML
     public SettingsUi settings() {
         if (settings == null) {
-            settings = App.createStage(new SettingsUi(this));
+            settings = FxApp.createStage(new SettingsUi(this));
             settings.setResizable(true);
             settings.initOwner(this.getScene().getWindow());
-            settings.setTitle(App.MESSAGES.getString("settings"));
-            restoreWindowPositionAndSetAutosave(settings, Control.PREFERENCES.node("settings"));
+            settings.setTitle(I18n.msg().getString("settings"));
+            restoreWindowPositionAndSetAutosave(settings, getControl().getPreferences().node("settings"));
         }
         settings.show();
         settings.toFront();
@@ -249,12 +233,12 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     private static final String PREF_MIDI_NOTE_ZERO_BASED = "midiNoteZeroBased";
 
     public boolean getMidiNoteZeroBased() {
-        return Control.PREFERENCES.getBoolean(PREF_MIDI_NOTE_ZERO_BASED, true);
+        return getControl().getPreferences().getBoolean(PREF_MIDI_NOTE_ZERO_BASED, true);
     }
 
     public void setMidiNoteZeroBased(boolean zeroBased) {
         midiNoteNumberStringConverter.setOffset(zeroBased ? 0 : 1);
-        Control.PREFERENCES.putBoolean(PREF_MIDI_NOTE_ZERO_BASED, zeroBased);
+        getControl().getPreferences().putBoolean(PREF_MIDI_NOTE_ZERO_BASED, zeroBased);
     }
 
     public IntegerOffsetStringConverter getMidiNoteNumberStringConverter() {
@@ -264,12 +248,12 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     private static final String PREF_MIDI_CHANNEL_ZERO_BASED = "midiChannelZeroBased";
 
     public boolean getMidiChannelZeroBased() {
-        return Control.PREFERENCES.getBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, false);
+        return getControl().getPreferences().getBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, false);
     }
 
     public void setMidiChannelZeroBased(boolean zeroBased) {
         midiChannelStringConverter.setOffset(zeroBased ? 0 : 1);
-        Control.PREFERENCES.putBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, zeroBased);
+        getControl().getPreferences().putBoolean(PREF_MIDI_CHANNEL_ZERO_BASED, zeroBased);
     }
 
     public IntegerOffsetStringConverter getMidiChannelStringConverter() {
@@ -280,14 +264,14 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
 
     public NoteNamingConvention getNoteNamingConvention() {
         try {
-            return NoteNamingConvention.valueOf(Control.PREFERENCES.get(PREF_MIDI_NOTE_NAMING_CONVENTION, NoteNamingConvention.ENGLISH_SHORT.name()));
+            return NoteNamingConvention.valueOf(getControl().getPreferences().get(PREF_MIDI_NOTE_NAMING_CONVENTION, NoteNamingConvention.ENGLISH_SHORT.name()));
         } catch (RuntimeException ignore) {
             return NoteNamingConvention.ENGLISH_SHORT;
         }
     }
 
     public void setNoteNamingConvention(NoteNamingConvention noteNamingConvention) {
-        Control.PREFERENCES.put(PREF_MIDI_NOTE_NAMING_CONVENTION, noteNamingConvention.name());
+        getControl().getPreferences().put(PREF_MIDI_NOTE_NAMING_CONVENTION, noteNamingConvention.name());
         midiNoteNameStringConverter.setNoteNamingConvention(noteNamingConvention);
     }
 
@@ -299,7 +283,7 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
         MenuItem menuItem = new MenuItem();
         ProjectUi projectUi = new ProjectUi(this, project, menuItem);
         projectUis.add(projectUi);
-        Stage projectStage = App.createStage(projectUi);
+        Stage projectStage = FxApp.createStage(projectUi);
         projectStage.titleProperty().bind(projectUi.nameProperty());
 
         projectUi.restoreWindowPosition();
@@ -327,16 +311,16 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
     }
 
     public void restoreWindowPositionAndSetAutosave() {
-        restoreWindowPositionAndSetAutosave((Stage) getScene().getWindow(), Control.PREFERENCES);
+        restoreWindowPositionAndSetAutosave((Stage) getScene().getWindow(), getControl().getPreferences());
     }
 
     public static void restoreWindowPositionAndSetAutosave(Stage stage, Preferences preferences) {
-        double x = preferences.getDouble(App.PREF_X, Double.NaN);
+        double x = preferences.getDouble(FxApp.PREF_X, Double.NaN);
         if (x != Double.NaN) {
             stage.setX(x);
             LOGGER.info("init X to <{}>", x);
         }
-        double y = preferences.getDouble(App.PREF_Y, Double.NaN);
+        double y = preferences.getDouble(FxApp.PREF_Y, Double.NaN);
         if (y != Double.NaN) {
             stage.setY(y);
             LOGGER.info("init Y to <{}>", y);
@@ -347,8 +331,8 @@ public class ControlUi extends BorderPane implements FxmlController, MidiDeviceM
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
                 if (!newValue) {
-                    preferences.putDouble(App.PREF_X, stage.getX());
-                    preferences.putDouble(App.PREF_Y, stage.getY());
+                    preferences.putDouble(FxApp.PREF_X, stage.getX());
+                    preferences.putDouble(FxApp.PREF_Y, stage.getY());
                     LOGGER.info("moved X,Y to <{}> <{}>", stage.getX(), stage.getY());
                 }
             }

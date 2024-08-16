@@ -6,26 +6,22 @@ package nl.nlcode.musictheory;
  */
 public interface IntervalSequence {
 
-    int toneCount();
+    int degrees();
 
     /**
      * @return offsets (in semitones) to the tonic of the note with given {@code degree}
      */
     int semitonesFromTonicByDegree(int degree);
 
-    int semitonesFromTonicByDegreeUp(int degree);
-
-    int semitonesFromTonicByDegreeDown(int degree);
-
     /**
      * @return semitones from the given {@code degree} to the following degree
      */
-    int intervalUp(int degree);
+    int intervalUpFrom(int degree);
 
     /**
      * @return semitones from the given {@code degree} to the preceding degree
      */
-    int intervalDown(int degree);
+    int intervalDownFrom(int degree);
 
     default int semitonesPerOctave() {
         return 12; // keep it simple, yet we may want to expand on this in the future
@@ -34,10 +30,10 @@ public interface IntervalSequence {
     String name();
 
     default boolean hasSameIntervalsAs(IntervalSequence other) {
-        if (toneCount() != other.toneCount()) {
+        if (degrees() != other.degrees()) {
             return false;
         }
-        for (int degree = 1; degree <= toneCount(); degree++) {
+        for (int degree = 1; degree <= degrees(); degree++) {
             if (semitonesFromTonicByDegree(degree) != other.semitonesFromTonicByDegree(degree)) {
                 return false;
             }
@@ -46,8 +42,8 @@ public interface IntervalSequence {
     }
 
     default void checkDegree(int degree) {
-        if (degree < 1) {
-            throw new IllegalArgumentException("degree must be a positive number");
+        if (degree < 0 || degree > degrees()) {
+            throw new IllegalArgumentException("degree out of range");
         }
     }
 
@@ -75,8 +71,8 @@ public interface IntervalSequence {
         }
         int firstHalfOnDegree = 0;
         int secondHalfOnDegree = 0;
-        for (int degree = 1; degree <= toneCount(); degree++) {
-            switch (intervalUp(degree)) {
+        for (int degree = 1; degree <= degrees(); degree++) {
+            switch (intervalUpFrom(degree)) {
                 case 1:
                     if (firstHalfOnDegree == 0) {
                         firstHalfOnDegree = degree;
@@ -108,7 +104,7 @@ public interface IntervalSequence {
     }
 
     default boolean isHeptatonic() {
-        return toneCount() == 7;
+        return degrees() == 7;
     }
 
     default boolean isMajor() {

@@ -12,6 +12,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.javafxutil.FxmlController;
 import nl.nlcode.m.engine.ClockSource;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class MidiClockUi extends MidiInOutUi<MidiClock> implements FxmlControlle
 
     public MidiClockUi(ProjectUi projectUi, MidiClock midiClock, MenuItem menuItem) {
         super(projectUi, midiClock, menuItem);
-        loadFxml(MidiClockUi.class, App.MESSAGES);
+        loadFxml(MidiClockUi.class, I18n.msg());
     }
 
     @Override

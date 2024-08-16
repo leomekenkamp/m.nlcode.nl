@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -49,7 +48,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import nl.nlcode.javafxutil.FxmlController;
-import nl.nlcode.m.JvmStuff;
 import nl.nlcode.m.engine.A42;
 import nl.nlcode.m.engine.Arpeggiator;
 import nl.nlcode.m.engine.MidiInOut;
@@ -57,6 +55,7 @@ import static nl.nlcode.m.engine.Control.FILE_EXTENTION_FILTER;
 import nl.nlcode.m.engine.KeyboardKeyboard;
 import nl.nlcode.m.engine.ChannelMatrix;
 import nl.nlcode.m.engine.Echo;
+import nl.nlcode.m.engine.I18n;
 import nl.nlcode.m.engine.MidiClock;
 import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.LayerAndSplit;
@@ -85,7 +84,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final FileChooser.ExtensionFilter M_FILTER
-            = new FileChooser.ExtensionFilter(App.MESSAGES.getString("m.nlcode.nl.files"), FILE_EXTENTION_FILTER);
+            = new FileChooser.ExtensionFilter(I18n.msg().getString("m.nlcode.nl.files"), FILE_EXTENTION_FILTER);
 
     private static final String FOCUS = "focus";
 
@@ -164,7 +163,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     };
 
     public ProjectUi(ControlUi controlUi, Project project, MenuItem menuItem) {
-        loadFxml(App.MESSAGES);
+        loadFxml(I18n.msg());
         this.project = project;
         this.controlUi = controlUi;
         this.menuItem = menuItem;
@@ -215,7 +214,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     private void updateChannelTextProperties() {
-        MessageFormat messageFormat = new MessageFormat(App.MESSAGES.getString("channel%"));
+        MessageFormat messageFormat = new MessageFormat(I18n.msg().getString("channel%"));
         int offset = getControlUi().getMidiChannelStringConverter().offsetProperty().get();
         forAllChannels(channel -> channelTextProperty[channel].set(messageFormat.format(new Object[]{channel + offset})));
         forAllChannels(channel -> channelNumberProperty[channel].set(Integer.toString(channel + offset)));
@@ -433,7 +432,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
             MidiInOutUi midiInOutUi = ctor.newInstance(this, midiInOut, menuItem);
             midiInOut.setUi(midiInOutUi); // TODO: MOVE TO FACTORY METHOD
 
-            Stage result = App.createStage(midiInOutUi);
+            Stage result = FxApp.createStage(midiInOutUi);
             result.titleProperty().bind(midiInOutUi.nameProperty());
             midiInOutUiList.add(midiInOutUi);
             midiInOutUi.restoreWindowPositionAndSetAutosave();
@@ -564,7 +563,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     static FileChooser projectChooser(String titleKey, File initialDirectory) {
         FileChooser result = new FileChooser();
-        result.setTitle(App.MESSAGES.getString(titleKey));
+        result.setTitle(I18n.msg().getString(titleKey));
         result.setInitialDirectory(initialDirectory);
         result.getExtensionFilters().clear();
         return result;
@@ -609,12 +608,12 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     }
 
     public static void restoreWindowPosition(Stage stage, Map<Serializable, Serializable> info) {
-        Double x = (Double) info.getOrDefault(App.PREF_X, null);
+        Double x = (Double) info.getOrDefault(FxApp.PREF_X, null);
         if (x != null) {
             stage.setX(x);
             LOGGER.info("init X to {}", x);
         }
-        Double y = (Double) info.getOrDefault(App.PREF_Y, null);
+        Double y = (Double) info.getOrDefault(FxApp.PREF_Y, null);
         if (y != null) {
             stage.setY(y);
             LOGGER.info("init Y to {}", y);
@@ -624,8 +623,8 @@ public final class ProjectUi extends BorderPane implements FxmlController {
     protected void beforeSave() {
         double x = getScene().getWindow().getX();
         double y = getScene().getWindow().getY();
-        getProject().getInfo().put(App.PREF_X, x);
-        getProject().getInfo().put(App.PREF_Y, y);
+        getProject().getInfo().put(FxApp.PREF_X, x);
+        getProject().getInfo().put(FxApp.PREF_Y, y);
         LOGGER.info("moved X,Y to {} {}", x, y);
         for (MidiInOutUi midiInOutUi : midiInOutUiList) {
             midiInOutUi.beforeSave();
@@ -636,11 +635,11 @@ public final class ProjectUi extends BorderPane implements FxmlController {
         AtomicBoolean result = new AtomicBoolean(false);
         if (isDirty()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(App.MESSAGES.getString("closeProject"));
-            alert.setContentText(String.format(App.MESSAGES.getString("whatToDo"), getPath()));
-            ButtonType saveAndClose = new ButtonType(App.MESSAGES.getString("saveAndClose"), ButtonBar.ButtonData.OK_DONE);
-            ButtonType cancelClose = new ButtonType(App.MESSAGES.getString("neverMind"), ButtonBar.ButtonData.CANCEL_CLOSE);
-            ButtonType deleteAndClose = new ButtonType(App.MESSAGES.getString("deleteAndClose"));
+            alert.setTitle(I18n.msg().getString("closeProject"));
+            alert.setContentText(String.format(I18n.msg().getString("whatToDo"), getPath()));
+            ButtonType saveAndClose = new ButtonType(I18n.msg().getString("saveAndClose"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelClose = new ButtonType(I18n.msg().getString("neverMind"), ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType deleteAndClose = new ButtonType(I18n.msg().getString("deleteAndClose"));
             alert.getButtonTypes().setAll(saveAndClose, cancelClose, deleteAndClose);
             alert.showAndWait().ifPresent(chosen -> {
                 if (chosen == saveAndClose) {

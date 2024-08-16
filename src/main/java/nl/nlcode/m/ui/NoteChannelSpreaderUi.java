@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
+import nl.nlcode.m.engine.I18n;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.NoteChannelSpreader;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ public class NoteChannelSpreaderUi extends MidiInOutUi<NoteChannelSpreader> impl
 
     public NoteChannelSpreaderUi(ProjectUi projectUi, NoteChannelSpreader noteChannelSpreader, MenuItem menuItem) {
         super(projectUi, noteChannelSpreader, menuItem);
-        loadFxml(NoteChannelSpreaderUi.class, App.MESSAGES);
+        loadFxml(NoteChannelSpreaderUi.class, I18n.msg());
     }
 
     @Override

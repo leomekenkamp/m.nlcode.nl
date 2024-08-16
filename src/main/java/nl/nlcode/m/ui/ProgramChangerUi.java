@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
+import nl.nlcode.m.engine.I18n;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.ProgramChanger;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class ProgramChangerUi extends MidiInOutUi<ProgramChanger> implements Pro
     public ProgramChangerUi(ProjectUi projectUi, ProgramChanger programChanger, MenuItem menuItem) {
         super(projectUi, programChanger, menuItem);
 
-        loadFxml(ProgramChangerUi.class, App.MESSAGES);
+        loadFxml(ProgramChangerUi.class, I18n.msg());
     }
 
     @FXML

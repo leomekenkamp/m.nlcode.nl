@@ -22,8 +22,8 @@ public class Mode implements IntervalSequence {
         this.name = name;
         this.basedOn = basedOn;
         this.modeNumber = modeNumber;
-        if (modeNumber < 1 || modeNumber > toneCount()) {
-            throw new IllegalArgumentException("cannot have more modes than degrees in the parent scale (" + toneCount() + ")");
+        if (modeNumber < 1 || modeNumber > degrees()) {
+            throw new IllegalArgumentException("cannot have more modes than degrees in the parent scale (" + degrees() + ")");
         }
     }
 
@@ -40,33 +40,23 @@ public class Mode implements IntervalSequence {
     }
 
     @Override
-    public int toneCount() {
-        return basedOn.toneCount();
+    public int degrees() {
+        return basedOn.degrees();
     }
 
     @Override
     public int semitonesFromTonicByDegree(int degree) {
-        return basedOn.noteOffsetToTonicByDegree(degree, modeNumber);
+        return basedOn.semitonesFromTonicByDegree(degree, modeNumber);
     }
 
     @Override
-    public int semitonesFromTonicByDegreeUp(int degree) {
-        return basedOn.semitonesFromTonicByDegreeUp(degree + modeNumber);
+    public int intervalUpFrom(int degree) {
+        return basedOn.intervalUpFrom(degree, modeNumber);
     }
 
     @Override
-    public int semitonesFromTonicByDegreeDown(int degree) {
-        return basedOn.semitonesFromTonicByDegreeDown(degree + modeNumber);
-    }
-
-    @Override
-    public int intervalUp(int degree) {
-        return basedOn.intervalUp(degree, modeNumber);
-    }
-
-    @Override
-    public int intervalDown(int degree) {
-        return basedOn.intervalDown(degree, modeNumber);
+    public int intervalDownFrom(int degree) {
+        return basedOn.intervalDownFrom(degree, modeNumber);
     }
 
 }

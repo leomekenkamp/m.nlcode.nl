@@ -6,6 +6,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.m.engine.Example;
+import nl.nlcode.m.engine.I18n;
 import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.Transposer;
@@ -37,7 +38,7 @@ public class TransposerUi extends MidiInOutUi<Transposer> implements Example.Ui 
 
     public TransposerUi(ProjectUi projectUi, Transposer transposer, MenuItem menuItem) {
         super(projectUi, transposer, menuItem);
-        loadFxml(TransposerUi.class, App.MESSAGES);
+        loadFxml(TransposerUi.class, I18n.msg());
     }
 
     @Override

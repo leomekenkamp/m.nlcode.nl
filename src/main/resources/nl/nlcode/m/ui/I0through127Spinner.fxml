@@ -13,7 +13,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import nl.nlcode.m.ui.Field?>
 <?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
 <?import nl.nlcode.m.ui.I0through127Spinner?>

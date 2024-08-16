@@ -6,95 +6,120 @@ package nl.nlcode.musictheory;
  */
 public class Scale implements IntervalSequence {
 
+    public enum Direction {
+        UNIDIRECTIONAL,
+        ASCENDING,
+        DESCENDING;
+    }
+    
     private String name;
-    private int[] noteOffsetToTonic; // zero based!
-    private int[] intervalsInSemitone;
+
+    /**
+     * Index 0 holds the interval in semitones from the tonic to the second note
+     * of the scale.Index n holds the interval in semitones to the n+2 note of
+     * the scale.
+     */
+    private int[] intervals;
+
+    /**
+     * Index n holds the number of semitones between the tonic and note n of the
+     * scale. Ergo, distanceToTonic[0] = 0 by definition.
+     */
+    private int[] distanceToTonic; // zero based!
+
+    private Direction direction;
 
     protected Scale(String name) {
         this.name = name;
     }
 
-    protected Scale(String name, int[] intervalsInSemitone) {
+    protected Scale(String name, int[] intervalsInSemitones, Direction direction) {
         this(name);
-        this.intervalsInSemitone = intervalsInSemitone.clone();
-        noteOffsetToTonic = new int[intervalsInSemitone.length + 1];
+        this.intervals = intervalsInSemitones.clone();
+        distanceToTonic = new int[intervals.length + 1];
         int offset = 0;
-        noteOffsetToTonic[0] = 0;
-        for (int i = 0; i < intervalsInSemitone.length; i++) {
-            noteOffsetToTonic[i + 1] = intervalsInSemitone[i] + offset;
-            offset = noteOffsetToTonic[i + 1];
+        distanceToTonic[0] = 0;
+        for (int i = 0; i < intervals.length; i++) {
+            distanceToTonic[i + 1] = intervals[i] + offset;
+            offset = distanceToTonic[i + 1];
         }
+        this.direction = direction;
+    }
+
+    protected Scale(String name, int[] intervalsInSemitones) {
+        this(name, intervalsInSemitones, Direction.UNIDIRECTIONAL);
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 
     public String name() {
         return name;
     }
 
-    public int toneCount() {
-        return intervalsInSemitone.length;
+    /**
+     * @return the number of distinct chromatic notes in this scale.
+     */
+    public int degrees() {
+        return intervals.length;
     }
 
     /**
      * @return array with offsets (in semitones) to the tonic note
      */
-    protected int[] noteOffsetToTonic() {
-        return noteOffsetToTonic.clone();
+    protected int[] distanceToTonic() {
+        return distanceToTonic.clone();
     }
 
     /**
-     * @return offsets (in semitones) to the tonic of the note with given {@code degree}
+     * @return offsets (in semitones) to the tonic of the note with given
+     * {@code degree}
      */
+    @Override
     public int semitonesFromTonicByDegree(int degree) {
-        int octaveOffset = semitonesPerOctave() * ((degree - 1) / toneCount());
-        return octaveOffset + noteOffsetToTonic[((degree - 1) % toneCount())];
+        int octaveOffset = semitonesPerOctave() * (degree / degrees());
+        return octaveOffset + distanceToTonic[(degree % degrees())];
     }
 
-    public int noteOffsetToTonicByDegree(int degree, int modeNumber) {
-        return semitonesFromTonicByDegree(modeNumber + degree - 1) - semitonesFromTonicByDegree(modeNumber);
+    public int semitonesFromTonicByDegree(int degree, int modeNumber) {
+        return Scale.this.semitonesFromTonicByDegree(modeNumber - 1 + degree) - Scale.this.semitonesFromTonicByDegree(modeNumber - 1);
 //        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / toneCount())
 //        return octaveOffset + noteOffsetToTonic[((degree + modeNumber - 2) % toneCount())] - noteOffsetToTonic[modeNumber - 1];
     }
 
-    public int semitonesFromTonicByDegreeUp(int degree) {
-        return semitonesFromTonicByDegree(degree);
-    }
-
-    public int semitonesFromTonicByDegreeDown(int degree) {
-        return semitonesFromTonicByDegree(degree);
+    /**
+     * @return semitones from the given {@code degree} to the following degree
+     */
+    public int intervalUpFrom(int degree) {
+        return intervalUpFrom(degree, 1);
     }
 
     /**
      * @return semitones from the given {@code degree} to the following degree
      */
-    public int intervalUp(int degree) {
-        return intervalUp(degree, 1);
-    }
-
-    /**
-     * @return semitones from the given {@code degree} to the following degree
-     */
-    public int intervalUp(int degree, int modeNumber) {
+    public int intervalUpFrom(int degree, int modeNumber) {
         checkDegree(degree);
         checkModeNumber(modeNumber);
-        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / intervalsInSemitone.length);
-        return octaveOffset + intervalsInSemitone[((degree + modeNumber - 2) % intervalsInSemitone.length)];
+        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / intervals.length);
+        return octaveOffset + intervals[((degree + modeNumber - 2) % intervals.length)];
     }
 
     /**
      * @return semitones from the preceding degree to the given {@code degree}
      */
-    public int intervalDown(int degree) {
-        return intervalDown(degree, 1);
+    public int intervalDownFrom(int degree) {
+        return intervalDownFrom(degree, 1);
     }
 
     /**
      * @return semitones from the preceding degree to the given {@code degree}
      */
-    public int intervalDown(int degree, int modeNumber) {
+    public int intervalDownFrom(int degree, int modeNumber) {
         checkDegree(degree);
         checkModeNumber(modeNumber);
-        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / intervalsInSemitone.length);
-        return octaveOffset + intervalsInSemitone[((degree + modeNumber + intervalsInSemitone.length - 3) % intervalsInSemitone.length)];
+        int octaveOffset = semitonesPerOctave() * ((degree - modeNumber) / intervals.length);
+        return octaveOffset + intervals[((degree + modeNumber + intervals.length - 3) % intervals.length)];
     }
 
     public int semitonesPerOctave() {
@@ -102,8 +127,8 @@ public class Scale implements IntervalSequence {
     }
 
     protected void checkModeNumber(int modeNumber) {
-        if (modeNumber < 1 || modeNumber > toneCount()) {
-            throw new IllegalArgumentException("modeNumber must be in interval [1, " + toneCount() + "]");
+        if (modeNumber < 1 || modeNumber > degrees()) {
+            throw new IllegalArgumentException("modeNumber must be in interval [1, " + degrees() + "]");
         }
     }
 }
