@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import nl.nlcode.m.engine.I18n;
-import nl.nlcode.m.engine.NoteGateVelocity;
+import nl.nlcode.m.engine.VelocityGate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteGateVelocityUi extends MidiInOutUi<NoteGateVelocity> implements NoteGateVelocity.Ui {
+public class NoteGateVelocityUi extends MidiInOutUi<VelocityGate> implements VelocityGate.Ui {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -25,7 +25,7 @@ public class NoteGateVelocityUi extends MidiInOutUi<NoteGateVelocity> implements
     private Spinner<Integer> toVelocity;
     private IntPropertyUpdaterBridge toVelocityBacking;
 
-    public NoteGateVelocityUi(ProjectUi projectUi, NoteGateVelocity noteGate, MenuItem menuItem) {
+    public NoteGateVelocityUi(ProjectUi projectUi, VelocityGate noteGate, MenuItem menuItem) {
         super(projectUi, noteGate, menuItem);
         loadFxml(NoteGateVelocityUi.class, I18n.msg());
     }

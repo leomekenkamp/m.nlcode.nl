@@ -36,24 +36,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Instead of using the Java MIDI API to create software instruments, we do it the other way round.
- * We define our own: this one. The Java MIDI API device is accessed through {@link MidiDeviceLink}.
- * The reason to define an alternative way of defining instruments, is the simple reason that two
- * {@code MidiInOut} devices need to know of each other. The user needs to know which device
- * transmits to which other devices, but also which device receives from which other devices. It was
- * too cumbersome to 'enhance' the Java MIDI API to do this; bridging via {@code MidiDeviceLink}
- * gives far simpler code.
+ * Instead of using the Java MIDI API to create software instruments, we do it
+ * the other way round. We define our own: this one. The Java MIDI API device is
+ * accessed through {@link MidiDeviceLink}. The reason to define an alternative
+ * way of defining instruments, is the simple reason that two {@code MidiInOut}
+ * devices need to know of each other. The user needs to know which device
+ * transmits to which other devices, but also which device receives from which
+ * other devices. It was too cumbersome to 'enhance' the Java MIDI API to do
+ * this; bridging via {@code MidiDeviceLink} gives far simpler code.
  * <p>
- * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is no public 'send'
- * method. Implementations need to decide for themselves if they keep total control over their own
- * sending of messages and thus keep their send method(s) to themselves. A receiving instance
- * however must be visible to the world, but there is no guarantee that the data received will
- * actually be processed. Implementations may choose to ignore incoming messages, for instance if
- * they represent something like piano keys. Of course they are free to process them and -keeping
- * with the example- opt to act like a pianola.
+ * Note while there is a public {@link asyncReceive(MidiMessage, int)}, there is
+ * no public 'send' method. Implementations need to decide for themselves if
+ * they keep total control over their own sending of messages and thus keep
+ * their send method(s) to themselves. A receiving instance however must be
+ * visible to the world, but there is no guarantee that the data received will
+ * actually be processed. Implementations may choose to ignore incoming
+ * messages, for instance if they represent something like piano keys. Of course
+ * they are free to process them and -keeping with the example- opt to act like
+ * a pianola.
  * <p>
- * Subclasses are expected to provide a {@code public static interface Ui} that extends the
- * {@code UI} interface in {@code MidiInOut}.
+ * Subclasses are expected to provide a {@code public static interface Ui} that
+ * extends the {@code UI} interface in {@code MidiInOut}.
  *
  * @author leo
  */
@@ -79,9 +82,11 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     /**
      * <p>
-     * Interface to be implemented by user interface classes. This allows for decoupling of the user
-     * interface: the user interface knows <code>MidiInOut</code>, but not the other way around.
-     * <code>MidiInOut</code> only knows about the interface it should use to 'talk to'.
+     * Interface to be implemented by user interface classes. This allows for
+     * decoupling of the user interface: the user interface knows
+     * <code>MidiInOut</code>, but not the other way around.
+     * <code>MidiInOut</code> only knows about the interface it should use to
+     * 'talk to'.
      */
     public interface Ui {
 
@@ -97,7 +102,19 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         default void sent(MidiMessage message, long timestamp) {
         }
 
-        default void nameChanged(String name) {
+        default void nameChanged(String previousName, String currentName) {
+        }
+
+        default void sendingTo(MidiInOut receiver) {
+        }
+
+        default void receivingFrom(MidiInOut sender) {
+        }
+
+        default void notSendingTo(MidiInOut receiver) {
+        }
+
+        default void notReceivingFrom(MidiInOut sender) {
         }
     }
 
@@ -147,7 +164,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     protected static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private transient Set sendingToReadonly;
+    private transient Set<MidiInOut> sendingToReadonly;
+
+    private transient Set<MidiInOut> receivingFromReadonly;
 
     private transient Lookup<MidiInOut> lookup;
 
@@ -158,6 +177,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     private transient ExecutorService executorService;
 
     private transient Set<Updater<?, U, ? extends Updater.Holder<U>>> updaters;
+
+    private transient Map<String, Updater<?, U, ? extends Updater.Holder<U>>> nameToUpdater;
 
     private transient U ui;
 
@@ -217,7 +238,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         asyncReceiveQueue = new LinkedBlockingQueue();
         processing = new AtomicBoolean(false);
         updaters = new HashSet<>();
+        nameToUpdater = new HashMap<>();
         sendingToReadonly = Collections.unmodifiableSet(sendingTo);
+        receivingFromReadonly = Collections.unmodifiableSet(receivingFrom);
     }
 
     public final void openWith(Project project) {
@@ -261,6 +284,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     protected void syncUi() {
         updaters.stream().forEach(updater -> updater.runAfterChange());
+        // nameToUpdater.values().stream().forEach(updater -> updater.runAfterChange());
     }
 
     public void close() {
@@ -278,6 +302,10 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         return sendingToReadonly;
     }
 
+    public Set<MidiInOut> receivingFrom() {
+        return receivingFromReadonly;
+    }
+
     private void ensureNotRecursiveSendingTo(MidiInOut toBeAdded) {
         if (this == toBeAdded) {
             throw new MidiInOut.SendReceiveLoopDetectedException();
@@ -287,27 +315,35 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         }
     }
 
-    public void startSendingTo(MidiInOut receiver) {
+    public boolean startSendingTo(MidiInOut<? extends Ui> receiver) {
         receiver.ensureNotRecursiveSendingTo(this);
         LOGGER.debug("<{}> starting sending to <{}>", this, receiver);
         if (sendingTo.add(receiver)) {
             receiver.receivingFrom.add(this);
+            uiUpdate(ui -> ui.sendingTo(receiver));
+            receiver.uiUpdate(ui -> ui.receivingFrom(this));
+            return true;
         } else {
-            //         throw new IllegalArgumentException("<" + this + "> already sending to <" + receiver + ">");
+            return false;
         }
     }
 
-    public void stopSendingTo(MidiInOut receiver) {
+    public boolean stopSendingTo(MidiInOut<? extends Ui> receiver) {
         if (sendingTo.remove(receiver)) {
             receiver.receivingFrom.remove(this);
+            uiUpdate(ui -> ui.notSendingTo(receiver));
+            receiver.uiUpdate(ui -> ui.notReceivingFrom(this));
+            return true;
         } else {
-            //           throw new IllegalArgumentException("<" + this + "> was not sending to <" + receiver + ">");
+            return false;
         }
     }
 
     /**
-     * Unlike the public {@link MidiInOut#receive(javax.sound.midi.MidiMessage, long)} method, this
-     * method gives implementations a default way to send messages to all registered instances in {@link #sendingTo()].
+     * Unlike the public
+     * {@link MidiInOut#receive(javax.sound.midi.MidiMessage, long)} method,
+     * this method gives implementations a default way to send messages to all
+     * registered instances in {@link #sendingTo()].
      *
      * @param message
      * @param timeStamp
@@ -359,18 +395,18 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     public void setName(String name) {
-        boolean changing = !Objects.equals(this.name, name);
+        String oldName = this.name;
+        boolean changing = !Objects.equals(oldName, name);
         boolean verify = lookup != null && changing;
         if (verify) {
-            lookup.verifyName(name);
-        }
-        this.name = name;
-        if (verify) {
-            lookup.renamed(this);
+            lookup.verifyNameAndExecute(name, () -> {this.name = name;});
+            lookup.renamed(this); // FIXME: this looks strange
+        } else {
+            this.name = name;
         }
         if (changing) {
             setDirty();
-            uiUpdate(ui -> ui.nameChanged(name));
+            uiUpdate(ui -> ui.nameChanged(oldName, name));
         }
     }
 
@@ -394,8 +430,8 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     /**
-     * Makes this instance receive midi data, meaning that a sender must call this method to send
-     * data to this instance.
+     * Makes this instance receive midi data, meaning that a sender must call
+     * this method to send data to this instance.
      *
      * @param message
      * @param timeStamp
@@ -423,16 +459,17 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     /**
-     * False if no messages will ever be sent from this instance, true otherwise. The returned value
-     * may change during the lifetime of an instance.
+     * False if no messages will ever be sent from this instance, true
+     * otherwise. The returned value may change during the lifetime of an
+     * instance.
      */
     public boolean isActiveSender() {
         return false;
     }
 
     /**
-     * False if incoming messages are completely ignored, true otherwise. The returned value may
-     * change during the lifetime of an instance.
+     * False if incoming messages are completely ignored, true otherwise. The
+     * returned value may change during the lifetime of an instance.
      */
     public boolean isActiveReceiver() {
         return false;
@@ -572,7 +609,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     public static final boolean isTimingClock(MidiMessage message) {
         return message.getLength() == 1 && message.getStatus() == ShortMessage.TIMING_CLOCK;
     }
-    
+
     public static final ShortMessage createShortMessage(int command, int channel, int note, int velocity) {
         try {
             return new ShortMessage(command, channel, note, velocity);
@@ -595,7 +632,6 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         verify7Bit(data);
     }
 
-        
     public static void forAllChannels(IntConsumer intConsumer) {
         for (int channel = CHANNEL_MIN; channel <= CHANNEL_MAX; channel++) {
             intConsumer.accept(channel);
@@ -661,25 +697,35 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     @Override
     public void unregister(Updater<?, U, ? extends Updater.Holder<U>> updater) {
         updaters.remove(updater);
+        nameToUpdater.remove(updater.getName(), updater);
     }
 
     @Override
     public void register(Updater<?, U, ? extends Updater.Holder<U>> updater) {
         updaters.add(updater);
+        if (!Updater.TODO_NAME.equals(updater.getName())) {
+            nameToUpdater.put(updater.getName(), updater);
+        }
     }
 
     public PropertyChangeSupport getPropertyChangeSupport() {
-        if (true) throw new RuntimeException("is this code even used?");
+        if (true) {
+            throw new RuntimeException("is this code even used?");
+        }
         return propertyChangeSupport;
-   }
+    }
 
     public void addPropertyChangeListener(String name, PropertyChangeListener listener) {
-        if (true) throw new RuntimeException("is this code even used?");
+        if (true) {
+            throw new RuntimeException("is this code even used?");
+        }
         propertyChangeSupport.addPropertyChangeListener(name, listener);
     }
 
     public void removePropertyChangeListener(String name, PropertyChangeListener listener) {
-        if (true) throw new RuntimeException("is this code even used?");
+        if (true) {
+            throw new RuntimeException("is this code even used?");
+        }
         propertyChangeSupport.removePropertyChangeListener(name, listener);
     }
 
@@ -690,4 +736,13 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         return msg == null ? "<null>"
                 : "[cmd: " + msg.getCommand() + "; ch: " + msg.getChannel() + "; d1: " + msg.getData1() + "; d2: " + msg.getData2();
     }
+
+    /**
+     *
+     * @return the updater 'properties' that this instance holds
+     */
+    public Map<String, Updater<?, U, ? extends Updater.Holder<U>>> getNameToUpdater() {
+        return nameToUpdater;
+    }
+;
 }

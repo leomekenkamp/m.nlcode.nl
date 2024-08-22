@@ -5,6 +5,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -16,10 +19,10 @@ import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
 import static nl.nlcode.m.cli.Verbosity.newbie;
 import nl.nlcode.m.engine.Control;
+import nl.nlcode.m.engine.Lights;
+import nl.nlcode.m.engine.MidiDeviceLink;
+import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
-import org.jline.builtins.Completers.TreeCompleter;
-import static org.jline.builtins.Completers.TreeCompleter.node;
-import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -28,6 +31,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 /**
  *
@@ -35,7 +39,16 @@ import org.slf4j.LoggerFactory;
  */
 public class ControlCli implements Runnable, Control.Ui {
 
+    static {
+        MidiInOutCliRegistry.register("Lights", (controlCli) -> new LightsCli(new Lights(), controlCli));
+        MidiInOutCliRegistry.register("MidiDeviceLink", (controlCli) -> new MidiDeviceLinkCli(new MidiDeviceLink(), controlCli));
+    }
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    public static final String COMMAND_MESSAGES_BUNDLE = "nl.nlcode.m.cli.CommandMessages";
+
+    private static ResourceBundle COMMAND_MESSAGES = ResourceBundle.getBundle(COMMAND_MESSAGES_BUNDLE);
 
     private static ControlCli instance;
 
@@ -65,18 +78,6 @@ public class ControlCli implements Runnable, Control.Ui {
         this.control = control;
     }
 
-    private Completer createCompleter(RootCommand rootCommand) {
-        TreeCompleter result = new TreeCompleter(
-                node("exit",
-                        node("--force")),
-                node("help",
-                        node("Option1",
-                                node("Param1", "Param2")),
-                        node("Option2"),
-                        node("Option3")));
-        return result;
-    }
-
     @Override
     public void run() {
         applicationStatus = ApplicationStatus.RUNNING;
@@ -89,18 +90,16 @@ public class ControlCli implements Runnable, Control.Ui {
             } else {
                 stdout = new PrintWriter(new MultiWriter(new Writer[]{terminal.writer(), stdoutTestEcho}));
             }
-            RootCommand rootCommand = RootCommand.createRootCommand();
             LineReader lineReader = LineReaderBuilder.builder()
                     .terminal(terminal)
-                    .completer(createCompleter(rootCommand))
                     .build();
             while (applicationStatus == ApplicationStatus.RUNNING) {
-                String prompt = "m.nlcode.nl> ";
+                String prompt = getVerbosity() == minimal ? "> " : "m.nlcode.nl> ";
                 commandLoop(commandTestSupplier == null ? () -> lineReader.readLine(prompt) : commandTestSupplier);
                 if (testCommandCompleterBarrier != null) {
                     try {
                         testCommandCompleterBarrier.await();
-                    } catch (InterruptedException |BrokenBarrierException e) {
+                    } catch (InterruptedException | BrokenBarrierException e) {
                         Thread.interrupted();
                         throw new RuntimeException(e);
                     }
@@ -115,12 +114,15 @@ public class ControlCli implements Runnable, Control.Ui {
     }
 
     void commandLoop(Supplier<String> commandSupplier) {
-        RootCommand rootCommand = RootCommand.createRootCommand();
         try {
             String rawCommand = commandSupplier.get();
             String[] tokens = CommandSplitter.splitCommand(rawCommand).toArray(String[]::new);
             if (tokens.length > 0) {
-                rootCommand.process(tokens, this);
+                CommandLine commandLine = new CommandLine(new BaseCommand(this));
+                commandLine.registerConverter(Class.class, s -> Class.forName(MidiInOut.class.getPackageName() + "." + s));
+                commandLine.registerConverter(MidiInOut.class, s -> getDefaultProject().getMidiInOutLookup().get(s));
+                commandLine.registerConverter(Project.class, new ConvNameToProject(this));
+                commandLine.execute(tokens);
             }
         } catch (Token.TokenException e) {
             stdout().println(e.getMessage());
@@ -182,11 +184,20 @@ public class ControlCli implements Runnable, Control.Ui {
         return idToProject.get(0);
     }
 
-    public synchronized void renumProjects() {
-        SortedSet<Integer> oldIds = new TreeSet(idToProject.keySet());
-        int newId = 0;
-        for (int oldId : oldIds) {
-            idToProject.put(newId, idToProject.remove(oldId));
+    public Project getCurrentProject() {
+        return getDefaultProject();
+    }
+
+    public synchronized void renumProjects(Project newDefault) {
+        SortedMap<Integer, Project> idToProjectCopy = new TreeMap<>(idToProject);
+        idToProject.clear();
+        int newId = newDefault == null ? 0 : 1;
+        for (Map.Entry<Integer, Project> entry : idToProjectCopy.entrySet()) {
+            if (entry.getValue() == newDefault) {
+                idToProject.put(0, entry.getValue());    
+            } else {
+                idToProject.put(newId, entry.getValue());
+            }
             newId++;
         }
     }
@@ -229,5 +240,25 @@ public class ControlCli implements Runnable, Control.Ui {
 
     ApplicationStatus getApplicationStatus() {
         return applicationStatus;
+    }
+
+    public void commandOutput(String key, Object... params) {
+        stdout().println(commandMessage(key, params));
+    }
+
+    public String commandMessage(String key, Object... params) {
+        String formatString = null;
+        for (Verbosity verbosity : getVerbosity().withFallback()) {
+            try {
+                formatString = COMMAND_MESSAGES.getString(key + "." + verbosity);
+                break;
+            } catch (MissingResourceException e) {
+                // ignore
+            }
+        }
+        if (formatString == null) {
+            formatString = "???<" + key + ">??? ";
+        }
+        return String.format(formatString, params);
     }
 }

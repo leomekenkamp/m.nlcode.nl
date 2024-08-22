@@ -127,7 +127,7 @@ public final class MidiDeviceMgr {
         }
     };
 
-    private final boolean USE_COREMIDI4j = true;
+    private final boolean USE_COREMIDI4j = false;
 
     private final List<MidiDevice> midiDevices = new ArrayList<>();
 
@@ -140,13 +140,13 @@ public final class MidiDeviceMgr {
     private Set<Listener> listeners = new HashSet<>();
 
     private MidiDeviceMgr() {
-        if (USE_COREMIDI4j) {
-            try {
-                CoreMidiDeviceProvider.addNotificationListener(() -> refreshMidiDevices());
-            } catch (CoreMidiException e) {
-                LOGGER.error("Could not register listener. No auto refresh of MIDI (usb) devices.");
-            }
-        }
+//        if (USE_COREMIDI4j) {
+//            try {
+//                CoreMidiDeviceProvider.addNotificationListener(() -> refreshMidiDevices());
+//            } catch (CoreMidiException e) {
+//                LOGGER.error("Could not register listener. No auto refresh of MIDI (usb) devices.");
+//            }
+//        }
     }
 
     public void addListener(Listener listener) {

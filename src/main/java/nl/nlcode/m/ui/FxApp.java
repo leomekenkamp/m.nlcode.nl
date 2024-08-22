@@ -49,16 +49,32 @@ public class FxApp extends Application {
         launch(args);
     }
 
+    private static volatile FxApp instance;
+    
+    public static synchronized FxApp getInstance() {
+        return instance;
+    }
+    
+   public static synchronized void start() {
+       //Thread t = new Thread(() -> {
+           launch();
+       //});
+   }
+
     @Override
-    public void init() throws Exception {
+    public  void init() throws Exception {
         LOGGER.info("initialize");
         // Not prefetching at the moment, since CoreMidi4J hangs if we do.
         //preLoadMidiDeviceInfo();
     }
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public synchronized void start(Stage stage) throws IOException {
         LOGGER.info("starting");
+        if (instance != null) {
+            throw new IllegalStateException("cannot start FxApp twice");
+        }
+        instance = this;
         try {
             Preferences preferences = Preferences.userNodeForPackage(Control.class);
             setStyleSheet(preferences.get(STYLE_SHEET_PREF, DEFAULT_STYLE_SHEET));
@@ -79,10 +95,11 @@ public class FxApp extends Application {
     }
 
     @Override
-    public void stop() throws Exception {
+    public synchronized void stop() {
         LOGGER.info("stopping");
         ForkJoinPool.commonPool().awaitQuiescence(1, TimeUnit.SECONDS);
-        System.exit(0); // needed because the midi system will prevent proper shutdown
+        instance = null;
+        //System.exit(0); // needed because the midi system will prevent proper shutdown
         LOGGER.info("this line should not be executed anymore");
     }
 

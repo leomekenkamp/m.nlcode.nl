@@ -14,8 +14,10 @@ module nl.nlcode.m {
     requires ch.qos.logback.classic;
     requires ch.qos.logback.core;
     requires uk.co.xfactorylibrarians.coremidi4j;
+    requires info.picocli;
 
     opens nl.nlcode.m to com.fasterxml.jackson.databind;
+    opens nl.nlcode.m.cli to info.picocli;
     opens nl.nlcode.m.engine to javafx.fxml, com.fasterxml.jackson.databind;
     opens nl.nlcode.marshalling to com.fasterxml.jackson.databind;
     opens nl.nlcode.m.ui to javafx.fxml; //, org.testfx.junit5;

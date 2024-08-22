@@ -16,19 +16,36 @@ public class IntUpdater<U, H extends Updater.Holder<U>> extends Updater<Integer,
 
     private int max;
 
-    public IntUpdater(H holder) {
-        super(holder);
+    public IntUpdater(String name, H holder) {
+        super(name, holder);
     }
     
-    public IntUpdater(H holder, int value) {
+    public IntUpdater(String name, H holder, int value) {
         this(holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    public IntUpdater(H holder, int value, int min, int max) {
+    public IntUpdater(String name, H holder, int value, int min, int max) {
+        super(name);
         this.min = min;
         this.max = max;
         set(value);
         register(holder);
+    }
+
+    // FIXME: remove 3 ctors below
+    @Deprecated
+    public IntUpdater(H holder) {
+        this(TODO_NAME, holder);
+    }
+    
+    @Deprecated
+    public IntUpdater(H holder, int value) {
+        this(TODO_NAME, holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    @Deprecated
+    public IntUpdater(H holder, int value, int min, int max) {
+        this(TODO_NAME, holder, value, min, max);
     }
 
     public int get() {

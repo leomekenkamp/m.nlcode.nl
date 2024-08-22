@@ -15,6 +15,9 @@ import java.util.function.Consumer;
  */
 public abstract class Updater<T, U, H extends Updater.Holder<U>> {
 
+    @Deprecated
+    public static String TODO_NAME = "<todo>";
+            
     /**
      * The holder for the UI component. The holder can hold any non-negative number of UI
      * interfaces.
@@ -56,12 +59,26 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
     private Consumer<U> afterSet;
 
     private final Set<Listener> listeners = Collections.newSetFromMap(new WeakHashMap<>());
+    
+    private String name;
 
+    protected Updater(String name) {
+        this.name = name;
+    }
+
+    protected Updater(String name, H holder) {
+        this(name);
+        register(holder);        
+    }
+    
+    // FIXME: remove these ctors
+    @Deprecated
     protected Updater() {
     }
 
+    @Deprecated
     protected Updater(H holder) {
-        register(holder);
+        this(TODO_NAME);
     }
 
     public abstract T getValue();
@@ -147,4 +164,12 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
         this.holderDirtyOnChange = holderDirtyOnChange;
     }
 
+    /**
+     * 
+     * @return unique name for use in e.g. cli user interface to identify this
+     * particular instance. Must be unique per holder.
+     */
+    public String getName() {
+        return name;
+    }
 }

@@ -154,11 +154,12 @@ public class ProgramChanger<U extends ProgramChanger.Ui> extends MidiInOut<U> {
     }
 
     @Override
-    public void startSendingTo(MidiInOut receiver) {
-        super.startSendingTo(receiver);
-        if (getResendOnConnect()) {
+    public boolean startSendingTo(MidiInOut<? extends MidiInOut.Ui> receiver) {
+        boolean result = super.startSendingTo(receiver);
+        if (result && getResendOnConnect()) {
             resend();
         }
+        return result;
     }
 
     @Override

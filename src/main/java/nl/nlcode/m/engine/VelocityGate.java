@@ -3,7 +3,7 @@ package nl.nlcode.m.engine;
 import java.lang.invoke.MethodHandles;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
-import nl.nlcode.m.linkui.IntUpdater;
+import nl.nlcode.m.linkui.MidiDataUpdater;
 import nl.nlcode.m.linkui.ObjectUpdater;
 import nl.nlcode.marshalling.Marshalled;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U> {
+public class VelocityGate<U extends VelocityGate.Ui> extends MidiInOut<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -23,19 +23,19 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
 
     private static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private final IntUpdater fromVelocity;
-    private final IntUpdater toVelocity;
-    private final ObjectUpdater<IntervalClosure, U, NoteGateVelocity<U>> intervalClosure;
+    private final MidiDataUpdater fromVelocity;
+    private final MidiDataUpdater toVelocity;
+    private final ObjectUpdater<IntervalClosure, U, VelocityGate<U>> intervalClosure;
 
     public static record SaveData0(
             int id,
             int fromVelocity,
             int toVelocity,
             IntervalClosure intervalClosure,
-            Marshalled<MidiInOut> s) implements Marshalled<NoteGateVelocity> {
+            Marshalled<MidiInOut> s) implements Marshalled<VelocityGate> {
 
         @Override
-        public void unmarshalInto(Marshalled.Context context, NoteGateVelocity target) {
+        public void unmarshalInto(Marshalled.Context context, VelocityGate target) {
             target.fromVelocity.set(fromVelocity());
             target.toVelocity.set(toVelocity());
             target.intervalClosure.set(intervalClosure());
@@ -43,15 +43,15 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         }
 
         @Override
-        public NoteGateVelocity createMarshallable() {
-            return new NoteGateVelocity();
+        public VelocityGate createMarshallable() {
+            return new VelocityGate();
         }
 
     }
 
     @Override
     public Marshalled marshalInternal(int id, Context context) {
-        return new NoteGateVelocity.SaveData0(
+        return new VelocityGate.SaveData0(
                 id,
                 fromVelocity.get(),
                 toVelocity.get(),
@@ -60,9 +60,9 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         );
     }
 
-    public NoteGateVelocity() {
-        fromVelocity = new IntUpdater(this, MIDI_DATA_MIN);
-        toVelocity = new IntUpdater(this, MIDI_DATA_MAX);
+    public VelocityGate() {
+        fromVelocity = new MidiDataUpdater("from", this, MIDI_DATA_MIN);
+        toVelocity = new MidiDataUpdater("to", this, MIDI_DATA_MAX);
         intervalClosure = new ObjectUpdater(this, IntervalClosure.CLOSED);
     }
 
@@ -105,7 +105,7 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         this.fromVelocity.set(fromVelocity);
     }
 
-    public IntUpdater<U, NoteGateVelocity<U>> fromVelocity() {
+    public MidiDataUpdater<U, VelocityGate<U>> fromVelocity() {
         return fromVelocity;
     }
 
@@ -117,7 +117,7 @@ public class NoteGateVelocity<U extends NoteGateVelocity.Ui> extends MidiInOut<U
         this.toVelocity.set(toVelocity);
     }
 
-    public IntUpdater<U, NoteGateVelocity<U>> toVelocity() {
+    public MidiDataUpdater<U, VelocityGate<U>> toVelocity() {
         return toVelocity;
     }
 

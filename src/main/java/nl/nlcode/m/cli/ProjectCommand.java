@@ -1,165 +1,33 @@
 package nl.nlcode.m.cli;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
 import static nl.nlcode.m.cli.Verbosity.newbie;
 import nl.nlcode.m.engine.Project;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  *
  * @author jq59bu
  */
-public class ProjectCommand extends Token {
-
-    public static class ProjectUnspecifiedException extends Token.TokenException {
-
-        public ProjectUnspecifiedException(String[] tokens, int tokenIndex, Verbosity verbosity) {
-            super(switch (verbosity) {
-                case minimal:
-                    yield "no default project";
-                case informative:
-                    yield "You did not specify a project and there is no default project.";
-                case newbie:
-                    yield "You did not specify a project and there is no default project."
-                    + "\nEither specify a project name or project id (--id and --name), or set a project on index 0 to make that the default.";
-            }, tokens, tokenIndex, verbosity);
-        }
+@Command(name = "project", description="project manipulation commands")
+public class ProjectCommand extends ChildCommand<BaseCommand> {
+    
+    //public static final String RESOURCE_BUNDLE = "nl.nlcode.m.cli.picocli";
+    
+    @Command(name = "new", description="create a new project from scratch")
+    public void create() {
+        getControlCli().getControl().createProject();
+        getControlCli().commandOutput("new.done");
     }
 
-    private boolean commandSet;
-
-    private Project project;
-
-    private Path projectPath;
-
-    public ProjectCommand(Token parent) {
-        super("project", parent);
-        setMustHaveMatchedChild();
-
-        new Token.Builder(this)
-                .command("new")
-                .execute(() -> doNew())
-                .create();
-
-        new Token.Builder(this)
-                .command("list")
-                .execute(() -> doList())
-                .create();
-
-        new Token.Builder(this)
-                .command("renum")
-                .execute(() -> getControlCli().renumProjects())
-                .create();
-
-        Token open = new Token.Builder(this)
-                .command("open")
-                .execute(() -> {
-                    try {
-                        getControlCli().getControl().loadProject(getProjectPath());
-                    } catch (IOException e) {
-                        String msg = e.getMessage();
-                        getControlCli().stdout().println(msg);
-                    }
-                })
-                .create();
-
-        new Token.Builder(open)
-                .variable("<project path>")
-                .mustBeMatched()
-                .matches((token) -> {
-                    setProjectPath(Paths.get(token));
-                    return Files.exists(getProjectPath());
-                })
-                .create();
-
-        new Token.Builder(this)
-                .command("save")
-                .execute(() -> {
-                    try {
-                        getProject().save();
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                })
-                .create();
-
-        Token close = new Token.Builder(this)
-                .command("close")
-                .execute(() -> getProject().close())
-                .create();
-
-        Token closeId = new Token.Builder(close)
-                .option("id")
-                .create();
-
-        new Token.Builder(closeId)
-                .variable("project id")
-                .mustBeMatched()
-                .matches((token) -> {
-                    try {
-                        int id = Integer.parseInt((String) token);
-                        Project project = getControlCli().getIdToProject().get(id);
-                        if (project == null) {
-                            throw new Token.InvalidException("no project with that id", getRawTokens(), closeId.getMatchIndex() + 1, getControlCli().getVerbosity());
-                        } else {
-                            setProject(project, closeId.getMatchIndex());
-                            return true;
-                        }
-                    } catch (NumberFormatException e) {
-                        throw new Token.InvalidException("should be an integer", getRawTokens(), closeId.getMatchIndex(), getControlCli().getVerbosity());
-                    }
-                })
-                .create();
-
-        Token closeName = new Token.Builder(close)
-                .option("name")
-                .create();
-
-        new Token.Builder(closeName)
-                .variable("project name")
-                .mustBeMatched()
-                .matches((token) -> {
-                    for (Project project : getControlCli().getIdToProject().values()) {
-                        if (project.getPath().toString().contentEquals((String) token)) {
-                            setProject(project, closeName.getMatchIndex());
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .create();
-
-    }
-
-    private void setProjectPath(Path projectPath) {
-        this.projectPath = projectPath;
-    }
-
-    private Path getProjectPath() {
-        return projectPath;
-    }
-
-    public void doNew() {
-        Project project = getControlCli().getControl().createProject();
-        switch (getControlCli().getVerbosity()) {
-            case minimal:
-                break;
-            case informative:
-                break;
-            case newbie:
-                getControlCli().stdout().println("Note that a file with the same path does not yet exist: you need to save first with 'project save'.");
-                break;
-        }
-    }
-
-    public void doList() {
+    @Command(name = "list", description="display list of open projects")
+    public void list() {
         Set<Map.Entry<Integer, Project>> entries = getControlCli().getIdToProject().entrySet();
         switch (getControlCli().getVerbosity()) {
             case newbie:
@@ -178,23 +46,32 @@ public class ProjectCommand extends Token {
         };
     }
 
-    private Project getProject() {
-        Project result = project;
-        if (result == null) {
-            result = getControlCli().getDefaultProject();
-        }
-        if (result == null) {
-            throw new ProjectUnspecifiedException(getRawTokens(), getMatchIndex(), getControlCli().getVerbosity());
-        } else {
-            return result;
-        }
+    @Command(name = "renum", description="renumber / reindex the open projects")
+    public void renum(@Parameters(paramLabel = "<project name>", description = "project name", arity = "0..1")
+            Project project) {
+        getControlCli().renumProjects(project);
     }
-
-    private void setProject(Project project, int matchIndex) {
-        if (this.project != null) {
-            throw new Token.InvalidException("can only specify project once", getRawTokens(), matchIndex, getControlCli().getVerbosity());
-        }
-        this.project = project;
+    
+    @Command(name = "open", description="reads an existing project from file")
+    public void open(
+            @Parameters(paramLabel = "<project name>", description = "project name")
+            Path projectPath
+    ) throws IOException {
+        getControlCli().getControl().loadProject(projectPath);
+    }
+    
+    @Command(name = "save", description="write project to file")
+    public void save() throws IOException {
+        getProject().save();
+    }
+    
+    @Command(name = "close", description="close project")
+    public void close() throws IOException {
+        getProject().close();
+    }
+    
+    private Project getProject() {
+        return getControlCli().getDefaultProject();
     }
 
 }

@@ -63,13 +63,17 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
          */
         Lookup<T> getLookup();
 
-        default String getGenericName() {
+        default String getHumanTypeName() {
             String key = getClass().getName();
             if (I18n.msg().containsKey(key)) {
                 return I18n.msg().getString(key);
             } else {
                 return getClass().getSimpleName();
             }
+        }
+
+        default String getSystemTypeName() {
+            return getClass().getSimpleName();
         }
     }
 
@@ -125,6 +129,18 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         }
     }
 
+    public void verifyNameAndExecute(String name, Runnable runWhenAllowed) {
+        verifyFormat(name);
+        synchronized (synchronizedBackingList) {
+            for (T t : synchronizedBackingList) {
+                if (t.getName().equals(name)) {
+                    throw new FunctionalException("name already exists: <" + name +">");
+                }
+            }
+            runWhenAllowed.run();
+        }
+    }
+
     public void renamed(T item) {
         if (synchronizedBackingList.contains(item)) {
             // The backingList may just very well have some sort of observer mechanism. That mechanism
@@ -139,7 +155,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
 
     public void add(T item) {
         if (item.getName() == null) {
-            item.setName(suggestName(item.getGenericName()));
+            item.setName(suggestName(item.getHumanTypeName()));
         }
         synchronizedBackingList.add(item);
         synchronizedBackingList.sort(NAME_COMPARATOR);

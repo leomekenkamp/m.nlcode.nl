@@ -17,17 +17,20 @@ import java.util.function.Function;
  *
  * project new close [--name <name> | --index <num>] [--force] save [--name
  * <name> | --index <num>] saveAs [--name <name> | --index <num>] <new name>
- * list index [--name <name> | --index <num>] <new index>
  *
- * midiinout midiDeviceLink new delete [--name <name> | --index <num>] [--force]
- * index [--name <name> | --index <num>] <new index>
- * list
- *
- * linkout [--name <name> | --index <num>] to [--name <name> | --index <num>]
- * linkin [--name <name> | --index <num>] from [--name <name> | --index <num>]
- * unlinkout [--name <name> | --index <num>] to [--name <name> | --index <num>]
- * unlinkin [--name <name> | --index <num>] from [--name <name> | --index <num>]
- * show [mididevice] set mididevice <name>
+ * list (lists all midiinout)
+ * list <dev> (lists only that type of dev)
+ * new <dev> [name]
+ * delete <name> [--force]
+ * status <name> (dumps info on specified noteGate)
+ * status <name> fromvelocity   (shows only from)
+ * status <name> fromvelocity 40 
+ * status <name> tovelocity max
+ * send <sender name> <receiver name>
+ * receive <receiver name> <sender name>
+ * disconnect <sender or receiver name> <receiver or sender name>
+ * disconnect <sender or receiver name> (disconnect from all) rename <name>
+ * <new name>
  *
  * @author jq59bu
  */
@@ -91,13 +94,26 @@ public class Token {
             return this;
         }
 
+        public <E extends Enum<E>> Builder variableEnum(Class<E> type) {
+            token("<" + allValuesDescription(type) + ">")
+            .type(Type.VARIABLE)
+            .matches((token) -> {
+                try {
+                    Enum.valueOf(type, token);
+                    return true;
+                } catch (IllegalArgumentException e) {
+                    return false;
+                }
+            });
+            return this;
+        }
+
         public Builder option(String token) {
             token("--" + token);
             type(Type.OPTION);
             return this;
         }
 
-        
         public Builder mustBeMatched() {
             result.mustBeMatched = true;
             return this;
@@ -111,6 +127,15 @@ public class Token {
         public Token create() {
             result.getParent().addChild(result);
             return result;
+        }
+
+        private <E extends Enum<E>> String allValuesDescription(Class<E> type) {
+            StringJoiner result = new StringJoiner("|");
+
+            for (E enumConst : type.getEnumConstants()) {
+                result.add(enumConst.name());
+            }
+            return result.toString();
         }
     }
 
@@ -192,7 +217,7 @@ public class Token {
     }
 
     private Type type;
-    
+
     private String token;
 
     private String match;
@@ -202,18 +227,26 @@ public class Token {
     private Token parent;
 
     private boolean mustBeMatched;
-    
+
     private boolean mustHaveMatchedChild;
-        
+
     private Function<String, Boolean> matches = (token) -> {
         return token.contentEquals(getToken());
     };
 
     private Runnable matched = () -> {
     };
-    
+
     private Runnable execute = () -> {
     };
+    
+    protected void onExecute(Runnable execute) {
+        this.execute = execute;
+    }
+
+    protected void onMatched(Runnable matched) {
+        this.matched = matched;
+    }
 
     private final SortedSet<Token> children = new TreeSet<>(
             (Token o1, Token o2) -> o1.getToken().compareTo(o2.getToken())
@@ -247,7 +280,11 @@ public class Token {
     public Type getType() {
         return type;
     }
-    
+
+    protected void setType(Type type) {
+        this.type = type;
+    }
+
     /**
      * @return the actual part of the command line that was matched on this
      * token (or null if not matched)
@@ -318,7 +355,8 @@ public class Token {
     /**
      * Recursively verifies<ul>
      * <li>{@code mustHaveMatchedChild} on all matched tokens</li>
-     * <li>{@code mustBeMatched} on _all_ children that have a matched parent</li>
+     * <li>{@code mustBeMatched} on _all_ children that have a matched
+     * parent</li>
      * <ul>
      */
     protected void verify() {

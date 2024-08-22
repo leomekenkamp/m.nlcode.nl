@@ -65,7 +65,7 @@ import static nl.nlcode.m.engine.MidiInOut.CHANNEL_COUNT;
 import static nl.nlcode.m.engine.MidiInOut.forAllChannels;
 import nl.nlcode.m.engine.MidiMessageDump;
 import nl.nlcode.m.engine.Sequencer;
-import nl.nlcode.m.engine.NoteGateVelocity;
+import nl.nlcode.m.engine.VelocityGate;
 import nl.nlcode.m.engine.NoteHolder;
 import nl.nlcode.m.engine.NoteChannelSpreader;
 import nl.nlcode.m.engine.ProgramChanger;
@@ -286,7 +286,7 @@ public final class ProjectUi extends BorderPane implements FxmlController {
 
     @FXML
     public void createNoteGate(ActionEvent event) {
-        activateAndCreateStage(new NoteGateVelocity());
+        activateAndCreateStage(new VelocityGate());
     }
 
     @FXML

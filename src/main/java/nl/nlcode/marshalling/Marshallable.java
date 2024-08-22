@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 
 /**
  * I hate direct dependence on a library. I also want versioning in save files. Combine the two, and
- * you need something like this and {@code Marshalled_1}. The idea is that classes are themselves
+ * you need something like this and {@code Marshalled}. The idea is that classes are themselves
  * responsible for writing their data to Java Records and (re)creating objects from that data. Since
  * Jackson relies on annotations for handling multiple instances of the same object as references
- * (or custom code), {@code Marshallable_1} will do that. That way the switch to another format than
+ * (or custom code), {@code Marshallable} will do that. That way the switch to another format than
  * Jackson should be trivial.
  *
  * @author leo
