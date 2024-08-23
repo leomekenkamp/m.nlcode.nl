@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.ArpeggiatorUi?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldVBox?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+
+<fx:root
+    xmlns="http://javafx.com/javafx" 
+    xmlns:fx="http://javafx.com/fxml/1"
+    type="ArpeggiatorUi" 
+>
+    <instrument>
+        <FieldVBox>
+            <FieldHBox>          
+                <Field labelText="%channel">
+                    <Spinner fx:id="channel" editable="true">
+                        <valueFactory>
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="15"/>
+                        </valueFactory>
+                    </Spinner>
+                </Field>
+                <Field labelText="%tickSource">
+                    <EnumChoiceBox fx:id="tickSource" enumClass="nl.nlcode.m.engine.TickSource" />
+                </Field>             
+            </FieldHBox>
+            <FieldVBox>
+                <Field labelText="%range">
+                    <children>
+                        <FieldHBox>
+                            <Field labelText="%octaveDown">
+                                <Spinner fx:id="octaveDown" editable="true">
+                                    <valueFactory>
+                                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="11"/>
+                                    </valueFactory>
+                                </Spinner>
+                            </Field>
+                            <Field labelText="%octaveUp">
+                                <Spinner fx:id="octaveUp" editable="true">
+                                    <valueFactory>
+                                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="11"/>
+                                    </valueFactory>
+                                </Spinner>
+                            </Field>
+                        </FieldHBox>
+                    </children>
+                </Field>
+                <Field labelText="%direction">
+                    <FieldHBox>
+                        <Field labelText="%chord">
+                            <EnumChoiceBox fx:id="chordDirection" enumClass="nl.nlcode.m.engine.Direction" />
+                        </Field>
+                        <Field labelText="%range">
+                            <EnumChoiceBox fx:id="rangeDirection" enumClass="nl.nlcode.m.engine.Direction" />
+                        </Field>
+                    </FieldHBox>
+                </Field>
+                <Field labelText="%length">
+                    <FieldHBox>
+                        <Spinner fx:id="length" editable="true">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="384"/>
+                            </valueFactory>
+                        </Spinner>
+                        <Label text="%ticksPer" />
+                        <EnumChoiceBox enumClass="nl.nlcode.m.engine.ArpeggiatorLengthPer" fx:id="lengthPer"/>
+                    </FieldHBox>
+                </Field>
+                <Field labelText="%velocity">
+                    <children>
+                        <FieldHBox>
+                            <Field labelText="%attack">
+                                <Spinner fx:id="overrideAttackVelocity" editable="true">
+                                    <valueFactory>
+                                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/> <!-- FIXME implement NONE, use keydown velocity -->
+                                    </valueFactory>
+                                </Spinner>
+                            </Field>
+                            <Field labelText="%release">
+                                <Spinner fx:id="releaseVelocity" editable="true">
+                                    <valueFactory>
+                                        <SpinnerValueFactory.IntegerSpinnerValueFactory min="0" max="127"/>
+                                    </valueFactory>
+                                </Spinner>
+                            </Field>
+                        </FieldHBox>
+                    </children>
+                </Field>
+                <!--
+                <Field labelText="%newNotesTakeEffect">
+                   <EnumChoiceBox enumClass="nl.nlcode.m.engine.ArpeggiatorActionTakeEffect" fx:id="lengthPer"/>
+                </Field>
+                                -->
+            </FieldVBox>
+        </FieldVBox>
+    </instrument>
+</fx:root>

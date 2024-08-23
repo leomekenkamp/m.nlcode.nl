@@ -1,0 +1,255 @@
+.root {
+    -fx-base: rgba(10, 30, 33, 255);
+    -fx-base: #102528;
+    /*
+    -fx-dark-text-color: #060808;
+    -fx-mid-text-color: #608080;
+    -fx-light-text-color: #CCFFFF;
+    */
+}
+
+.root.midiInOut.focus .tab-header-background {
+    -fx-background-color: linear-gradient(to right, #0000FF, #FF7F00);
+}
+
+.root.midiInOut.connectedSender .tab-header-background {
+    -fx-background-color: #0000FF;
+}
+
+.combo-box-popup .list-cell:disabled  {
+    -fx-opacity: 0.4;
+}
+
+.list-cell:disabled  {
+    -fx-opacity: 0.4;
+}
+
+ControlUi, ProjectUi {
+    -fx-background-color: black;
+}
+
+ControlUi .logoText, ProjectUi .logoText {
+    -fx-text-fill: aqua;
+}
+
+ControlUi .version  {
+    -fx-text-fill: #00aaaa;
+}
+
+HBox.canvasContainer {
+    -fx-padding: 5px;
+    -fx-border-width: 2px;
+}
+MidiClockUi .position {
+    -fx-background-color: black;
+}
+MidiClockUi .position Label {
+    -fx-text-fill: aqua;
+}
+Label.numberFeedback {
+    /*-fx-text-fill: red; actual text color */
+    -fx-border-color: -fx-mid-text-color;
+    -fx-background-color: black; 
+}
+Field {
+    -fx-border-color: -fx-mid-text-color;
+}
+
+
+
+
+
+.root {
+    -fx-font-size: 9pt;
+/*    -fx-font-family: sans-serif;
+undelete in case of strange font problems on a mac
+*/
+}
+
+.list-cell.meta {
+}
+
+
+.composite HBox.field {
+    fx-padding: 1.5em;
+    fx-spacing: 2em;
+    fx-alignment: "CENTER_RIGHT";
+}
+
+FieldVBox, FieldHBox {
+     -fx-alignment: center;
+}
+
+ControlUi .logoText, ProjectUi .logoText, ControlUi .version  {
+    -fx-alignment: center;
+    -fx-font-family: "Andale Mono";
+}
+
+ControlUi .logoText {
+    -fx-font-size: 2em;
+    -fx-padding: 1em 2em 0em 2em;
+}
+
+ControlUi .logoWrapper {
+    -fx-padding: 1em 0.7em 0em 0.7em;
+}
+
+ControlUi .version {
+    -fx-font-size: 0.8em;
+    -fx-font-weight: bolder;
+    -fx-padding: 0.8em 5.5em 1.2em 5.5em;
+}
+
+ChannelMatrixUi .buttons {
+}
+
+.tab {
+}
+
+.tab-pane {
+}
+
+.tab-content-area {
+    /*-fx-padding: 1px 2px;*/
+    /*    -fx-border-color: black;*/
+    /*-fx-border-insets: 1em 2em;*/
+}
+
+.tab-content-area > HBox, .tab-content-area > VBox {
+    -fx-alignment: center;
+}
+
+.keyboardKeyboard .tab-content-area > VBox > GridPane {
+    -fx-alignment: center;
+}
+
+ProjectUi .logoText {
+    -fx-font-size: 1.5em;
+    -fx-padding: 1em 2em;
+}
+
+VBox.buttons, HBox.buttons {
+    -fx-alignment: center;
+    -fx-padding: 0.5em;
+    -fx-spacing: 0.2em;
+}
+VBox.buttons > Button {
+    -fx-max-width: Infinity;
+}
+HBox.fields, HBox.fields {
+    -fx-padding: 0.4em;
+    -fx-spacing: 0.8em;
+}
+HBox.lights {
+    -fx-spacing: 0.2em;
+}
+HBox.canvasContainer {
+    -fx-padding: 5px;
+    -fx-border-width: 2px;
+}
+MidiMessageDumpUi .cell #messageReceivedAtColumn,
+MidiMessageDumpUi .cell #messageHexColumn {
+    -fx-font-size: 0.95em;
+    -fx-font-family: "Andale Mono";
+    -fx-font-weight: bold;
+}
+SequencerUi .stepIndicator {
+    -fx-font-size: 1.5em;
+    -fx-alignment: top-center;
+}
+SequencerUi .stepIndicator.active {
+}
+KeyboardKeyboardUi Spinner {
+    -fx-max-width: 7em;
+}
+ChannelMatrixUi .checkboxes .label {
+    -fx-font-size: 75%;
+}
+ChannelMatrixUi .checkboxes .check-box > .box {
+    -fx-padding: 0.3em;
+}
+ChannelMatrixUi .checkboxes .check-box > .box > .mark {
+    -fx-padding: 0.3em;
+}
+MidiClockUi Field.clockSource EnumChoiceBox {
+    -fx-min-width: 8em;
+}
+MidiClockUi Field.beatsperminute TextField {
+    -fx-max-width: 6em;
+    -fx-alignment: center-right;
+}
+MidiClockUi Field Spinner {
+    -fx-max-width: 5em;
+}
+MidiClockUi .position {
+    -fx-padding: 0.4em;
+    -fx-alignment: center-right;
+    -fx-max-width: 18em;
+}
+MidiClockUi .position Label {
+}
+MidiClockUi .position,
+MidiClockUi .position Field Label.fieldLabel {
+    -fx-padding: 0em 0.3em 0em 0.5em;
+}
+MidiClockUi .position Field {
+    -fx-min-width: 4.75em;
+    -fx-max-width: 4.75em;
+    -fx-alignment: center-right;
+    -fx-padding: 0.5em 0.5em 0.15em 0.5em;
+}
+MidiClockUi .position Label.value {
+    -fx-font-size: 2.5em;
+    -fx-font-family: "Andale Mono";
+}
+MidiClockUi .position Field.bar {
+    -fx-min-width: 8.5em;
+    -fx-max-width: 8.5em;
+}
+Label.numberFeedback {
+    -fx-pref-width: 5em; 
+    -fx-font-family: monospace; 
+    -fx-border-width: 1px;
+    -fx-padding: 0.5em 0.6em; 
+    -fx-font-weight: bolder; 
+    -fx-alignment: CENTER_RIGHT;
+}
+GridPane.channels, FieldGridPane {
+    -fx-hgap: 0.5em;
+    -fx-vgap: 0.5em;
+}
+.instrument {
+    -fx-padding: 1.5em;
+    -fx-background-insets: 0,0.15em,0.3em,0.4em;
+    -fx-background-radius: 0.3em;
+}
+I0through127Spinner,Spinner {
+    -fx-pref-width: 6em;
+    -fx-max-width: 6em;
+    -fx-min-width: 6em;
+}
+Field {    
+    -fx-margin: 0.4em;
+    -fx-padding: 0.4em;
+    -fx-border-width: 1px;
+    -fx-spacing: 0.2em;
+}
+Field Label {
+    -fx-alignment: center;
+}
+Label.numberFeedback {
+    -fx-pref-width: 5em; 
+    -fx-font-family: monospace; 
+    -fx-border-width: 1px;
+    -fx-padding: 0.5em 0.6em; 
+    -fx-font-weight: bolder; 
+    -fx-alignment: CENTER_RIGHT;
+}
+.instrument {
+    -fx-padding: 1.5em;
+    -fx-background-insets: 0,0.15em,0.3em,0.4em;
+    -fx-background-radius: 0.3em;
+}
+SettingsUi .tab-content-area FieldVBox.midiDevices {
+    -fx-alignment: left;
+}

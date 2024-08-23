@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.FieldGridPane?>
+<?import nl.nlcode.m.ui.IntegerRangeStringConverter?>
+<?import nl.nlcode.m.ui.ProgramChangerUi?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.I0through127Spinner?>
+
+
+<fx:root
+    xmlns="http://javafx.com/javafx" 
+    xmlns:fx="http://javafx.com/fxml/1"
+    type="ProgramChangerUi" 
+    styleClass="programChanger"
+>
+    <instrument>
+        <FieldGridPane styleClass="channels">
+            <Field fx:id="channel0Field" FieldGridPane.rowIndex="0" FieldGridPane.columnIndex="0">
+                <I0through127Spinner fx:id="programSpinner0" editable="true"/>
+                <CheckBox fx:id="dropIncoming0" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel1Field" FieldGridPane.rowIndex="0" FieldGridPane.columnIndex="1">
+                <I0through127Spinner fx:id="programSpinner1" editable="true"/>
+                <CheckBox fx:id="dropIncoming1" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel2Field" FieldGridPane.rowIndex="0" FieldGridPane.columnIndex="2">
+                <I0through127Spinner fx:id="programSpinner2" editable="true"/>
+                <CheckBox fx:id="dropIncoming2" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel3Field" FieldGridPane.rowIndex="0" FieldGridPane.columnIndex="3">
+                <I0through127Spinner fx:id="programSpinner3" editable="true"/>
+                <CheckBox fx:id="dropIncoming3" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel4Field" FieldGridPane.rowIndex="1" FieldGridPane.columnIndex="0">
+                <I0through127Spinner fx:id="programSpinner4" editable="true"/>
+                <CheckBox fx:id="dropIncoming4" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel5Field" FieldGridPane.rowIndex="1" FieldGridPane.columnIndex="1">
+                <I0through127Spinner fx:id="programSpinner5" editable="true"/>
+                <CheckBox fx:id="dropIncoming5" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel6Field" FieldGridPane.rowIndex="1" FieldGridPane.columnIndex="2">
+                <I0through127Spinner fx:id="programSpinner6" editable="true"/>
+                <CheckBox fx:id="dropIncoming6" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel7Field" FieldGridPane.rowIndex="1" FieldGridPane.columnIndex="3">
+                <I0through127Spinner fx:id="programSpinner7" editable="true"/>
+                <CheckBox fx:id="dropIncoming7" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel8Field" FieldGridPane.rowIndex="2" FieldGridPane.columnIndex="0">
+                <I0through127Spinner fx:id="programSpinner8" editable="true"/>
+                <CheckBox fx:id="dropIncoming8" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel9Field" FieldGridPane.rowIndex="2" FieldGridPane.columnIndex="1">
+                <I0through127Spinner fx:id="programSpinner9" editable="true"/>
+                <CheckBox fx:id="dropIncoming9" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel10Field" FieldGridPane.rowIndex="2" FieldGridPane.columnIndex="2">
+                <I0through127Spinner fx:id="programSpinner10" editable="true"/>
+                <CheckBox fx:id="dropIncoming10" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel11Field" FieldGridPane.rowIndex="2" FieldGridPane.columnIndex="3">
+                <I0through127Spinner fx:id="programSpinner11" editable="true"/>
+                <CheckBox fx:id="dropIncoming11" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel12Field" FieldGridPane.rowIndex="3" FieldGridPane.columnIndex="0">
+                <I0through127Spinner fx:id="programSpinner12" editable="true"/>
+                <CheckBox fx:id="dropIncoming12" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel13Field" FieldGridPane.rowIndex="3" FieldGridPane.columnIndex="1">
+                <I0through127Spinner fx:id="programSpinner13" editable="true"/>
+                <CheckBox fx:id="dropIncoming13" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel14Field" FieldGridPane.rowIndex="3" FieldGridPane.columnIndex="2">
+                <I0through127Spinner fx:id="programSpinner14"/>
+                <CheckBox fx:id="dropIncoming14" text="%drop_incoming"/>
+            </Field>
+            <Field fx:id="channel15Field" FieldGridPane.rowIndex="3" FieldGridPane.columnIndex="3">
+                <I0through127Spinner fx:id="programSpinner15" editable="true"/>
+                <CheckBox fx:id="dropIncoming15" text="%drop_incoming"/>
+            </Field>
+            <Field labelText="%resend" FieldGridPane.rowIndex="4" FieldGridPane.columnSpan="4">
+                <HBox>
+                    <CheckBox fx:id="resendOnConnect" text="%resend_on_project_load"/>
+                    <CheckBox fx:id="resendOnMidiDeviceChange" text="%resend_on_midi_device_change"/>
+                    <Button onAction="#resend" text="resend"/>
+                </HBox>
+            </Field>
+        </FieldGridPane>
+    </instrument>
+</fx:root>

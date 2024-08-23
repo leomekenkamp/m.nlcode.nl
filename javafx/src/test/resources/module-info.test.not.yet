@@ -1,0 +1,9 @@
+Modules are quite in the way for unit tests...
+--add-opens
+    nl.nlcode.m/nl.nlcode.m.ui=org.junit.platform.commons
+--add-opens
+    nl.nlcode.m/nl.nlcode.m.engine=org.junit.platform.commons
+
+--add-reads
+  nl.nlcode.m=org.controlsfx.controls
+    

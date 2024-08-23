@@ -18,6 +18,8 @@ import javax.sound.midi.MidiDevice;
 import nl.nlcode.m.util.Prefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
 
 /**
  *
@@ -28,7 +30,7 @@ public final class Control {
     public static interface Ui {
 
         void added(Project project);
-        
+
         void removed(Project project);
     }
 
@@ -83,14 +85,37 @@ public final class Control {
         }
     }
 
+    public static void preInitMidiSystem() {
+//        try {
+//            System.out.println("loaded: " + CoreMidiDeviceProvider.isLibraryLoaded());
+//        } catch (CoreMidiException e) {
+//            e.printStackTrace(System.out);
+//        }
+//        System.out.println("libaryVersion: " + CoreMidiDeviceProvider.getLibraryVersion());
+//        System.out.println("scanInterval: " + CoreMidiDeviceProvider.getScanInterval());
+//        try {
+//            System.out.println("loaded: " + CoreMidiDeviceProvider.isLibraryLoaded());
+//        } catch (CoreMidiException e) {
+//            e.printStackTrace(System.out);
+//        }
+
+        System.out.println("trying getMidiDeviceInfo...");
+        MidiDevice.Info[] infos = CoreMidiDeviceProvider.getMidiDeviceInfo();
+        System.out.println("done getMidiDeviceInfo...");
+
+        for (MidiDevice.Info info : infos) {
+            System.out.println(info.getName());
+        }
+    }
+
     public void addUi(Ui ui) {
         uis.add(ui);
     }
-    
+
     public void removeUi(Ui ui) {
         uis.remove(ui);
     }
-    
+
     public Preferences getPreferences() {
         return preferences;
     }
@@ -120,18 +145,18 @@ public final class Control {
 
     void register(Project project) {
         projects.add(project);
-        updateUi(ui ->  ui.added(project));
+        updateUi(ui -> ui.added(project));
     }
 
     void unregister(Project project) {
         projects.remove(project);
-        updateUi(ui ->  ui.removed(project));
+        updateUi(ui -> ui.removed(project));
     }
 
     private void updateUi(Consumer<Ui> update) {
         uis.stream().forEach(update);
     }
-    
+
     public Path unusedProjectPath() {
         int index = -1;
         DecimalFormat format = new DecimalFormat("00");

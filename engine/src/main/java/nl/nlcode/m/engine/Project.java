@@ -100,8 +100,13 @@ public final class Project implements Serializable, Marshallable {
         midiInOutLookup = Lookup.createWithSynchronizedBacking(midiInOutList);
     }
 
-    public void close() {
-        control.unregister(this);
+    public boolean close(boolean force) {
+        if (!dirty || force) {
+            control.unregister(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void init(Control control, Path path) {
@@ -148,8 +153,15 @@ public final class Project implements Serializable, Marshallable {
 
     public void save() throws IOException {
         SAVER_LOADER.save(this);
+        resetDirty();
     }
 
+    public void saveIfDirty() throws IOException {
+        if (dirty) {
+            save();
+        }
+    }
+    
     public Lookup<MidiInOut> getMidiInOutLookup() {
         return midiInOutLookup;
     }

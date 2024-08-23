@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.MidiInOutUi?>
+<?import nl.nlcode.m.ui.MidiInOutUiListView?>
+<?import nl.nlcode.m.ui.ControlUi?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+
+<fx:root type="MidiInOutUi" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+         tabClosingPolicy="UNAVAILABLE" fx:id="tabPane">
+    <Tab text="${controller.instrumentTypeName}">
+        <HBox fx:id="instrument" styleClass="instrument"/>
+    </Tab>
+    <Tab text="%settings">
+        <BorderPane>
+            <top>
+                <MenuBar BorderPane.alignment="CENTER">
+                    <menus>
+                        <Menu text="%midiInOutUi">
+                            <items>
+                                <MenuItem text="%_close" onAction="#closeWindow"/>
+                            </items>
+                        </Menu>
+                        <Menu text="%window">
+                            <items>
+                                <MenuItem text="%project" onAction="#projectToFront"/>
+                                <Menu text="%connected">
+                                    <items>
+                                        <MenuItem text="%toFront" onAction="#connectedToFront"/>
+                                        <MenuItem text="%minimize" onAction="#connectedMinimize"/>
+                                    </items>
+                                </Menu>
+                                <Menu text="%unconnected">
+                                    <items>
+                                        <MenuItem text="%toFront" onAction="#unconnectedToFront"/>
+                                        <MenuItem text="%minimize" onAction="#unconnectedMinimize"/>
+                                    </items>
+                                </Menu>
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </top>
+            <center>
+                <FieldHBox>
+                    <Field labelText="%name">
+                        <Label text="${controller.name}"/> <Button text="%changeName" onAction="#changeName"/>
+                    </Field>
+                </FieldHBox>
+            </center>
+        </BorderPane>
+    </Tab>
+    <Tab fx:id="inputsTab" text="%inputs" >
+        <MidiInOutUiListView fx:id="inputListView">
+            <!--
+FIXME: rewrite input list view so that items="${controller.activeSenders}" can be used and the
+controller knows only about the items and not of the way the are presented; i.e. does not know that
+a ListView is being used. Maybe this is not that easily done with JavaFX, because the controller
+need access to the SelectionModel of the ListView.
+            -->
+            <prefHeight>
+                <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+            </prefHeight>
+        </MidiInOutUiListView>
+    </Tab>
+    <Tab fx:id="outputsTab" text="%outputs" >
+        <MidiInOutUiListView fx:id="outputListView">
+            <prefHeight>
+                <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+            </prefHeight>
+        </MidiInOutUiListView>
+    </Tab>
+</fx:root>

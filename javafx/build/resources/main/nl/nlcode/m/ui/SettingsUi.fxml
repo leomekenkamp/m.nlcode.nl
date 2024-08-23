@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import org.controlsfx.control.ToggleSwitch?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.FieldVBox?>
+<?import nl.nlcode.m.ui.SettingsUi?>
+
+<fx:root xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+         type="SettingsUi" tabClosingPolicy="UNAVAILABLE">
+    <Tab text="%midiDevices" styleClass="midiDevices">
+        <BorderPane>
+            <top>
+                <VBox styleClass="buttons" maxWidth="-Infinity">
+                    <Button text="%refresh" onAction="#refreshMidiDevices"/>
+                </VBox>
+            </top>
+            <center>
+                <FieldVBox fx:id="midiDevicesPane" styleClass="midiDevices">
+                </FieldVBox>
+            </center>
+        </BorderPane>
+    </Tab>
+    <Tab text="%style">
+        <VBox styleClass="buttons" maxWidth="-Infinity">
+            <HBox>
+                <Label text="%currentCss"/>
+                <Label text="${controller.styleSheet}"/>
+            </HBox>
+            <Button text="%defaultCss" onAction="#defaultCss"/>
+            <Button text="%extractDefaultCss" onAction="#extractDefaultCss"/>
+            <Button text="%selectCssFile" onAction="#selectCssFile"/>
+            <Button text="%reloadCssFile" onAction="#replaceStyleSheetOnAllWindows"/>
+        </VBox>
+    </Tab>
+    <Tab text="%midiValuesDisplay">
+        <FieldVBox styleClass="instrument">
+            <FieldHBox>
+                <Field labelText="%noteNumber">
+                    <EnumChoiceBox enumClass="nl.nlcode.m.ui.ZeroOrOneBased" fx:id="noteZeroOne"/>
+                </Field>    
+                <Field labelText="%channelNumber">
+                    <EnumChoiceBox enumClass="nl.nlcode.m.ui.ZeroOrOneBased" fx:id="channelZeroOne"/>
+                </Field>
+            </FieldHBox>
+            <Field labelText="%noteName">
+                <EnumChoiceBox enumClass="nl.nlcode.m.ui.NoteNamingConvention" fx:id="noteNamingConvention"/>
+            </Field>    
+        </FieldVBox>
+    </Tab>
+    <Tab text="%saveFileFormat">
+        <FieldHBox>   
+            <Field labelText="%encoding">
+                <EnumChoiceBox enumClass="nl.nlcode.m.engine.SaveFileEncoding" fx:id="saveFileEncoding"/>
+            </Field>    
+            <Field labelText="%format">
+                <Label text="json"/>
+            </Field>    
+        </FieldHBox>    
+    </Tab>
+</fx:root>
