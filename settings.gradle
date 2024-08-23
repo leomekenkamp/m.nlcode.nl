@@ -1,1 +1,3 @@
 rootProject.name = 'm_nlcode_nl'
+include 'app', 'engine'
+

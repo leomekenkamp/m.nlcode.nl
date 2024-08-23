@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import nl.nlcode.m.ui.MidiClockUi?>
+<?import nl.nlcode.m.ui.ProjectUi?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.FieldVBox?>
+
+<fx:root 
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiClockUi"  styleClass="channelMatrix">
+    <instrument>
+        <VBox>
+            <FieldHBox styleClass="fields">
+                <Field labelText="%clockSource" styleClass="clockSource">
+                    <EnumChoiceBox enumClass="nl.nlcode.m.engine.ClockSource" fx:id="clockChoice"/>
+                </Field>
+                <Field labelText="%beatsPerMinute" styleClass="beatsPerMinute">
+                    <Spinner fx:id="beatsPerMinute" editable="true" minWidth="85">
+                        <valueFactory>
+                            <SpinnerValueFactory.DoubleSpinnerValueFactory min="1" max="1000" amountToStepBy="0.1"/>
+                        </valueFactory>
+                    </Spinner>
+                </Field>
+                <Field labelText="%beatsPerBar" styleClass="beatsPerBar">
+                    <Spinner fx:id="beatsPerBar" editable="true">
+                        <valueFactory>
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="1000"/>
+                        </valueFactory>
+                    </Spinner>                            
+                </Field>
+            </FieldHBox>
+            <FieldHBox styleClass="position">
+                <Field labelText="%bar" styleClass="bar">
+                    <Label fx:id="barLabel" styleClass="value"/>
+                </Field>
+                <Field labelText="%beat" styleClass="beat">
+                    <Label fx:id="beatLabel" styleClass="value"/>
+                </Field>
+                <Field labelText="%tick" styleClass="tick">
+                    <Label fx:id="tickLabel" styleClass="value"/>
+                </Field>
+            </FieldHBox>
+            <Field labelText="%mediaControl">
+                <HBox styleClass="buttons">
+                    <Button text="%clockStart" onAction="#start"/>
+                    <Button text="%clockStop" onAction="#stop"/>
+                    <Button text="%clockContinue" onAction="#resume"/>
+                </HBox>
+            </Field>
+        </VBox>
+    </instrument>
+</fx:root>

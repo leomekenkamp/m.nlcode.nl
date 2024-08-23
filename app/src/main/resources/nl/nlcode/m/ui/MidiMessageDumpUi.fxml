@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import nl.nlcode.m.ui.ControlUi?>
+<?import javafx.scene.control.TextField?>
+<?import nl.nlcode.m.ui.MidiMessageDumpUi?>
+<?import nl.nlcode.m.ui.Field?>
+<?import nl.nlcode.m.ui.FieldHBox?>
+<?import nl.nlcode.m.ui.EnumChoiceBox?>
+
+<fx:root
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+    type="MidiMessageDumpUi"
+    tabClosingPolicy="UNAVAILABLE" styleClass="midiMessageDump">
+    <instrument>
+        <BorderPane>
+            <top>
+                <FieldHBox>
+                    <Field labelText="%tick">
+                        <EnumChoiceBox enumClass="nl.nlcode.m.engine.ShowTicks" fx:id="showTicks"/>
+                    </Field>
+                    <Field labelText="%writeToFile">
+                        <CheckBox fx:id="writeToFile" text="%writeToFile"/>
+                    </Field>
+                    <Field labelText="%maxMessagesInFile">
+                        <Spinner fx:id="maxMessagesInFile" editable="true" minWidth="80">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory initialValue="1000" min="1" max="2147483647" amountToStepBy="1000"/>
+                            </valueFactory>
+                        </Spinner>
+                    </Field>
+                </FieldHBox>
+            </top>
+            <center>
+                <TableView fx:id="midiMessageTable">
+                    <columns>
+                        <TableColumn fx:id="messageReceivedAtColumn" text="%messageReceivedAt" prefWidth="175"/>
+                        <TableColumn fx:id="messageHexColumn" text="%messageHex" prefWidth="100"/>
+                        <TableColumn fx:id="timestampColumn" text="%timestamp" prefWidth="80"/>
+                        <TableColumn fx:id="descriptionColumn" text="%description" prefWidth="250"/>
+                    </columns>
+                    <prefHeight>
+                        <ControlUi fx:constant="TABLE_VIEW_PREF_HEIGHT"/>
+                    </prefHeight>
+                </TableView>
+            </center>
+        </BorderPane>
+    </instrument>
+</fx:root>
