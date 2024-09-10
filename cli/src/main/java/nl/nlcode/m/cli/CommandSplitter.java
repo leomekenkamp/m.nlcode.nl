@@ -10,12 +10,19 @@ import java.util.stream.Collectors;
  */
 public class CommandSplitter {
 
-    private enum CommandSplitterState {
-        BEGINNING_CHUNK, PARSING_WORD, PARSING_QUOTE, ESCAPE_CHAR
+    private enum State {
+        BEGINNING_CHUNK, 
+        BEGINNING_CHUNK_ESCAPE, 
+        PARSING_WORD, 
+        PARSING_WORD_ESCAPE,
+        PARSING_QUOTE,
+        PARSING_QUOTE_ESCAPE,
+        ESCAPE_CHAR
     }
 
     /**
      * Shamelessly copied from https://stackoverflow.com/questions/3366281/tokenizing-a-string-but-ignoring-delimiters-within-quotes
+     * with some additions.
      * 
      * Splits a command on whitespaces. Preserves whitespace in quotes. Trims
      * excess whitespace between chunks. Supports quote escape within quotes.
@@ -30,7 +37,7 @@ public class CommandSplitter {
                 .collect(Collectors.toCollection(LinkedList::new));
 
         // Finite-State Automaton for parsing.
-        CommandSplitterState state = CommandSplitterState.BEGINNING_CHUNK;
+        State state = State.BEGINNING_CHUNK;
         LinkedList<Character> chunkBuffer = new LinkedList<>();
 
         for (Character currentChar : charList) {
@@ -38,21 +45,32 @@ public class CommandSplitter {
                 case BEGINNING_CHUNK:
                     switch (currentChar) {
                         case '"':
-                            state = CommandSplitterState.PARSING_QUOTE;
+                            state = State.PARSING_QUOTE;
                             break;
                         case ' ':
                             break;
+                        case '\\':
+                            state = State.BEGINNING_CHUNK_ESCAPE;
+                            break;
                         default:
-                            state = CommandSplitterState.PARSING_WORD;
+                            state = State.PARSING_WORD;
                             chunkBuffer.add(currentChar);
                     }
                     break;
                 case PARSING_WORD:
                     switch (currentChar) {
                         case ' ':
-                            state = CommandSplitterState.BEGINNING_CHUNK;
+                            state = State.BEGINNING_CHUNK;
                             String newWord = chunkBuffer.stream().map(Object::toString).collect(Collectors.joining());
                             matchList.add(newWord);
+                            chunkBuffer = new LinkedList<>();
+                            break;
+                        case '\\':
+                            state = State.PARSING_WORD_ESCAPE;
+                            break;
+                        case '"':
+                            state = State.PARSING_QUOTE;
+                            matchList.add(chunkBuffer.stream().map(Object::toString).collect(Collectors.joining()));
                             chunkBuffer = new LinkedList<>();
                             break;
                         default:
@@ -62,34 +80,49 @@ public class CommandSplitter {
                 case PARSING_QUOTE:
                     switch (currentChar) {
                         case '"':
-                            state = CommandSplitterState.BEGINNING_CHUNK;
+                            state = State.BEGINNING_CHUNK;
                             String newWord = chunkBuffer.stream().map(Object::toString).collect(Collectors.joining());
                             matchList.add(newWord);
                             chunkBuffer = new LinkedList<>();
                             break;
                         case '\\':
-                            state = CommandSplitterState.ESCAPE_CHAR;
+                            state = State.PARSING_QUOTE_ESCAPE;
                             break;
                         default:
                             chunkBuffer.add(currentChar);
                     }
                     break;
-                case ESCAPE_CHAR:
+                case PARSING_QUOTE_ESCAPE:
                     switch (currentChar) {
                         case '"': // Intentional fall through
                         case '\\':
-                            state = CommandSplitterState.PARSING_QUOTE;
+                            state = State.PARSING_QUOTE;
                             chunkBuffer.add(currentChar);
                             break;
                         default:
-                            state = CommandSplitterState.PARSING_QUOTE;
+                            state = State.PARSING_QUOTE;
+                            chunkBuffer.add('\\');
+                            chunkBuffer.add(currentChar);
+                    }
+                    break;
+                case PARSING_WORD_ESCAPE: // fall through
+                case BEGINNING_CHUNK_ESCAPE:
+                    switch (currentChar) {
+                        case '"': // Intentional fall through
+                        case ' ': // Intentional fall through
+                        case '\\': // Intentional fall through
+                            state = State.PARSING_WORD;
+                            chunkBuffer.add(currentChar);
+                            break;
+                        default:
+                            state = State.PARSING_WORD;
                             chunkBuffer.add('\\');
                             chunkBuffer.add(currentChar);
                     }
             }
         }
 
-        if (state != CommandSplitterState.BEGINNING_CHUNK) {
+        if (state != State.BEGINNING_CHUNK) {
             String newWord = chunkBuffer.stream().map(Object::toString).collect(Collectors.joining());
             matchList.add(newWord);
         }

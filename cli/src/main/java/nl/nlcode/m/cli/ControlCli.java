@@ -5,47 +5,47 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.Supplier;
 import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
 import static nl.nlcode.m.cli.Verbosity.newbie;
+import nl.nlcode.m.cli.picoclijline3.PicocliCommands;
+import nl.nlcode.m.cli.picoclijline3.PicocliCommands.PicocliCommandsFactory;
 import nl.nlcode.m.engine.Control;
-import nl.nlcode.m.engine.Lights;
-import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
-import org.jline.jansi.AnsiConsole;
+import org.jline.console.SystemRegistry;
+import org.jline.console.impl.SystemRegistryImpl;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Parser;
 import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
-import static org.jline.jansi.Ansi.*;
-import static org.jline.jansi.Ansi.Color.*;
+import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Model.CommandSpec;
 
 /**
  *
  * @author jq59bu
  */
 public class ControlCli implements Runnable, Control.Ui {
-
-    static {
-        MidiInOutCliRegistry.register("Lights", (controlCli) -> new LightsCli(new Lights(), controlCli));
-        MidiInOutCliRegistry.register("MidiDeviceLink", (controlCli) -> new MidiDeviceLinkCli(new MidiDeviceLink(), controlCli));
-    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -88,10 +88,15 @@ public class ControlCli implements Runnable, Control.Ui {
     @Override
     public void run() {
         applicationStatus = ApplicationStatus.RUNNING;
-        System.setProperty("org.jline.terminal.dumb", "true");
+        Attributes attributes = new Attributes();
         try (Terminal term = TerminalBuilder.builder()
                 .name("m.nlcode.nl terminal")
+                .attributes(attributes)
+                .dumb(true) // only suppresses warning, does not force use of a dumb terminal
+                .jansi(true)
                 .build();) {
+            //AnsiConsole.setTerminal(terminal);
+
             welcome();
             terminal = term;
             if (stdoutTestEcho == null) {
@@ -99,12 +104,30 @@ public class ControlCli implements Runnable, Control.Ui {
             } else {
                 stdout = new PrintWriter(new MultiWriter(new Writer[]{terminal.writer(), stdoutTestEcho}));
             }
-            LineReader lineReader = LineReaderBuilder.builder()
-                    .terminal(terminal)
-                    .build();
+
+            Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             while (applicationStatus == ApplicationStatus.RUNNING) {
-                String prompt = getVerbosity() == minimal ? "> " : "m.nlcode.nl> ";
-                commandLoop(commandTestSupplier == null ? () -> lineReader.readLine(prompt) : commandTestSupplier);
+
+                // set up JLine built-in commands            
+                BaseCommand baseCommand = new BaseCommand(this);
+
+                CommandSpec baseSpec = BaseCommand.createCommandSpec(this);
+                PicocliCommandsFactory factory = new PicocliCommandsFactory();
+                CommandLine commandLine = new CommandLine(baseSpec, factory);
+                PicocliCommands picocliCommands = new PicocliCommands(commandLine);
+
+                Parser parser = new DefaultParser();
+                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
+                systemRegistry.setCommandRegistries(picocliCommands);
+                systemRegistry.register("help", picocliCommands);
+
+                LineReader lineReader = LineReaderBuilder.builder()
+                        .terminal(terminal)
+                        .completer(systemRegistry.completer())
+                        .build();
+
+                String prompt = getVerbosity() == minimal ? "> " : Ansi.AUTO.string("@|yellow m|@.nlcode.nl> ").toString(); // "m.nlcode.nl> "; //
+                commandLoop(commandTestSupplier == null ? () -> lineReader.readLine(prompt) : commandTestSupplier, baseSpec);
                 if (testCommandCompleterBarrier != null) {
                     try {
                         testCommandCompleterBarrier.await();
@@ -114,6 +137,12 @@ public class ControlCli implements Runnable, Control.Ui {
                     }
                 }
             }
+            getControl().getMidiDeviceMgr().close();
+            try {
+                Thread.sleep(1); // need this to prevent hanging and not stopping the JVM; if we don't we do not get the command prompt back...
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {
@@ -122,12 +151,12 @@ public class ControlCli implements Runnable, Control.Ui {
         }
     }
 
-    void commandLoop(Supplier<String> commandSupplier) {
+    void commandLoop(Supplier<String> commandSupplier, CommandSpec baseSpec) {
         try {
             String rawCommand = commandSupplier.get();
             String[] tokens = CommandSplitter.splitCommand(rawCommand).toArray(String[]::new);
             if (tokens.length > 0) {
-                CommandLine commandLine = new CommandLine(new BaseCommand(this));
+                CommandLine commandLine = new CommandLine(baseSpec);
                 commandLine.registerConverter(Class.class, s -> Class.forName(MidiInOut.class.getPackageName() + "." + s));
                 commandLine.registerConverter(Project.class, new ConvNameToProject(this));
                 commandLine.execute(tokens);
@@ -202,8 +231,12 @@ public class ControlCli implements Runnable, Control.Ui {
     }
 
     public Project getCurrentProject() {
+        return getCurrentProject(true);
+    }
+
+    public Project getCurrentProject(boolean showErrorOnNoProject) {
         Project result = getDefaultProject();
-        if (result == null) {
+        if (result == null && showErrorOnNoProject) {
             commandOutput("project.none");
         }
         return result;
@@ -237,7 +270,6 @@ public class ControlCli implements Runnable, Control.Ui {
                 break;
             case newbie:
                 stdout().println("A project has been opened: <" + project.getPath() + ">.");
-                stdout().println("You will receive opened and closed messages also for projects not opened/closed from this command prompt.");
                 break;
         }
     }
@@ -254,7 +286,6 @@ public class ControlCli implements Runnable, Control.Ui {
                 break;
             case newbie:
                 stdout().println("A project has been closed: <" + project.getPath() + ">.");
-                stdout().println("You will receive opened and closed messages also for projects not opened/closed from this command prompt.");
                 break;
         }
     }
@@ -278,7 +309,7 @@ public class ControlCli implements Runnable, Control.Ui {
             }
         }
         if (formatString == null) {
-            formatString = "???<" + key + ">??? ";
+            formatString = "???<" + key + ">??? " + params;
         }
         return String.format(formatString, params);
     }
@@ -295,4 +326,15 @@ public class ControlCli implements Runnable, Control.Ui {
         }
         return result;
     }
+
+    public List<MidiInOut> getMidiInOutsForTypeName(String typeName) {
+        return getCurrentProject().getMidiInOutList().stream()
+                .filter(midiInOut -> midiInOut.getClass().getSimpleName().equalsIgnoreCase(typeName))
+                .toList();
+    }
+
+    public MidiInOutCli createMidiInOut(String midiInOutType, Project project) {
+        return MidiInOutCliRegistry.getInstance().create(midiInOutType, this, project);
+    }
+
 }

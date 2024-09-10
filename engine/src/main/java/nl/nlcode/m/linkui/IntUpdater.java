@@ -21,7 +21,7 @@ public class IntUpdater<U, H extends Updater.Holder<U>> extends Updater<Integer,
     }
     
     public IntUpdater(String name, H holder, int value) {
-        this(holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        this(name, holder, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     public IntUpdater(String name, H holder, int value, int min, int max) {

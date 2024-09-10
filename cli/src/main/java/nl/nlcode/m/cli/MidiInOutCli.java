@@ -37,7 +37,9 @@ public abstract class MidiInOutCli<M extends MidiInOut> implements MidiInOut.Ui 
 
     @Override
     public void nameChanged(String previousName, String currentName) {
-        if (previousName != null) {
+        if (previousName == null) {
+            feedback("MidiInOutCli.new", getMidiInOut().getHumanTypeName(), currentName);
+        } else {
             feedback("MidiInOutCli.nameChanged", getMidiInOut().getHumanTypeName(), previousName, currentName);
         }
     }

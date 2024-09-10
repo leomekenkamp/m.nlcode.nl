@@ -1,10 +1,12 @@
 package nl.nlcode.m.cli;
 
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import nl.nlcode.m.engine.KeyboardKeyboard;
+import nl.nlcode.m.engine.Lights;
+import nl.nlcode.m.engine.MidiDeviceLink;
 import nl.nlcode.m.engine.Project;
 
 /**
@@ -13,15 +15,31 @@ import nl.nlcode.m.engine.Project;
  */
 public class MidiInOutCliRegistry {
 
-    private static final ConcurrentHashMap<String, Function<ControlCli, MidiInOutCli>> NAME_TO_CREATOR = new ConcurrentHashMap<>();
+    private static final MidiInOutCliRegistry midiInOutCliRegistry;
     
-    public static void register(String midiInOutType, Function<ControlCli, MidiInOutCli> createInstance) {
-        NAME_TO_CREATOR.put(midiInOutType, createInstance);
+    public static MidiInOutCliRegistry getInstance() {
+        return midiInOutCliRegistry;
     }
     
-    public static MidiInOutCli create(String midiInOutType, ControlCli controlCli, Project project) {
+    static {
+        midiInOutCliRegistry = new MidiInOutCliRegistry();
+        midiInOutCliRegistry.register("lights", (controlCli) -> new LightsCli(new Lights(), controlCli));
+        midiInOutCliRegistry.register("midiDeviceLink", (controlCli) -> new MidiDeviceLinkCli(new MidiDeviceLink(), controlCli));
+        midiInOutCliRegistry.register("keyboardKeyboard", (controlCli) -> new KeyboardKeyboardCli(new KeyboardKeyboard(), controlCli));
+    }
+    
+    private ConcurrentHashMap<String, Function<ControlCli, MidiInOutCli>> nameToCreator = new ConcurrentHashMap<>();
+    
+    private MidiInOutCliRegistry() {
+    }
+    
+    private void register(String midiInOutType, Function<ControlCli, MidiInOutCli> createInstance) {
+        nameToCreator.put(midiInOutType, createInstance);
+    }
+    
+    public MidiInOutCli create(String midiInOutType, ControlCli controlCli, Project project) {
         MidiInOutCli result;
-        Function<ControlCli, MidiInOutCli> creator = NAME_TO_CREATOR.get(midiInOutType);
+        Function<ControlCli, MidiInOutCli> creator = nameToCreator.get(midiInOutType);
         if (creator == null) {
             result = null;
         } else {
@@ -31,7 +49,7 @@ public class MidiInOutCliRegistry {
         return result;
     }
     
-    public static Set<String> midiInOutTypes() {
-        return new TreeSet<String>(NAME_TO_CREATOR.keySet());
+    public Set<String> midiInOutTypes() {
+        return new TreeSet<String>(nameToCreator.keySet());
     }
 }

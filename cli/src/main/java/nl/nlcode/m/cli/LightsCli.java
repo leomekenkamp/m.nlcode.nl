@@ -1,7 +1,6 @@
 package nl.nlcode.m.cli;
 
 import nl.nlcode.m.engine.Lights;
-import nl.nlcode.m.engine.MidiInOut;
 
 /**
  *

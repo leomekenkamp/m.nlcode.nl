@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +27,26 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         }
     };
 
+    private static final Set<String> RESERVED_NAMES = Set.of(
+            "device",
+            "exit",
+            "help",
+            "list",
+            "new",
+            "project",
+            "print",
+            "verbosity",
+            "system"
+    );
+
     /**
-     * Items that can be looked up from a {@code Lookup}. Implementations must ensure that an
-     * instance can only be linked to one {@code Lookup} at a time.
+     * Items that can be looked up from a {@code Lookup}. Implementations must
+     * ensure that an instance can only be linked to one {@code Lookup} at a
+     * time.
      * <p>
-     * The name of an instance can only change during its lifetime, when the implementation calls
-     * {@code beforeRenameTo(String)} successfully just before the actual name change.
+     * The name of an instance can only change during its lifetime, when the
+     * implementation calls {@code beforeRenameTo(String)} successfully just
+     * before the actual name change.
      */
     public interface Named<T extends Lookup.Named> {
 
@@ -45,8 +60,8 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         void setName(String name);
 
         /**
-         * Implementations MUST call this method just before they change the actual name returned by
-         * getName(), or call {@code verifyName(String) on the value returned by {@code getLookup}.
+         * Implementations MUST call this method just before they change the
+         * actual name returned by getName(), or call {@code verifyName(String) on the value returned by {@code getLookup}.
          *
          * @param unique new name withing the containing lookup
          */
@@ -102,6 +117,12 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
         }
     }
 
+    static void verifyReservedName(String name) {
+        if (RESERVED_NAMES.contains(name)) {
+            throw new FunctionalException("name is reserved");
+        }
+    }
+
     public String suggestName(String base) {
         HashSet<String> names = new HashSet<>();
         synchronized (synchronizedBackingList) {
@@ -110,7 +131,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
             }
         }
         for (int i = 0; i < 1000; i++) {
-            String proposal = base + " " + i;
+            String proposal = base + "_" + i;
             if (!names.contains(proposal)) {
                 return proposal;
             }
@@ -119,22 +140,16 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
     }
 
     public void verifyName(String name) {
-        verifyFormat(name);
-        synchronized (synchronizedBackingList) {
-            for (T t : synchronizedBackingList) {
-                if (t.getName().equals(name)) {
-                    throw new FunctionalException("name already exists: <" + name +">");
-                }
-            }
-        }
+        verifyName(name, () -> {});
     }
 
-    public void verifyNameAndExecute(String name, Runnable runWhenAllowed) {
+    public void verifyName(String name, Runnable runWhenAllowed) {
         verifyFormat(name);
+        verifyReservedName(name);
         synchronized (synchronizedBackingList) {
             for (T t : synchronizedBackingList) {
                 if (t.getName().equals(name)) {
-                    throw new FunctionalException("name already exists: <" + name +">");
+                    throw new FunctionalException("name already exists: <" + name + ">");
                 }
             }
             runWhenAllowed.run();

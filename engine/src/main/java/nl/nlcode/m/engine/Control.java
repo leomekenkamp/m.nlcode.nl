@@ -18,8 +18,6 @@ import javax.sound.midi.MidiDevice;
 import nl.nlcode.m.util.Prefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
-import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
 
 /**
  *
@@ -78,34 +76,11 @@ public final class Control {
         preferences = Prefs.forApp().userNodeForPackage(Control.class);
         safeFilePreferences = preferences.node("saveFiles");
         systemMidiPreferences = preferences.node("systemMidi");
-        for (MidiDevice midiDevice : getMidiDeviceMgr().getMidiDevices()) {
-            if (getPreferences(midiDevice).getBoolean(OPEN, false)) {
-                getMidiDeviceMgr().open(midiDevice);
-            }
-        }
-    }
-
-    public static void preInitMidiSystem() {
-//        try {
-//            System.out.println("loaded: " + CoreMidiDeviceProvider.isLibraryLoaded());
-//        } catch (CoreMidiException e) {
-//            e.printStackTrace(System.out);
+//        for (MidiDevice midiDevice : getMidiDeviceMgr().getMidiDevices()) {
+//            if (getPreferences(midiDevice).getBoolean(OPEN, false)) {
+//                getMidiDeviceMgr().open(midiDevice);
+//            }
 //        }
-//        System.out.println("libaryVersion: " + CoreMidiDeviceProvider.getLibraryVersion());
-//        System.out.println("scanInterval: " + CoreMidiDeviceProvider.getScanInterval());
-//        try {
-//            System.out.println("loaded: " + CoreMidiDeviceProvider.isLibraryLoaded());
-//        } catch (CoreMidiException e) {
-//            e.printStackTrace(System.out);
-//        }
-
-        System.out.println("trying getMidiDeviceInfo...");
-        MidiDevice.Info[] infos = CoreMidiDeviceProvider.getMidiDeviceInfo();
-        System.out.println("done getMidiDeviceInfo...");
-
-        for (MidiDevice.Info info : infos) {
-            System.out.println(info.getName());
-        }
     }
 
     public void addUi(Ui ui) {

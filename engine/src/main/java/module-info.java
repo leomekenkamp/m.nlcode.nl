@@ -8,7 +8,7 @@ module nl.nlcode.m.engine {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires static ch.qos.logback.classic;
     requires static ch.qos.logback.core;
-    requires static uk.co.xfactorylibrarians.coremidi4j;
+    requires uk.co.xfactorylibrarians.coremidi4j;
 
     opens nl.nlcode.m.engine to com.fasterxml.jackson.databind;
     opens nl.nlcode.marshalling to com.fasterxml.jackson.databind;

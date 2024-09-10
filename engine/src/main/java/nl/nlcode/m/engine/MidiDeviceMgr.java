@@ -24,18 +24,22 @@ import javax.sound.midi.Transmitter;
 /**
  * @author leo
  */
-public final class MidiDeviceMgr {
+public class MidiDeviceMgr {
 
-    private static class NoneMidiDevice implements MidiDevice {
+    static class NoneMidiDevice implements MidiDevice {
 
-        private class DefaultInfo extends MidiDevice.Info {
-
-            public DefaultInfo(String name) {
-                super(name, null, null, null);
-            }
-        }
+        private boolean open;
+        
+        private String name;
 
         private MidiDevice.Info info;
+
+        private static class DefaultInfo extends MidiDevice.Info {
+
+            public DefaultInfo(String name) {
+                super(name, "vender", "description", "version");
+            }
+        }
 
         public NoneMidiDevice(String name) {
             info = new DefaultInfo(name);
@@ -48,17 +52,17 @@ public final class MidiDeviceMgr {
 
         @Override
         public void open() throws MidiUnavailableException {
-            throw new UnsupportedOperationException("This is a NULL item.");
+            open = true;
         }
 
         @Override
         public void close() {
-            throw new UnsupportedOperationException("This is a NULL item.");
+            open = false;
         }
 
         @Override
         public boolean isOpen() {
-            throw new UnsupportedOperationException("This is a NULL item.");
+            return open;
         }
 
         @Override
@@ -118,16 +122,24 @@ public final class MidiDeviceMgr {
         public int compare(MidiDevice o1, MidiDevice o2) {
             if (o1 == o2) {
                 return 0;
-            } else if (o1 == NONE_MIDI_DEVICE) {
+            } else if (o1 == NONE_MIDI_DEVICE || o1 == null) {
                 return -1;
-            } else if (o2 == NONE_MIDI_DEVICE) {
+            } else if (o2 == NONE_MIDI_DEVICE || o2 == null) {
                 return 1;
             }
             return getDisplayName(o1).compareTo(getDisplayName(o2));
         }
     };
 
-    private final boolean USE_COREMIDI4j = false;
+    private static final boolean USE_COREMIDI4j = foundCoreMidi4J();
+
+    private static boolean foundCoreMidi4J() {
+        try {
+            return uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider.class != null;
+        } catch (NoClassDefFoundError e) {
+            return false;
+        }
+    }
 
     private final List<MidiDevice> midiDevices = new ArrayList<>();
 
@@ -139,14 +151,30 @@ public final class MidiDeviceMgr {
 
     private Set<Listener> listeners = new HashSet<>();
 
-    private MidiDeviceMgr() {
-//        if (USE_COREMIDI4j) {
-//            try {
-//                CoreMidiDeviceProvider.addNotificationListener(() -> refreshMidiDevices());
-//            } catch (CoreMidiException e) {
-//                LOGGER.error("Could not register listener. No auto refresh of MIDI (usb) devices.");
-//            }
-//        }
+    private CoreMidiDeviceProvider coreMidiDeviceProvider;
+
+    MidiDeviceMgr() {
+        if (USE_COREMIDI4j) {
+            try {
+                // Next line seems needed; if it is not there, getMidiDeviceInfo() (both in
+                // CoreMidiDeviceProvider as well as in MidiSystem) will hang.
+                // Why is not clear. It may have something to do with the Java Module system, 
+                // since the hang does never happen in (non-module) unit tests.
+                coreMidiDeviceProvider = new CoreMidiDeviceProvider();
+                // 
+                //
+                //
+                CoreMidiDeviceProvider.addNotificationListener(() -> refreshMidiDevices());
+                try {
+                    Thread.sleep(100); // FIXME: needed?
+                } catch (InterruptedException e) {
+                    Thread.interrupted();
+                }
+                refreshMidiDevices();
+            } catch (CoreMidiException e) {
+                LOGGER.error("Could not register listener. No auto refresh of MIDI (usb) devices.");
+            }
+        }
     }
 
     public void addListener(Listener listener) {
@@ -168,25 +196,52 @@ public final class MidiDeviceMgr {
         return instance;
     }
 
+    @Deprecated
+    /**
+     * deprecated use {@code getMidiDevices()}
+     *
+     */
     public MidiDevice.Info[] getMidiDeviceInfo() {
+        return getDeviceInfo();
+    }
+
+    MidiDevice.Info[] getDeviceInfo() {
         return USE_COREMIDI4j
                 ? CoreMidiDeviceProvider.getMidiDeviceInfo()
                 : MidiSystem.getMidiDeviceInfo();
     }
 
+    MidiDevice getMidiDevice(MidiDevice.Info info) throws MidiUnavailableException {
+        return MidiSystem.getMidiDevice(info);
+    }
+
+    public String getSystemInfo() {
+        if (USE_COREMIDI4j) {
+            String libraryLoaded;
+            try {
+                libraryLoaded = Boolean.toString(CoreMidiDeviceProvider.isLibraryLoaded());
+            } catch (CoreMidiException e) {
+                libraryLoaded = e.getClass() + ": " + e.getMessage();
+            }
+            return CoreMidiDeviceProvider.class.getName()
+                    + ", libraryVersion: " + CoreMidiDeviceProvider.getLibraryVersion()
+                    + ", libraryLoaded: " + libraryLoaded
+                    + ", scanInterval: " + CoreMidiDeviceProvider.getScanInterval();
+        } else {
+            return MidiSystem.class.getName();
+        }
+    }
+
     public final void refreshMidiDevices() {
         Collection<String> errors = new ArrayList<>();
-        MidiDevice.Info[] midiDeviceInfos = getMidiDeviceInfo();
-        System.out.println("0y");
+        MidiDevice.Info[] midiDeviceInfos = getDeviceInfo();
         List<MidiDevice> newList = new ArrayList();
         int retried = 0;
-        System.out.println("0b");
 
         for (MidiDevice.Info info : midiDeviceInfos) {
-            System.out.println(1);
             LOGGER.info("adding/refreshing <{}>", info);
             try {
-                MidiDevice midiDevice = MidiSystem.getMidiDevice(info);
+                MidiDevice midiDevice = getMidiDevice(info);
                 newList.add(midiDevice);
                 retried = 0;
             } catch (MidiUnavailableException | IllegalArgumentException e) {
@@ -197,10 +252,9 @@ public final class MidiDeviceMgr {
                     continue;
                 }
                 LOGGER.info("retrying");
-                System.out.println(2);
 
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(1); // FIXME: find out why this is here
                 } catch (InterruptedException i) {
                     Thread.interrupted(); // Yes, I have read the javadoc!
                 }
@@ -216,9 +270,9 @@ public final class MidiDeviceMgr {
         LOGGER.debug("... by removing <{}>", deltaRemoveList);
         LOGGER.debug("... by adding <{}>", deltaAddList);
 
-        List<MidiDevice> buffer = new ArrayList(midiDevices);
         for (MidiDevice remove : deltaRemoveList) {
-            if (remove.isOpen()) {
+            boolean shouldClose = remove.isOpen();
+            if (shouldClose) {
                 remove.close();
             }
             synchronized (openMidiDevices) {
@@ -226,28 +280,21 @@ public final class MidiDeviceMgr {
             }
             synchronized (listeners) {
                 listeners.forEach(listener -> {
-                    listener.midiDeviceClosed(remove);
+                    if (shouldClose) {
+                        listener.midiDeviceClosed(remove);
+                    }
                     listener.midiDeviceRemoved(remove);
                 });
             }
-            buffer.remove(remove);
         }
-        //buffer.addAll(deltaAddList);
-        //buffer.sort(COMPARE_BY_DISPLAY_NAME);
-        //midiDevicesBacking.clear();
-        //midiDevicesBacking.addAll(buffer);
 
         midiDevices.removeAll(deltaRemoveList);
         midiDevices.addAll(deltaAddList);
         midiDevices.sort(COMPARE_BY_DISPLAY_NAME);
         synchronized (listeners) {
             listeners.forEach(listener -> {
-                for (MidiDevice removed : deltaRemoveList) {
-                    listener.midiDeviceClosed(removed);
-                    listener.midiDeviceRemoved(removed);
-                }
                 for (MidiDevice added : deltaAddList) {
-                    listener.midiDeviceRemoved(added);
+                    listener.midiDeviceAdded(added);
                 }
             });
         }
@@ -283,12 +330,12 @@ public final class MidiDeviceMgr {
         return result;
     }
 
-    public static String getCapabilitiesDecription(MidiDevice device) {
+    private static String getCapabilitiesDecription(MidiDevice device) {
         List<String> caps = getCapabilities(device);
         if (caps.isEmpty()) {
             return "";
         } else {
-            return "(" + String.join(", ", caps) + ")";
+            return " (" + String.join(", ", caps) + ")";
         }
     }
 
@@ -314,16 +361,17 @@ public final class MidiDeviceMgr {
     }
 
     public static String getDisplayName(MidiDevice.Info info) {
-        StringBuilder result = new StringBuilder(info.getName());
-        if (info.getDescription() != null) {
-            result.append(", ").append(info.getDescription());
-        }
+        StringBuilder result = new StringBuilder();
         if (info.getVendor() != null) {
-            result.append(" - ").append(info.getVendor());
+            result.append(info.getVendor());
         }
-        // We skip the version, because this display name is used to identify devices over different
-        // executions of the program. So a newer version does probably mean that the same settings should
-        // be used.
+        String name = info.getName();
+        String COREMIDI4JPREFIX = "CoreMIDI4J - ";
+        if (name.startsWith(COREMIDI4JPREFIX)) {
+            name = name.substring(COREMIDI4JPREFIX.length());
+        }
+        result.append(" ").append(name);
+        // info.getDescription and info.getVersion do not seem to have interesting data, so we skip them
         return result.toString();
     }
 
@@ -344,7 +392,6 @@ public final class MidiDeviceMgr {
                 midiDevice.close();
             }
         }
-        ;
     }
 
     public void open(MidiDevice device) {

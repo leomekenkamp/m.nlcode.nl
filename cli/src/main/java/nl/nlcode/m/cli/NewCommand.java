@@ -19,10 +19,8 @@ public class NewCommand extends WithProjectCommand<BaseCommand> implements Runna
     @Override
     public void run() {
         withProject(project -> {
-            MidiInOutCli midiInOutCli = MidiInOutCliRegistry.create(midiInOutType, getControlCli(), getProject());
-            if (midiInOutCli == null) {
-                getControlCli().commandOutput("MidiInOut.type.none", midiInOutType);
-            } else if (name != null) {
+            MidiInOutCli midiInOutCli = getControlCli().createMidiInOut(midiInOutType, project);
+            if (name != null) {
                 midiInOutCli.getMidiInOut().setName(name);
             }
         });

@@ -1,8 +1,6 @@
 package nl.nlcode.m.cli;
 
 import java.lang.invoke.MethodHandles;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
 import nl.nlcode.m.engine.Control;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +24,9 @@ public class CliApp {
         
         
         Control control = new Control(false);
-        control.preInitMidiSystem();
         ControlCli controlCli = ControlCli.createInstance(Control.getInstance());
         controlCli.run();
+        System.exit(0); // FIXME: do a proper shutdown of async listeners
     }
 
 }

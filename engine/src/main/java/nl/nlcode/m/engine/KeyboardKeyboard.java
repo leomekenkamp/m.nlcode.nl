@@ -58,9 +58,9 @@ public class KeyboardKeyboard<U extends KeyboardKeyboard.Ui> extends MidiInOut<U
     }
 
     public KeyboardKeyboard() {
-        channel = new IntUpdater<>(this, 0, CHANNEL_MIN, CHANNEL_MAX);
-        velocity = new IntUpdater<>(this, 63, MIDI_DATA_MIN, MIDI_DATA_MAX);
-        octave = new IntUpdater<>(this, 4);
+        channel = new IntUpdater<>("channel", this, 0, CHANNEL_MIN, CHANNEL_MAX);
+        velocity = new IntUpdater<>("velocity", this, 63, MIDI_DATA_MIN, MIDI_DATA_MAX);
+        octave = new IntUpdater<>("octave", this, 4);
     }
 
     @Override

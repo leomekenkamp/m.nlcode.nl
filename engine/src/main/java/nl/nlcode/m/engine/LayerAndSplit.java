@@ -67,6 +67,11 @@ public class LayerAndSplit<U extends LayerAndSplit.Ui> extends MidiInOut<U> {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
 
+        @Override
+        public Iterable<Updater> getAllUpdaters() {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
         public static interface Ui {
 
         }

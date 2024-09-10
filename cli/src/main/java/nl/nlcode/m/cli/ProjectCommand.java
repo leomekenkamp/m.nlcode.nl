@@ -1,13 +1,16 @@
 package nl.nlcode.m.cli;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
 import static nl.nlcode.m.cli.Verbosity.newbie;
+import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -15,22 +18,21 @@ import picocli.CommandLine.Parameters;
  *
  * @author jq59bu
  */
-@Command(name = "project", description="project manipulation commands",
-subcommands = {
-    ProjectSaveCommand.class,
-    ProjectCloseCommand.class
-}) 
-public class ProjectCommand extends ChildCommand<BaseCommand> {
-    
+@Command(name = "project", description = "project manipulation commands or display list of MidiInOut instances\"",
+        subcommands = {
+            ProjectSaveCommand.class,
+            ProjectCloseCommand.class
+        })
+public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnable {
+
     //public static final String RESOURCE_BUNDLE = "nl.nlcode.m.cli.picocli";
-        
-    @Command(name = "new", description="create a new project from scratch")
+    @Command(name = "new", description = "create a new project from scratch")
     public void create() {
         getControlCli().getControl().createProject();
         getControlCli().commandOutput("new.done");
     }
 
-    @Command(name = "list", description="display list of open projects")
+    @Command(name = "list", description = "display list of open projects")
     public void list() {
         Set<Map.Entry<Integer, Project>> entries = getControlCli().getIdToProject().entrySet();
         switch (getControlCli().getVerbosity()) {
@@ -50,22 +52,32 @@ public class ProjectCommand extends ChildCommand<BaseCommand> {
         };
     }
 
-    @Command(name = "renum", description="renumber / reindex the open projects")
-    public void renum(@Parameters(paramLabel = "<project name>", description = "project name", arity = "0..1")
-            Project project) {
+    @Command(name = "renum", description = "renumber / reindex the open projects")
+    public void renum(@Parameters(paramLabel = "<project name>", description = "project name", arity = "0..1") Project project) {
         getControlCli().renumProjects(project);
     }
-    
-    @Command(name = "open", description="reads an existing project from file")
+
+    @Command(name = "open", description = "reads an existing project from file")
     public void open(
-            @Parameters(paramLabel = "<project name>", description = "project name")
-            Path projectPath
+            @Parameters(paramLabel = "<project name>", description = "project name") Path projectPath
     ) throws IOException {
         getControlCli().getControl().loadProject(projectPath);
     }
-    
+
     private Project getProject() {
         return getControlCli().getDefaultProject();
+    }
+
+    @Override
+    public void run() {
+        if (getProject() != null) {
+            PrintWriter stdout = getControlCli().stdout();
+            StringBuilder items = new StringBuilder();
+            for (MidiInOut midiInOut : getProject().getMidiInOutLookup()) {
+                items.append(getControlCli().commandMessage("list.item", midiInOut.getClass().getSimpleName(), midiInOut.getName()));
+            }
+            stdout.print(getControlCli().commandMessage("list", items.toString(), getProject().getPath()));
+        }
     }
 
 }

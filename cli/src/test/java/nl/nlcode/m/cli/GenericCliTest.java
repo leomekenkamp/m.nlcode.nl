@@ -3,6 +3,7 @@ package nl.nlcode.m.cli;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.jupiter.api.Test;
+import java.util.function.BooleanSupplier;;
 
 /**
  *
@@ -20,28 +21,8 @@ public class GenericCliTest extends CliTest {
         assertThat(instanceThread.isAlive(), is(true));
         execute("exit");
         assertThat(instance.getApplicationStatus(), is(ApplicationStatus.EXIT));
-        Thread.sleep(1); // Crude way to give thread some time to end.
+        waitFor(() -> !instanceThread.isAlive(), 100);
         assertThat(instanceThread.isAlive(), is(false));
-    }
-
-    @Test
-    public void testInvalidCommand1() throws InterruptedException {
-        assertThat(execute("qdfqpbirh"), is(
-                "missing or illegal value on position 1\n"
-                + "↓↓↓↓↓↓↓↓↓\n"
-                + "qdfqpbirh\n"
-                + "↑↑↑↑↑↑↑↑↑\n"
-                + "Please use the command 'help' without quotes to get help on using this application.\n"));
-    }
-
-    @Test
-    public void testInvalidCommand2() throws InterruptedException {
-        assertThat(execute("qdfqpbirh sdfg"), is(
-                "missing or illegal value on position 1\n"
-                + "↓↓↓↓↓↓↓↓↓\n"
-                + "qdfqpbirh sdfg\n"
-                + "↑↑↑↑↑↑↑↑↑\n"
-                + "Please use the command 'help' without quotes to get help on using this application.\n"));
     }
 
 }

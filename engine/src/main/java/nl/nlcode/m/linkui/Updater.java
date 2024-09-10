@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  */
 public abstract class Updater<T, U, H extends Updater.Holder<U>> {
 
-    @Deprecated
+    // help in deprecating old ctors
     public static String TODO_NAME = "<todo>";
             
     /**
@@ -40,6 +40,8 @@ public abstract class Updater<T, U, H extends Updater.Holder<U>> {
         void setDirty();
 
         PropertyChangeSupport getPropertyChangeSupport();
+        
+        Iterable<Updater> getAllUpdaters();
     }
 
     /**

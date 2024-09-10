@@ -11,6 +11,7 @@ import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import static java.time.temporal.ChronoField.NANO_OF_SECOND;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -243,6 +244,10 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         receivingFromReadonly = Collections.unmodifiableSet(receivingFrom);
     }
 
+    public Iterable<Updater> getAllUpdaters() {
+        return new ArrayList(updaters);
+    }
+    
     public final void openWith(Project project) {
         this.project = project;
         if (this.lookup != null) {
@@ -394,12 +399,13 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         return name;
     }
 
+    @Override
     public void setName(String name) {
         String oldName = this.name;
         boolean changing = !Objects.equals(oldName, name);
         boolean verify = lookup != null && changing;
         if (verify) {
-            lookup.verifyNameAndExecute(name, () -> {this.name = name;});
+            lookup.verifyName(name, () -> {this.name = name;});
             lookup.renamed(this); // FIXME: this looks strange
         } else {
             this.name = name;

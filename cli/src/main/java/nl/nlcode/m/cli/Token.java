@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.function.Function;
+import static nl.nlcode.m.cli.Verbosity.minimal;
 
 /**
  * verbosity [minimal | informative | newbie]
@@ -172,6 +173,7 @@ public class Token {
         private static String markToken(String[] tokens, int tokenIndex, Verbosity verbosity) {
             return switch (verbosity) {
                 case minimal:
+                case brief:
                     yield "";
                 case informative:
                     yield markToken(tokens, tokenIndex);
