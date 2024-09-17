@@ -247,7 +247,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     public Iterable<Updater> getAllUpdaters() {
         return new ArrayList(updaters);
     }
-    
+
     public final void openWith(Project project) {
         this.project = project;
         if (this.lookup != null) {
@@ -268,7 +268,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         startListening();
     }
 
-    protected Project getProject() {
+    public Project getProject() {
         return project;
     }
 
@@ -311,12 +311,21 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         return receivingFromReadonly;
     }
 
-    private void ensureNotRecursiveSendingTo(MidiInOut toBeAdded) {
+    public boolean isRecursiveSendingTo(MidiInOut toBeAdded) {
         if (this == toBeAdded) {
-            throw new MidiInOut.SendReceiveLoopDetectedException();
+            return true;
         }
         for (MidiInOut receiver : sendingTo()) {
-            receiver.ensureNotRecursiveSendingTo(toBeAdded);
+            if (receiver.isRecursiveSendingTo(toBeAdded)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void ensureNotRecursiveSendingTo(MidiInOut toBeAdded) {
+        if (isRecursiveSendingTo(toBeAdded)) {
+            throw new MidiInOut.SendReceiveLoopDetectedException();
         }
     }
 
@@ -405,7 +414,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         boolean changing = !Objects.equals(oldName, name);
         boolean verify = lookup != null && changing;
         if (verify) {
-            lookup.verifyName(name, () -> {this.name = name;});
+            lookup.verifyName(name, () -> {
+                this.name = name;
+            });
             lookup.renamed(this); // FIXME: this looks strange
         } else {
             this.name = name;

@@ -15,7 +15,7 @@ public class ListCommand extends WithProjectCommand<BaseCommand> implements Runn
 
     @Override
     public void run() {
-        withProject(project -> {
+        withSelectedProjects(project -> {
             PrintWriter stdout = getControlCli().stdout();
             StringBuilder items = new StringBuilder();
             for (MidiInOut midiInOut : project.getMidiInOutLookup()) {

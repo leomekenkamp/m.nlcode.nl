@@ -26,6 +26,7 @@ public abstract class MidiInOutCli<M extends MidiInOut> implements MidiInOut.Ui 
         return midiInOut;
     }
                 
+    @Deprecated
     protected void feedback(String key, Object ... params) {
         getControlCli().commandOutput(key, params);
     }

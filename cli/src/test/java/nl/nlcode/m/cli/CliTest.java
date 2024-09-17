@@ -7,6 +7,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
+import nl.nlcode.m.engine.Control;
 
 /**
  *
@@ -16,7 +17,7 @@ public abstract class CliTest {
 
     protected static final String EMPTY_RESPONSE = "\n";
     
-    ControlCli instance;
+    ControlCli controlCli;
     SynchronousQueue<String> toTerminal;
     Thread instanceThread;
 
@@ -24,12 +25,17 @@ public abstract class CliTest {
         createInstance();
     }
 
+    protected String filename(String sequence) {
+        return controlCli.getControl().getDefaultFileName() + sequence + Control.FILE_EXTENTION;
+    }
+
+ 
     protected void createInstance() {
-        instance = ControlCli.createUnitTestInstance();
-        instance.testCommandCompleterBarrier = new CyclicBarrier(2);
-        instance.stdoutTestEcho = new StringWriter();
+        controlCli = ControlCli.createUnitTestInstance();
+        controlCli.testCommandCompleterBarrier = new CyclicBarrier(2);
+        controlCli.stdoutTestEcho = new StringWriter();
         toTerminal = new SynchronousQueue<>();
-        instance.commandTestSupplier = (() -> {
+        controlCli.commandTestSupplier = (() -> {
             try {
                 return toTerminal.poll(2500, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
@@ -38,7 +44,7 @@ public abstract class CliTest {
                 throw new RuntimeException(e);
             }
         });
-        instanceThread = new Thread(() -> instance.run());
+        instanceThread = new Thread(() -> controlCli.run());
         instanceThread.setName("instanceThread");
         instanceThread.start();
     }
@@ -52,7 +58,7 @@ public abstract class CliTest {
         try {
             toTerminal.offer(s, 2500, TimeUnit.MILLISECONDS);
             try {
-                instance.testCommandCompleterBarrier.await();
+                controlCli.testCommandCompleterBarrier.await();
             } catch (InterruptedException | BrokenBarrierException e) {
                 Thread.interrupted();
                 e.printStackTrace(System.err);
@@ -66,14 +72,14 @@ public abstract class CliTest {
     }
 
     protected String readFromTerminal() {
-        String result = instance.stdoutTestEcho.toString();
-        instance.stdoutTestEcho.getBuffer().setLength(0);
+        String result = controlCli.stdoutTestEcho.toString();
+        controlCli.stdoutTestEcho.getBuffer().setLength(0);
         return result;
     }
 
     protected String pwd() {
         //return Paths.get("").toAbsolutePath().toString();
-        return instance.getControl().getProjectDirectory().toString() + File.separator;
+        return controlCli.getControl().getProjectDirectory().toString() + File.separator;
     }
 
     protected boolean waitFor(BooleanSupplier stopCondition) {

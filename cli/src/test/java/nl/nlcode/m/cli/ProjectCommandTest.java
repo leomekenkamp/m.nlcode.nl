@@ -3,11 +3,13 @@ package nl.nlcode.m.cli;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import nl.nlcode.m.engine.Control;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -16,172 +18,176 @@ import org.junit.jupiter.api.Test;
  */
 public class ProjectCommandTest extends CliTest {
 
-    @Test
-    public void testProject() {
-        assertThat(execute("project"), is(""));
+    public ProjectCommandTest() {
+        if (!execute("project new").contains(filename("00"))) {
+            fail("There is at least one " + filename("??") + " file in " + pwd() + ". Please delete them all.");
+        }
+        execute("project close");
     }
 
     @Test
-    public void testProjectList_empty() {
+    public void testProject() {
+        assertThat(execute("project"), startsWith("There is no default project"));
+    }
+
+    @Test
+    public void project_list_starts_empty() {
         assertThat(execute("project list"), is("There are no open projects.\n"));
     }
 
     @Test
-    public void testProjectNew() {
+    public void project_new_creates_a_project() {
         String out = execute("project new");
         assertThat(out, startsWith("A project has been opened:"));
-        assertThat(out, containsString("noname"));
+        assertThat(out, containsString(filename("00")));
     }
 
     @Test
-    public void testProjectList() {
+    public void project_shows_information() {
+        execute("project new");
+        execute("new lights");
+        execute("new midiDeviceLink");
+        execute("verbosity minimal");
+        String info = execute("project");
+        assertThat(info, startsWith("\"" + pwd() + filename("00") + "\"\n"));
+        assertThat(info, containsString("-- midiInOut\n"));
+        assertThat(info, containsString("Lights \"lights_0\""));
+        assertThat(info, containsString("MidiDeviceLink \"midiDeviceLink_0\""));
+    }
+
+    @Test
+    public void project_list_shows_open_projects() {
         execute("project new");
         execute("project new");
         String listOutput = execute("project list");
         assertThat(listOutput, startsWith("List of open projects:"));
-        assertThat(listOutput, containsString("0 " + pwd() + "noname"));
-        assertThat(listOutput, containsString("1 " + pwd() + "noname"));
-        assertThat(listOutput, not(containsString("2 " + pwd() + "noname")));
+        assertThat(listOutput, containsString("0 " + pwd() + filename("00")));
+        assertThat(listOutput, containsString("1 " + pwd() + filename("01")));
+        assertThat(listOutput, not(containsString("2 " + pwd() + filename("02"))));
     }
 
     @Test
-    public void testProjectClose_ProjectList() {
+    public void close_default_project() {
         execute("project new");
         execute("project new");
         execute("project new");
         String closeOutput = execute("project close");
-        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + "noname"));
+        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + filename("00") + ">"));
         String listOutput = execute("project list");
         assertThat(listOutput, startsWith("List of open projects:"));
-        assertThat(listOutput, containsString("1 " + pwd() + "noname"));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname"));
+        assertThat(listOutput, containsString("1 " + pwd() + filename("01")));
+        assertThat(listOutput, containsString("2 " + pwd() + filename("02")));
     }
 
     @Test
-    public void testProjectClose_id() {
+    public void close_project_by_id() {
         execute("project new");
         execute("project new");
         execute("project new");
-        String closeOutput = execute("project close --id 1");
-        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + "noname01.m>."));
+        String closeOutput = execute("project close --projectId 1");
+        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + filename("01") + ">"));
         String listOutput = execute("project list");
-        assertThat(listOutput, containsString("0 " + pwd() + "noname"));
-        assertThat(listOutput, not(containsString("1 " + pwd() + "noname")));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname"));
+        assertThat(listOutput, containsString("0 " + pwd() + filename("00")));
+        assertThat(listOutput, not(containsString("1 " + pwd() + filename("01"))));
+        assertThat(listOutput, containsString("2 " + pwd() + filename("02")));
     }
 
     @Test
-    public void testProjectClose_id_missing() {
+    public void close_project_by_name() {
         execute("project new");
         execute("project new");
         execute("project new");
-        String closeOutput = execute("project close --id");
-        assertThat(closeOutput, startsWith(
-                "missing required token after position 3\n"
-                + "              ↓↓↓↓\n"
-                + "project close --id\n"
-                + "              ↑↑↑↑\n"
-                + "Please use the command 'help' without quotes to get help on using this application.\n"));
+        String closeOutput = execute("project close --projectName " + pwd() + filename("01"));
+        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + filename("01") + ">."));
 
         String listOutput = execute("project list");
         assertThat(listOutput, startsWith("List of open projects:"));
-        assertThat(listOutput, containsString("0 " + pwd() + "noname00.m"));
-        assertThat(listOutput, containsString("1 " + pwd() + "noname01.m"));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname02.m"));
+        assertThat(listOutput, containsString("0 " + pwd() + filename("00")));
+        assertThat(listOutput, not(containsString("1 " + pwd() + filename("01"))));
+        assertThat(listOutput, containsString("2 " + pwd() + filename("02")));
     }
 
     @Test
-    public void testProjectClose_both_name_and_id() {
+    public void close_all_projects() {
         execute("project new");
-        String closeOutput = execute("project close --name " + pwd() + "noname00.m --id 0");
-        assertThat(closeOutput, startsWith("bla"));
+        execute("project new");
+        execute("project new");
+        String closeOutput = execute("project close --all");
+        assertThat(closeOutput, containsString("A project has been closed: <" + pwd() + filename("00") + ">"));
+        assertThat(closeOutput, containsString("A project has been closed: <" + pwd() + filename("01") + ">"));
+        assertThat(closeOutput, containsString("A project has been closed: <" + pwd() + filename("02") + ">"));
         String listOutput = execute("project list");
-        assertThat(listOutput, containsString("0 " + pwd() + "noname00.m"));
+        assertThat(listOutput, not(containsString("0 " + pwd() + filename("00"))));
+        assertThat(listOutput, not(containsString("1 " + pwd() + filename("01"))));
+        assertThat(listOutput, not(containsString("2 " + pwd() + filename("02"))));
     }
 
     @Test
-    public void testProjectClose_both_id_and_name() {
-        String out = execute("project new");
-        assertThat(out, startsWith("A project has been opened: <" + pwd() + "noname00.m>."));
-        String s = execute("project list");
-        System.out.println(s);
-        String closeOutput = execute("project close --id 0 --name " + pwd() + "noname00.m");
-        assertThat(closeOutput, startsWith(
-                "invalid token on position 5; can only specify project once\n"
-                + "                     ↓↓↓↓↓↓\n"
-                + "project close --id 0 --name /Users/jq59bu/noname00.m\n"
-                + "                     ↑↑↑↑↑↑\n"));
-
-        String listOutput = execute("project list");
-        assertThat(listOutput, containsString("0 " + pwd() + "noname00.m"));
-    }
-
-    @Test
-    public void testProjectClose_name_missing() {
-        execute("project new");
-        execute("project new");
-        execute("project new");
-        String closeOutput = execute("project close --name");
-        assertThat(closeOutput, startsWith(
-                "missing required token after position 3\n"
-                + "              ↓↓↓↓↓↓\n"
-                + "project close --name\n"
-                + "              ↑↑↑↑↑↑\n"
-                + "Please use the command 'help' without quotes to get help on using this application.\n"));
-
-        String listOutput = execute("project list");
-        assertThat(listOutput, containsString("0 " + pwd() + "noname00.m"));
-        assertThat(listOutput, containsString("1 " + pwd() + "noname01.m"));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname02.m"));
-    }
-
-    @Test
-    public void testProjectClose_name() {
-        execute("project new");
-        execute("project new");
-        execute("project new");
-        String closeOutput = execute("project close --name " + pwd() + "noname01.m");
-        assertThat(closeOutput, startsWith("A project has been closed: <" + pwd() + "noname01.m>."));
-
-        String listOutput = execute("project list");
-        assertThat(listOutput, startsWith("List of open projects:"));
-        assertThat(listOutput, containsString("0 " + pwd() + "noname00.m"));
-        assertThat(listOutput, not(containsString("1 " + pwd() + "noname01.m")));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname02.m"));
-    }
-
-    @Test
-    public void testProjectRenum() {
+    public void renum_projects_after_removals() {
         execute("project new");
         execute("project new");
         execute("project new");
         execute("project new");
         execute("project new");
-        String closeNameOutput = execute("project close --name " + pwd() + "noname03.m");
+        String closeNameOutput = execute("project close --projectName " + pwd() + filename("03"));
         String closeIdOutput = execute("project close");
 
         execute("project renum");
         String listOutput = execute("project list");
-        assertThat(listOutput, not(containsString(pwd() + "noname00.m")));
-        assertThat(listOutput, containsString("0 " + pwd() + "noname01.m"));
-        assertThat(listOutput, containsString("1 " + pwd() + "noname02.m"));
-        assertThat(listOutput, not(containsString(pwd() + "noname03.m")));
-        assertThat(listOutput, containsString("2 " + pwd() + "noname04.m"));
+        assertThat(closeIdOutput, containsString(pwd() + filename("00")));
+        assertThat(listOutput, not(containsString(pwd() + filename("00"))));
+        assertThat(listOutput, containsString("0 " + pwd() + filename("01")));
+        assertThat(listOutput, containsString("1 " + pwd() + filename("02")));
+        assertThat(closeNameOutput, containsString(pwd() + filename("03")));
+        assertThat(listOutput, not(containsString(pwd() + filename("03"))));
+        assertThat(listOutput, containsString("2 " + pwd() + filename("04")));
     }
 
     @Test
-    public void testProjectSave_ProjectLoad() throws IOException {
+    public void renum_can_set_default_project() {
+        execute("project new");
+        execute("project new");
+        execute("project new");
+        execute("project renum -i 1");
+        String listOutput = execute("project list");
+        assertThat(listOutput, startsWith("List of open projects:\n0 " + pwd() + filename("01")));
+        assertThat(listOutput, containsString("1 " + pwd() + filename("00")));
+        assertThat(listOutput, containsString("2 " + pwd() + filename("02")));
+    }
+
+    @Test
+    public void project_can_be_saved_and_reloaded() throws IOException {
         String out = execute("project new");
-        assertThat(out, startsWith("A project has been opened: <" + pwd() + "noname00.m>."));
-        assertThat(Files.exists(Paths.get(pwd() + "noname00.m")), is(false));
+        assertThat(out, startsWith("A project has been opened: <" + pwd() + filename("00") + ">."));
+        assertThat(Files.exists(Paths.get(pwd() + filename("00"))), is(false));
         execute("project save");
-        assertThat(Files.exists(Paths.get(pwd() + "noname00.m")), is(true));
-        
-        String open = execute("project open " + pwd() + "noname00.m");
-        assertThat(open, startsWith("A project has been opened: <" + pwd() + "noname00.m>."));
-        execute("project close");
-        
-        Files.delete(Paths.get(pwd() + "noname00.m"));
+        try {
+            assertThat(Files.exists(Paths.get(pwd() + filename("00"))), is(true));
+            execute("project close");
+
+            String open = execute("project open " + pwd() + filename("00"));
+            assertThat(open, startsWith("A project has been opened: <" + pwd() + filename("00") + ">."));
+            execute("project close");
+        } finally {
+            Files.delete(Paths.get(pwd() + filename("00")));
+        }
+    }
+
+    // @Test FIXME either allow or disallow double opening
+    public void project_cannot_be_opened_twice() throws IOException {
+        String out = execute("project new");
+        assertThat(out, startsWith("A project has been opened: <" + pwd() + filename("00") + ">."));
+        assertThat(Files.exists(Paths.get(pwd() + filename("00"))), is(false));
+        execute("project save");
+        try {
+            assertThat(Files.exists(Paths.get(pwd() + filename("00"))), is(true));
+
+            String open = execute("project open " + pwd() + filename("00"));
+            assertThat(open, not(containsString("A project has been opened: <" + pwd() + filename("00") + ">.")));
+            execute("project close");
+        } finally {
+            Files.delete(Paths.get(pwd() + filename("00")));
+        }
     }
 
 }

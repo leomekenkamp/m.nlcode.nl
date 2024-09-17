@@ -114,20 +114,24 @@ public class ControlCli implements Runnable, Control.Ui {
                 CommandSpec baseSpec = BaseCommand.createCommandSpec(this);
                 PicocliCommandsFactory factory = new PicocliCommandsFactory();
                 CommandLine commandLine = new CommandLine(baseSpec, factory);
+                // CommandLine commandLine = new CommandLine(baseSpec);
+                commandLine.registerConverter(Class.class, s -> Class.forName(MidiInOut.class.getPackageName() + "." + s));
+                commandLine.registerConverter(Project.class, new ConvNameToProject(this));
+
                 PicocliCommands picocliCommands = new PicocliCommands(commandLine);
 
                 Parser parser = new DefaultParser();
                 SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
                 systemRegistry.setCommandRegistries(picocliCommands);
-                systemRegistry.register("help", picocliCommands);
+                //systemRegistry.register("help", picocliCommands);
 
                 LineReader lineReader = LineReaderBuilder.builder()
                         .terminal(terminal)
                         .completer(systemRegistry.completer())
                         .build();
 
-                String prompt = getVerbosity() == minimal ? "> " : Ansi.AUTO.string("@|yellow m|@.nlcode.nl> ").toString(); // "m.nlcode.nl> "; //
-                commandLoop(commandTestSupplier == null ? () -> lineReader.readLine(prompt) : commandTestSupplier, baseSpec);
+                String prompt = getVerbosity() == minimal ? "> " : Ansi.AUTO.string("@|yellow m|@.nlcode.nl> "); // "m.nlcode.nl> "; //
+                commandLoop(commandTestSupplier == null ? () -> lineReader.readLine(prompt) : commandTestSupplier, commandLine);
                 if (testCommandCompleterBarrier != null) {
                     try {
                         testCommandCompleterBarrier.await();
@@ -151,14 +155,11 @@ public class ControlCli implements Runnable, Control.Ui {
         }
     }
 
-    void commandLoop(Supplier<String> commandSupplier, CommandSpec baseSpec) {
+    void commandLoop(Supplier<String> commandSupplier, CommandLine commandLine) {
         try {
             String rawCommand = commandSupplier.get();
             String[] tokens = CommandSplitter.splitCommand(rawCommand).toArray(String[]::new);
             if (tokens.length > 0) {
-                CommandLine commandLine = new CommandLine(baseSpec);
-                commandLine.registerConverter(Class.class, s -> Class.forName(MidiInOut.class.getPackageName() + "." + s));
-                commandLine.registerConverter(Project.class, new ConvNameToProject(this));
                 commandLine.execute(tokens);
             }
         } catch (Token.TokenException e) {
@@ -201,6 +202,13 @@ public class ControlCli implements Runnable, Control.Ui {
         return instance;
     }
 
+    /**
+     * For use within Picocli command completion ONLY!
+    */ 
+    static ControlCli getInstance() {
+        return instance;
+    }
+    
     public Verbosity getVerbosity() {
         return verbosity;
     }
@@ -220,6 +228,10 @@ public class ControlCli implements Runnable, Control.Ui {
             }
         }
         return null;
+    }
+
+    public Project getProjectById(int id) {
+        return getIdToProject().get(id);
     }
 
     public Control getControl() {
@@ -251,8 +263,8 @@ public class ControlCli implements Runnable, Control.Ui {
                 idToProject.put(0, entry.getValue());
             } else {
                 idToProject.put(newId, entry.getValue());
+                newId++;
             }
-            newId++;
         }
     }
 

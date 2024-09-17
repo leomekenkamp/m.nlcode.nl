@@ -10,13 +10,15 @@ import picocli.CommandLine.Command;
 @Command(name = "close", description = "close a project")
 public class ProjectCloseCommand extends WithProjectCommand<BaseCommand> implements Runnable {
 
-    @CommandLine.Option(names = "--force", description = "immediately closes the project, without saving any changes")
+    @CommandLine.Option(names = "--force", description = "immediately closes the specified project, without saving any changes")
     private boolean force;
 
     @Override
     public void run() {
-        withProject(project -> {
-            if (!project.close(force)) {
+        withSelectedProjects(project -> {
+            if (project.close(force)) {
+                getControlCli().commandOutput("project.closed", project.getPath());
+            } else {
                 getControlCli().commandOutput("project.dirty", project.getPath());
             }
         });

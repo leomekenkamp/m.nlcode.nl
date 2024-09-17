@@ -2,6 +2,7 @@ package nl.nlcode.m.cli;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -18,7 +19,7 @@ public class NewCommandTest extends CliTest {
     @Test
     public void new_creates_a_new_miniInOut_device() {
         assertThat(execute("new lights"), is("\"lights_0\"\n"));
-        assertThat(execute("project"), is("Lights \"lights_0\"\n"));
+        assertThat(execute("project"), containsString("Lights \"lights_0\"\n"));
     }
 
 

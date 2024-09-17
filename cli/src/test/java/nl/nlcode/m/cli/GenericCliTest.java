@@ -20,7 +20,7 @@ public class GenericCliTest extends CliTest {
     public void testExit() throws InterruptedException {
         assertThat(instanceThread.isAlive(), is(true));
         execute("exit");
-        assertThat(instance.getApplicationStatus(), is(ApplicationStatus.EXIT));
+        assertThat(controlCli.getApplicationStatus(), is(ApplicationStatus.EXIT));
         waitFor(() -> !instanceThread.isAlive(), 100);
         assertThat(instanceThread.isAlive(), is(false));
     }

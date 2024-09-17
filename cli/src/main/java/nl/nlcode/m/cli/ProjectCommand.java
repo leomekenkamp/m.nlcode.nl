@@ -3,11 +3,16 @@ package nl.nlcode.m.cli;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.sound.midi.MidiDevice;
 import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
 import static nl.nlcode.m.cli.Verbosity.newbie;
+import nl.nlcode.m.engine.MidiDeviceMgr;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
 import picocli.CommandLine;
@@ -21,7 +26,8 @@ import picocli.CommandLine.Parameters;
 @Command(name = "project", description = "project manipulation commands or display list of MidiInOut instances\"",
         subcommands = {
             ProjectSaveCommand.class,
-            ProjectCloseCommand.class
+            ProjectCloseCommand.class,
+            ProjectRenumCommand.class
         })
 public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnable {
 
@@ -52,11 +58,6 @@ public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnabl
         };
     }
 
-    @Command(name = "renum", description = "renumber / reindex the open projects")
-    public void renum(@Parameters(paramLabel = "<project name>", description = "project name", arity = "0..1") Project project) {
-        getControlCli().renumProjects(project);
-    }
-
     @Command(name = "open", description = "reads an existing project from file")
     public void open(
             @Parameters(paramLabel = "<project name>", description = "project name") Path projectPath
@@ -70,13 +71,15 @@ public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnabl
 
     @Override
     public void run() {
-        if (getProject() != null) {
+        if (getProject() == null) {
+            getControlCli().commandOutput("project.none");
+        } else {
             PrintWriter stdout = getControlCli().stdout();
             StringBuilder items = new StringBuilder();
             for (MidiInOut midiInOut : getProject().getMidiInOutLookup()) {
-                items.append(getControlCli().commandMessage("list.item", midiInOut.getClass().getSimpleName(), midiInOut.getName()));
+                items.append(getControlCli().commandMessage("project.midiInOut", midiInOut.getClass().getSimpleName(), midiInOut.getName()));
             }
-            stdout.print(getControlCli().commandMessage("list", items.toString(), getProject().getPath()));
+            stdout.print(getControlCli().commandMessage("project", items.toString(), getProject().getPath()));
         }
     }
 

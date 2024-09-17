@@ -42,9 +42,12 @@ public final class Control {
 
     private static final String DEFAULT_FILE_NAME = "noname";
 
+    static final String TEST_FILE_NAME = "__deleteme_test_noname";
+
     private static final String DEFAULT_DIR = System.getProperty("user.home");
 
     private static Control instance;
+    
     public static final String OPEN = "open";
 
     private final Preferences preferences;
@@ -52,6 +55,8 @@ public final class Control {
     private final Preferences safeFilePreferences;
 
     private final Preferences systemMidiPreferences;
+    
+    private String defaultFileName = DEFAULT_FILE_NAME;
 
     public Preferences getPreferences(MidiDevice midiDevice) {
         Preferences result = systemMidiPreferences.node(MidiDeviceMgr.getPrefsName(midiDevice));
@@ -81,6 +86,9 @@ public final class Control {
 //                getMidiDeviceMgr().open(midiDevice);
 //            }
 //        }
+        if (test) {
+            defaultFileName = TEST_FILE_NAME;
+        }
     }
 
     public void addUi(Ui ui) {
@@ -105,7 +113,7 @@ public final class Control {
 
     public static Control getInstance() {
         if (instance == null) {
-            instance = new Control(true);
+            instance = new Control(false);
         }
         return instance;
     }
@@ -132,15 +140,19 @@ public final class Control {
         uis.stream().forEach(update);
     }
 
+    public String getDefaultFileName() {
+        return defaultFileName;
+    }
+    
     public Path unusedProjectPath() {
         int index = -1;
         DecimalFormat format = new DecimalFormat("00");
         Path result;
         do {
             if (++index > 99) {
-                throw new FunctionalException("seems there are too much '" + DEFAULT_FILE_NAME + FILE_EXTENTION_FILTER + "' files");
+                throw new FunctionalException("seems there are too much '" + getDefaultFileName() + FILE_EXTENTION_FILTER + "' files");
             }
-            result = Path.of(DEFAULT_DIR, DEFAULT_FILE_NAME + format.format(index) + FILE_EXTENTION);
+            result = Path.of(DEFAULT_DIR, getDefaultFileName() + format.format(index) + FILE_EXTENTION);
         } while (Files.exists(result) || unsavedPathInUse(result));
         // note that we only know this path is unused at _this_ time; might be created by _another_ process shortly after
         return result;

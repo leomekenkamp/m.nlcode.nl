@@ -1,24 +1,67 @@
 package nl.nlcode.m.cli;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.sound.midi.MidiDevice;
+import nl.nlcode.m.engine.MidiDeviceMgr;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IModelTransformer;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 /**
  *
  * @author jq59bu
  */
-@Command(name = "new", description = "create new MidiInOut instance")
-public class NewCommand extends WithProjectCommand<BaseCommand> implements Runnable {
+@Command(name = "new", description = "create new MidiInOut instance", modelTransformer = NewCommand.ModelTransformer.class)
+public class NewCommand extends WithProjectCommand<BaseCommand> {
 
-    @Parameters(paramLabel = "<MidiInOut type>", description = "type of instance to create", index = "0")
-    private String midiInOutType;
+    @Command
+    public static class MidiInOutTypeCommand extends ChildCommand<NewCommand> implements Runnable {
 
-    @Parameters(paramLabel = "<name>", description = "name for the new instance", arity = "0..1", index = "1")
-    private String name;
+        @Parameters(paramLabel = "<name>", description = "name for the new instance", arity = "0..1")
+        private String name;
 
-    @Override
-    public void run() {
-        withProject(project -> {
+        private String midiInOutType;
+
+        private MidiInOutTypeCommand(String midiInOutType) {
+            this.midiInOutType = midiInOutType;
+        }
+
+        @Override
+        public void run() {
+            getParent().create(midiInOutType, name);
+        }
+
+    }
+
+    public static class ModelTransformer implements IModelTransformer {
+
+        public CommandSpec transform(CommandSpec commandSpec) {
+            for (String midiInOutType : MidiInOutCliRegistry.getInstance().midiInOutTypes()) {
+                commandSpec.addSubcommand(midiInOutType, CommandSpec.forAnnotatedObject(new MidiInOutTypeCommand(midiInOutType)));
+            }
+            return commandSpec;
+        }
+    }
+
+    protected static class MidiInOutTypes implements Iterable<String> {
+
+        @Override
+        public Iterator<String> iterator() {
+            List<String> result = new ArrayList<>();
+            for (String typeName : MidiInOutCliRegistry.getInstance().midiInOutTypes()) {
+                result.add("\"" + typeName + "\"");
+            }
+            return result.iterator();
+        }
+    }
+
+    public void create(String midiInOutType, String name) {
+        withSelectedProjects(project -> {
             MidiInOutCli midiInOutCli = getControlCli().createMidiInOut(midiInOutType, project);
             if (name != null) {
                 midiInOutCli.getMidiInOut().setName(name);

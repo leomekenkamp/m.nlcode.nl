@@ -31,7 +31,7 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
 
     @BeforeAll
     public static void setUpClass() {
-        Control control = Control.getInstance();
+        Control control = new Control(true);
         project = control.createProject();
     }
 
@@ -135,7 +135,7 @@ public abstract class DefaultMidiInOutTest<T extends MidiInOut> {
         instance = null;
         defaultTestIn = null;
         defaultTestOut = null;
-        project = Control.getInstance().loadProject(getTestFilePath());
+        project = new Control(true).loadProject(getTestFilePath());
         Files.delete(getTestFilePath());
 
         // RISKY: order may change...

@@ -12,7 +12,7 @@ public class ProjectSaveCommand extends WithProjectCommand<BaseCommand> implemen
 
     @Override
     public void run() {
-        withProject(project -> {
+        withSelectedProjects(project -> {
             try {
                 project.save();
             } catch (IOException e){

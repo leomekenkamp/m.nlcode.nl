@@ -5,6 +5,7 @@ import nl.nlcode.m.engine.Project;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.IModelTransformer;
 import picocli.CommandLine.Model.CommandSpec;
 
 /**
@@ -14,13 +15,14 @@ import picocli.CommandLine.Model.CommandSpec;
 @Command(name = "m.nlcode.nl>", version = "1.0alfa", subcommands = {
     ExitCommand.class,
     HelpCommand.class,
+    ListCommand.class,
     MidiDeviceCommand.class,
     NewCommand.class,
     ProjectCommand.class,
     VerbosityCommand.class
 })
 public class BaseCommand implements Runnable, CliArgument {
-
+    
     private ControlCli controlCli;
 
     public Project getProject() {

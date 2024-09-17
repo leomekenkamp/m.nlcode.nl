@@ -3,23 +3,17 @@ package nl.nlcode.m.cli;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiUnavailableException;
 import nl.nlcode.m.engine.MidiDeviceMgr;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.IParameterPreprocessor;
-import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -101,18 +95,40 @@ public class MidiDeviceCommand extends ChildCommand<BaseCommand> implements Runn
 
     @Command(name = "open", description = "open midi device")
     public void open(@ArgGroup(exclusive = true) MidiDeviceDefinition midiDeviceDefinition) {
-        onSpecifiedMidiDevice(midiDeviceDefinition, midiDevice -> !midiDevice.isOpen(), (midiDevice)
-                -> getControlCli().getControl().getMidiDeviceMgr().open(midiDevice)
-        );
+        List<MidiDevice> openDevices = getControlCli().getControl().getMidiDeviceMgr().getMidiDevices().stream()
+                .filter(midiDevice -> midiDevice.isOpen()).collect(Collectors.toList());
+        if (midiDeviceDefinition == null) {
+            if (openDevices.isEmpty()) {
+                getControlCli().commandOutput("device.no_open_devices");
+            } else {
+                getControlCli().stdout().println("device.open_devices");
+                openDevices.forEach(midiDevice -> printName(midiDevice));
+            }
+        } else {
+            onSpecifiedMidiDevice(midiDeviceDefinition, midiDevice -> !midiDevice.isOpen(), (midiDevice)
+                    -> getControlCli().getControl().getMidiDeviceMgr().open(midiDevice)
+            );
+        }
     }
 
     @Command(name = "close", description = "close midi device")
     public void close(@ArgGroup(exclusive = true) MidiDeviceDefinition midiDeviceDefinition) {
-        onSpecifiedMidiDevice(midiDeviceDefinition,
-                midiDevice -> midiDevice.isOpen(),
-                (midiDevice) -> {
-                    midiDevice.close();
-                });
+        if (midiDeviceDefinition == null) {
+            List<MidiDevice> closedDevices = getControlCli().getControl().getMidiDeviceMgr().getMidiDevices().stream()
+                    .filter(midiDevice -> !midiDevice.isOpen()).collect(Collectors.toList());
+            if (closedDevices.isEmpty()) {
+                getControlCli().commandOutput("device.no_closed_devices");
+            } else {
+                getControlCli().stdout().println("device.closed_devices");
+                closedDevices.forEach(midiDevice -> printName(midiDevice));
+            }
+        } else {
+            onSpecifiedMidiDevice(midiDeviceDefinition,
+                    midiDevice -> midiDevice.isOpen(),
+                    (midiDevice) -> {
+                        midiDevice.close();
+                    });
+        }
     }
 
     protected void onSpecifiedMidiDevice(MidiDeviceDefinition midiDeviceDefinition, Predicate<MidiDevice> filter, Consumer<MidiDevice> action) {
@@ -138,17 +154,17 @@ public class MidiDeviceCommand extends ChildCommand<BaseCommand> implements Runn
         List<MidiDevice> openDevices = getControlCli().getControl().getMidiDeviceMgr().getMidiDevices().stream()
                 .filter(midiDevice -> midiDevice.isOpen()).collect(Collectors.toList());
         if (openDevices.isEmpty()) {
-            getControlCli().stdout().println("no open MidiDevices");
+            getControlCli().commandOutput("device.no_open_devices");
         } else {
-            getControlCli().stdout().println("open MidiDevices:");
+            getControlCli().stdout().println("device.open_devices");
             openDevices.forEach(midiDevice -> printName(midiDevice));
         }
         List<MidiDevice> closedDevices = getControlCli().getControl().getMidiDeviceMgr().getMidiDevices().stream()
                 .filter(midiDevice -> !midiDevice.isOpen()).collect(Collectors.toList());
         if (closedDevices.isEmpty()) {
-            getControlCli().stdout().println("no closed MidiDevices");
+            getControlCli().commandOutput("device.no_closed_devices");
         } else {
-            getControlCli().stdout().println("closed MidiDevices:");
+            getControlCli().stdout().println("device.closed_devices");
             closedDevices.forEach(midiDevice -> printName(midiDevice));
         }
     }
