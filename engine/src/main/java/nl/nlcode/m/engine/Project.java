@@ -62,9 +62,9 @@ public final class Project implements Serializable, Marshallable {
 
     private transient Path path;
 
-    private transient Lookup<MidiInOut> midiInOutLookup;
+    private transient Lookup<MidiInOut<?>> midiInOutLookup;
 
-    private transient List<MidiInOut> midiInOutList;
+    private transient List<MidiInOut<?>> midiInOutList;
 
     private transient ExecutorService midiInOutExecutorService;
 
@@ -162,7 +162,7 @@ public final class Project implements Serializable, Marshallable {
         }
     }
     
-    public Lookup<MidiInOut> getMidiInOutLookup() {
+    public Lookup<MidiInOut<?>> getMidiInOutLookup() {
         return midiInOutLookup;
     }
 
@@ -170,7 +170,7 @@ public final class Project implements Serializable, Marshallable {
         return midiInOutExecutorService;
     }
 
-    public List<MidiInOut> getMidiInOutList() {
+    public List<MidiInOut<?>> getMidiInOutList() {
         return midiInOutList;
     }
 

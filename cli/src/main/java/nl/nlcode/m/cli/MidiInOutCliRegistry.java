@@ -37,13 +37,14 @@ public class MidiInOutCliRegistry {
         nameToCreator.put(midiInOutType, createInstance);
     }
     
-    public MidiInOutCli create(String midiInOutType, ControlCli controlCli, Project project) {
+    public MidiInOutCli create(String midiInOutType, String name, ControlCli controlCli, Project project) {
         MidiInOutCli result;
         Function<ControlCli, MidiInOutCli> creator = nameToCreator.get(midiInOutType);
         if (creator == null) {
             result = null;
         } else {
             result = creator.apply(controlCli);
+            result.getMidiInOut().setName(name);
             result.getMidiInOut().openWith(project);
         }
         return result;

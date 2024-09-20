@@ -72,14 +72,14 @@ public abstract class WithProjectCommand<P extends CliArgument> extends ChildCom
             if (projectDefinition.projectId != null) {
                 Project project = getControlCli().getProjectById(projectDefinition.projectId);
                 if (project == null) {
-                    getControlCli().commandOutput("project.id.none", projectDefinition.projectId);
+                    getControlCli().printMessage("project.id.none", projectDefinition.projectId);
                 } else {
                     withProject.accept(project);
                 }
             } else if (projectDefinition.projectName != null) {
                 Project project = getControlCli().getProjectByName(projectDefinition.projectName);
                 if (project == null) {
-                    getControlCli().commandOutput("project.name.none", projectDefinition.projectId);
+                    getControlCli().printMessage("project.name.none", projectDefinition.projectId);
                 } else {
                     withProject.accept(project);                    
                 }

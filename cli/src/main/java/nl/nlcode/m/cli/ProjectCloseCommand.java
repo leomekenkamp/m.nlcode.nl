@@ -17,9 +17,9 @@ public class ProjectCloseCommand extends WithProjectCommand<BaseCommand> impleme
     public void run() {
         withSelectedProjects(project -> {
             if (project.close(force)) {
-                getControlCli().commandOutput("project.closed", project.getPath());
+                getControlCli().printMessage("project.closed", project.getPath());
             } else {
-                getControlCli().commandOutput("project.dirty", project.getPath());
+                getControlCli().printMessage("project.dirty", project.getPath());
             }
         });
     }

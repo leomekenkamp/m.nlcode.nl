@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -15,6 +17,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import static nl.nlcode.m.cli.Verbosity.informative;
 import static nl.nlcode.m.cli.Verbosity.minimal;
@@ -39,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 
 /**
@@ -108,12 +112,19 @@ public class ControlCli implements Runnable, Control.Ui {
             Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             while (applicationStatus == ApplicationStatus.RUNNING) {
 
-                // set up JLine built-in commands            
-                BaseCommand baseCommand = new BaseCommand(this);
-
                 CommandSpec baseSpec = BaseCommand.createCommandSpec(this);
                 PicocliCommandsFactory factory = new PicocliCommandsFactory();
                 CommandLine commandLine = new CommandLine(baseSpec, factory);
+//                commandLine.setExecutionExceptionHandler(new IExecutionExceptionHandler() {
+//                    @Override
+//                    public int handleExecutionException(Exception e, CommandLine commandLine, CommandLine.ParseResult pr) throws Exception {
+//                        stdout().println(commandLine.getColorScheme().errorText(e.getMessage()));
+//                        return commandLine.getExitCodeExceptionMapper() != null
+//                                ? commandLine.getExitCodeExceptionMapper().getExitCode(e)
+//                                : commandLine.getCommandSpec().exitCodeOnExecutionException();
+//                    }
+//                });
+
                 // CommandLine commandLine = new CommandLine(baseSpec);
                 commandLine.registerConverter(Class.class, s -> Class.forName(MidiInOut.class.getPackageName() + "." + s));
                 commandLine.registerConverter(Project.class, new ConvNameToProject(this));
@@ -204,11 +215,11 @@ public class ControlCli implements Runnable, Control.Ui {
 
     /**
      * For use within Picocli command completion ONLY!
-    */ 
+     */
     static ControlCli getInstance() {
         return instance;
     }
-    
+
     public Verbosity getVerbosity() {
         return verbosity;
     }
@@ -249,7 +260,7 @@ public class ControlCli implements Runnable, Control.Ui {
     public Project getCurrentProject(boolean showErrorOnNoProject) {
         Project result = getDefaultProject();
         if (result == null && showErrorOnNoProject) {
-            commandOutput("project.none");
+            printMessage("project.none");
         }
         return result;
     }
@@ -306,24 +317,76 @@ public class ControlCli implements Runnable, Control.Ui {
         return applicationStatus;
     }
 
-    public void commandOutput(String key, Object... params) {
+    public void printMessage(String key, List<Object> params) {
         stdout().println(commandMessage(key, params));
     }
 
-    public String commandMessage(String key, Object... params) {
-        String formatString = null;
+    public void printMessage(String key, Object... params) {
+        stdout().println(commandMessage(key, params));
+    }
+
+    public boolean hasMessageKey(String key) {
+        return COMMAND_MESSAGES.containsKey(key);
+    }
+
+    public String messageFallback(String key) {
         for (Verbosity verbosity : getVerbosity().withFallback()) {
             try {
-                formatString = COMMAND_MESSAGES.getString(key + "." + verbosity);
-                break;
+                return COMMAND_MESSAGES.getString(key + "." + verbosity);
             } catch (MissingResourceException e) {
                 // ignore
             }
         }
+        return null;
+    }
+
+    public String commandMessage(String key, List<Object> params) {
+        String formatString = messageFallback(key);
         if (formatString == null) {
             formatString = "???<" + key + ">??? " + params;
         }
-        return String.format(formatString, params);
+        return String.format(formatString, params.toArray());
+    }
+
+    public String commandMessage(String key, Object... params) {
+        return commandMessage(key, Arrays.asList(params));
+    }
+
+    /**
+     * Expects both a {@code listPropKey} as well as a key with same name and
+     * ".item" appended.
+     *
+     * @param listPropKey
+     */
+    public <I> void printList(String listPropKey, List<Object> overallParameters, Iterable<I> items, Function<I, List<Object>> perItemParameters) {
+        String s = commandList(listPropKey, overallParameters, items, perItemParameters);
+        if (!s.isEmpty()) {
+            stdout().println(s);
+        }
+    }
+
+    /**
+     * Expects both a {@code listPropKey} as well as a key with same name and
+     * ".item" appended.
+     *
+     * @param listPropKey
+     */
+    public <I> String commandList(String listPropKey, List<Object> overallParameters, Iterable<I> items, Function<I, List<Object>> perItemParameters) {
+        StringBuilder itemsBuffer = new StringBuilder();
+        if (items.iterator().hasNext()) {
+            for (I item : items) {
+                itemsBuffer.append(commandMessage(listPropKey + ".item", perItemParameters.apply(item)));
+            }
+        } else {
+            String emptyKey = listPropKey + ".empty";
+            if (messageFallback(emptyKey) != null) {
+                return commandMessage(emptyKey, overallParameters);
+            }
+        }
+        List<Object> combinedParameters = new ArrayList();
+        combinedParameters.add(itemsBuffer.toString());
+        combinedParameters.addAll(overallParameters);
+        return commandMessage(listPropKey, combinedParameters);
     }
 
     public boolean saveAllDirtyProjects() {
@@ -332,21 +395,21 @@ public class ControlCli implements Runnable, Control.Ui {
             try {
                 project.saveIfDirty();
             } catch (IOException e) {
-                commandOutput("save.error", project.getPath(), e.getClass().getSimpleName(), e.getMessage());
+                printMessage("save.error", project.getPath(), e.getClass().getSimpleName(), e.getMessage());
                 result = false;
             }
         }
         return result;
     }
 
-    public List<MidiInOut> getMidiInOutsForTypeName(String typeName) {
+    public List<MidiInOut<?>> getMidiInOutsForTypeName(String typeName) {
         return getCurrentProject().getMidiInOutList().stream()
                 .filter(midiInOut -> midiInOut.getClass().getSimpleName().equalsIgnoreCase(typeName))
                 .toList();
     }
 
-    public MidiInOutCli createMidiInOut(String midiInOutType, Project project) {
-        return MidiInOutCliRegistry.getInstance().create(midiInOutType, this, project);
+    public MidiInOutCli createMidiInOut(String midiInOutType, String name, Project project) {
+        return MidiInOutCliRegistry.getInstance().create(midiInOutType, name, this, project);
     }
 
 }

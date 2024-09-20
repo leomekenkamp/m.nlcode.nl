@@ -51,8 +51,8 @@ public class ProjectCommandTest extends CliTest {
         String info = execute("project");
         assertThat(info, startsWith("\"" + pwd() + filename("00") + "\"\n"));
         assertThat(info, containsString("-- midiInOut\n"));
-        assertThat(info, containsString("Lights \"lights_0\""));
-        assertThat(info, containsString("MidiDeviceLink \"midiDeviceLink_0\""));
+        assertThat(info, containsString("lights \"lights_0\""));
+        assertThat(info, containsString("midiDeviceLink \"midiDeviceLink_0\""));
     }
 
     @Test

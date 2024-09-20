@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author leo
  */
-public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<MidiInOut>, Marshallable, Updater.Holder<U> {
+public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<MidiInOut<?>>, Marshallable, Updater.Holder<U> {
 
     public static void verify7Bit(int data) {
         if (data < 0 || data > 127) {
@@ -165,11 +165,11 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
 
     protected static final MidiMessageFormat MIDI_FORMAT = new MidiMessageFormat();
 
-    private transient Set<MidiInOut> sendingToReadonly;
+    private transient Set<MidiInOut<?>> sendingToReadonly;
 
-    private transient Set<MidiInOut> receivingFromReadonly;
+    private transient Set<MidiInOut<?>> receivingFromReadonly;
 
-    private transient Lookup<MidiInOut> lookup;
+    private transient Lookup<MidiInOut<?>> lookup;
 
     private transient BlockingQueue<TimestampedMidiMessage> asyncReceiveQueue;
 
@@ -194,9 +194,9 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     // persisted data
     private String name;
 
-    private Set<MidiInOut> sendingTo;
+    private Set<MidiInOut<?>> sendingTo;
 
-    private Set<MidiInOut> receivingFrom;
+    private Set<MidiInOut<?>> receivingFrom;
 
     private Map<Serializable, Serializable> info;
 
@@ -303,11 +303,11 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
         }
     }
 
-    public Set<MidiInOut> sendingTo() {
+    public Set<MidiInOut<?>> sendingTo() {
         return sendingToReadonly;
     }
 
-    public Set<MidiInOut> receivingFrom() {
+    public Set<MidiInOut<?>> receivingFrom() {
         return receivingFromReadonly;
     }
 
@@ -428,7 +428,7 @@ public abstract class MidiInOut<U extends MidiInOut.Ui> implements Lookup.Named<
     }
 
     @Override
-    public Lookup<MidiInOut> getLookup() {
+    public Lookup<MidiInOut<?>> getLookup() {
         return lookup;
     }
 

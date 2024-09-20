@@ -87,7 +87,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
             if (I18n.msg().containsKey(key)) {
                 return I18n.msg().getString(key);
             } else {
-                return getClass().getSimpleName();
+                return getSystemTypeName();
             }
         }
 
@@ -144,7 +144,8 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
     }
 
     public void verifyName(String name) {
-        verifyName(name, () -> {});
+        verifyName(name, () -> {
+        });
     }
 
     public void verifyName(String name, Runnable runWhenAllowed) {
@@ -165,7 +166,7 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
             // The backingList may just very well have some sort of observer mechanism. That mechanism
             // will probably be limited to changes in the list itself; changes in the contained objects
             // will probably not trigger any listeners. Since we assume that the {@code name} if the item
-            // will be used in certain ui-klists, we forcibly change the list when a name changes.
+            // will be used in certain ui-lists, we forcibly change the list when a name changes.
             // We do not know of the sort down below forces that change, so we force it here
             synchronizedBackingList.sort(NAME_COMPARATOR);
             synchronizedBackingList.add(synchronizedBackingList.remove(0));
@@ -173,11 +174,15 @@ public class Lookup<T extends Lookup.Named> implements Iterable<T> {
     }
 
     public void add(T item) {
-        if (item.getName() == null) {
-            item.setName(suggestName(item.getHumanTypeName()));
+        synchronized (synchronizedBackingList) {
+            if (item.getName() == null) {
+                item.setName(suggestName(item.getHumanTypeName()));
+            } else {
+                verifyName(item.getName());
+            }
+            synchronizedBackingList.add(item);
+            synchronizedBackingList.sort(NAME_COMPARATOR);
         }
-        synchronizedBackingList.add(item);
-        synchronizedBackingList.sort(NAME_COMPARATOR);
     }
 
     /**

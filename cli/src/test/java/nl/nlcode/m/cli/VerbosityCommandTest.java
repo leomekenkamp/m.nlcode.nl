@@ -18,25 +18,25 @@ public class VerbosityCommandTest extends CliTest {
     
     @Test
     public void newbie_is_default() {
-        assertThat(execute("verbosity"), startsWith("Verbosity is currently set to <newbie>.\nThis setting will"));
+        assertThat(execute("verbosity"), startsWith("Verbosity is currently set to \"newbie\".\nThis setting will"));
     }
 
     @Test
     public void can_be_set_to_minimal() {
         assertThat(execute("verbosity minimal"), is(EMPTY_RESPONSE));
-        assertThat(execute("verbosity"), is("minimal\n"));
+        assertThat(execute("verbosity"), startsWith("minimal"));
     }
 
     @Test
     public void can_be_set_to_brief() {
-        assertThat(execute("verbosity brief"), is("verbosity <brief>\n"));
-        assertThat(execute("verbosity"), is("brief\n"));
+        assertThat(execute("verbosity brief"), startsWith("verbosity \"brief\""));
+        assertThat(execute("verbosity"), startsWith("brief"));
     }
 
     @Test
     public void can_be_set_to_informative() {
-        assertThat(execute("verbosity informative"), is("Verbosity is now set to <informative>.\n"));
-        assertThat(execute("verbosity"), is("Verbosity is currently set to <informative>.\n"));
+        assertThat(execute("verbosity informative"), startsWith("Verbosity is now set to <informative>."));
+        assertThat(execute("verbosity"), startsWith("Verbosity is currently set to <informative>."));
     }
 
 

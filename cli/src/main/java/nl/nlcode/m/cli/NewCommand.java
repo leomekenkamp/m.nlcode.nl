@@ -3,13 +3,9 @@ package nl.nlcode.m.cli;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.sound.midi.MidiDevice;
-import nl.nlcode.m.engine.MidiDeviceMgr;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IModelTransformer;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 /**
@@ -62,7 +58,7 @@ public class NewCommand extends WithProjectCommand<BaseCommand> {
 
     public void create(String midiInOutType, String name) {
         withSelectedProjects(project -> {
-            MidiInOutCli midiInOutCli = getControlCli().createMidiInOut(midiInOutType, project);
+            MidiInOutCli midiInOutCli = getControlCli().createMidiInOut(midiInOutType, name, project);
             if (name != null) {
                 midiInOutCli.getMidiInOut().setName(name);
             }

@@ -1,6 +1,9 @@
 package nl.nlcode.m.cli;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
 import picocli.CommandLine;
@@ -16,12 +19,11 @@ public class ListCommand extends WithProjectCommand<BaseCommand> implements Runn
     @Override
     public void run() {
         withSelectedProjects(project -> {
-            PrintWriter stdout = getControlCli().stdout();
-            StringBuilder items = new StringBuilder();
-            for (MidiInOut midiInOut : project.getMidiInOutLookup()) {
-                items.append(getControlCli().commandMessage("list.item", midiInOut.getClass().getSimpleName(), midiInOut.getName()));
-            }
-            stdout.print(getControlCli().commandMessage("list", items.toString(), project.getPath()));
+            getControlCli().printList("list", 
+                List.of(project.getPath()), 
+                (Iterable<MidiInOut<?>>) project.getMidiInOutLookup(), 
+                (midiInOut) -> List.of(midiInOut.getHumanTypeName(), midiInOut.getName())
+            );
         });
     }
 }

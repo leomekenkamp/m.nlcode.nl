@@ -26,28 +26,27 @@ public abstract class MidiInOutCli<M extends MidiInOut> implements MidiInOut.Ui 
         return midiInOut;
     }
                 
-    @Deprecated
-    protected void feedback(String key, Object ... params) {
-        getControlCli().commandOutput(key, params);
+    protected void notifyUser(String key, Object ... params) {
+        getControlCli().printMessage(key, params);
     }
     
     @Override
     public void sendingTo(MidiInOut receiver) {
-        feedback("MidiInOutCli.sendingTo", getMidiInOut().getSystemTypeName(), getMidiInOut().getName(), receiver.getSystemTypeName(), receiver.getName());
+        notifyUser("MidiInOutCli.sendingTo", getMidiInOut().getHumanTypeName(), getMidiInOut().getName(), receiver.getHumanTypeName(), receiver.getName());
     }
 
     @Override
     public void nameChanged(String previousName, String currentName) {
         if (previousName == null) {
-            feedback("MidiInOutCli.new", getMidiInOut().getHumanTypeName(), currentName);
+            notifyUser("MidiInOutCli.new", getMidiInOut().getHumanTypeName(), currentName);
         } else {
-            feedback("MidiInOutCli.nameChanged", getMidiInOut().getHumanTypeName(), previousName, currentName);
+            notifyUser("MidiInOutCli.nameChanged", getMidiInOut().getHumanTypeName(), previousName, currentName);
         }
     }
     
     @Override
     public void notSendingTo(MidiInOut receiver) {
-        feedback("MidiInOutCli.notSendingTo", getMidiInOut().getSystemTypeName(), getMidiInOut().getName(), receiver.getSystemTypeName(), receiver.getName());
+        notifyUser("MidiInOutCli.notSendingTo", getMidiInOut().getSystemTypeName(), getMidiInOut().getName(), receiver.getSystemTypeName(), receiver.getName());
     }
     
 }

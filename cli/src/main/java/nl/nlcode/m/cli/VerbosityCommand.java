@@ -16,10 +16,10 @@ public class VerbosityCommand extends ChildCommand<BaseCommand> implements Runna
     @Override
     public void run() {
         if (verbosity == null) {
-            getControlCli().commandOutput("verbosity", getControlCli().getVerbosity().name());
+            getControlCli().printMessage("verbosity", getControlCli().getVerbosity().name());
         } else {
             getControlCli().setVerbosity(verbosity);
-            getControlCli().commandOutput("verbosity.set", verbosity);
+            getControlCli().printMessage("verbosity.set", verbosity);
         }
     }
 

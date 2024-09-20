@@ -1,6 +1,6 @@
 package nl.nlcode.m.cli;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import nl.nlcode.m.engine.MidiInOut;
 import nl.nlcode.m.engine.Project;
@@ -8,7 +8,6 @@ import nl.nlcode.m.linkui.IntUpdater;
 import nl.nlcode.m.linkui.Updater;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
 
@@ -120,16 +119,17 @@ public class MidiInOutCommand<M extends MidiInOut> extends ChildCommand<BaseComm
     }
 
     private void printConnected(boolean reverse) {
-        final Set<MidiInOut> others = reverse ? getMidiInOut().receivingFrom() : getMidiInOut().sendingTo();
-        for (MidiInOut r : others) {
-            getControlCli().stdout().println(r.getName());
-        }
+        getControlCli().printList("MidiInOutCommand.connectedList", 
+                List.of(getMidiInOut().getHumanTypeName(), getMidiInOut().getName()),
+                (Set<MidiInOut<?>>) getMidiInOut().sendingTo(), 
+                (receiver) -> List.of(receiver.getHumanTypeName(), receiver.getName())
+        );
     }
 
     private MidiInOut lookup(Project project, String name) {
         MidiInOut result = project.getMidiInOutLookup().get(name);
         if (result == null) {
-            getControlCli().commandOutput("MidiInOut.name.none", name, project.getPath());
+            getControlCli().printMessage("MidiInOut.name.none", name, project.getPath());
         }
         return result;
     }

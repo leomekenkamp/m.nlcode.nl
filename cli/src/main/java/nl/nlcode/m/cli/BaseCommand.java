@@ -5,7 +5,6 @@ import nl.nlcode.m.engine.Project;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
-import picocli.CommandLine.IModelTransformer;
 import picocli.CommandLine.Model.CommandSpec;
 
 /**

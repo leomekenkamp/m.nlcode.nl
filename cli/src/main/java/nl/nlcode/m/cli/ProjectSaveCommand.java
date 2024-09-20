@@ -16,7 +16,7 @@ public class ProjectSaveCommand extends WithProjectCommand<BaseCommand> implemen
             try {
                 project.save();
             } catch (IOException e){
-                getControlCli().commandOutput("save.error", project.getPath(), e.getClass().getSimpleName(), e.getMessage());
+                getControlCli().printMessage("save.error", project.getPath(), e.getClass().getSimpleName(), e.getMessage());
             }
         });
     }

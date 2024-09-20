@@ -26,25 +26,25 @@ public class ListCommandTest extends CliTest {
         execute("new midiDeviceLink");
         String info = execute("list");
         assertThat(info, startsWith("\"" + pwd() + filename("00") + "\"\n"));
-        assertThat(info, containsString("Lights \"lights_0\""));
-        assertThat(info, containsString("MidiDeviceLink \"midiDeviceLink_0\""));
+        assertThat(info, containsString("lights \"lights_0\""));
+        assertThat(info, containsString("midiDeviceLink \"midiDeviceLink_0\""));
     }
 
     @Test
-    public void list_shows_open_midiInOut_instancesin_other_project() {
+    public void list_shows_open_midiInOut_instances_in_other_project() {
         execute("new lights");
         execute("new midiDeviceLink");
         execute("project new");
         execute("project renum -i 1");
         String listSecondProject = execute("list");
-        assertThat(listSecondProject, startsWith("\"" + pwd() + filename("01") + "\"\n"));
-        assertThat(listSecondProject, not(containsString("Lights \"lights_0\"")));
-        assertThat(listSecondProject, not(containsString("MidiDeviceLink \"midiDeviceLink_0\"")));
+        assertThat(listSecondProject, startsWith("\"" + pwd() + filename("01") + "\""));
+        assertThat(listSecondProject, not(containsString("lights \"lights_0\"")));
+        assertThat(listSecondProject, not(containsString("midiDeviceLink \"midiDeviceLink_0\"")));
         
         String listFirstProject = execute("list --projectId 1");
-        assertThat(listFirstProject, startsWith("\"" + pwd() + filename("00") + "\"\n"));
-        assertThat(listFirstProject, containsString("Lights \"lights_0\""));
-        assertThat(listFirstProject, containsString("MidiDeviceLink \"midiDeviceLink_0\""));
+        assertThat(listFirstProject, startsWith("\"" + pwd() + filename("00") + "\""));
+        assertThat(listFirstProject, containsString("lights \"lights_0\""));
+        assertThat(listFirstProject, containsString("midiDeviceLink \"midiDeviceLink_0\""));
         
     }
 

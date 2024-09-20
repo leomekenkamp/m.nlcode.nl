@@ -35,7 +35,7 @@ public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnabl
     @Command(name = "new", description = "create a new project from scratch")
     public void create() {
         getControlCli().getControl().createProject();
-        getControlCli().commandOutput("new.done");
+        getControlCli().printMessage("new.done");
     }
 
     @Command(name = "list", description = "display list of open projects")
@@ -72,12 +72,12 @@ public class ProjectCommand extends ChildCommand<BaseCommand> implements Runnabl
     @Override
     public void run() {
         if (getProject() == null) {
-            getControlCli().commandOutput("project.none");
+            getControlCli().printMessage("project.none");
         } else {
             PrintWriter stdout = getControlCli().stdout();
             StringBuilder items = new StringBuilder();
             for (MidiInOut midiInOut : getProject().getMidiInOutLookup()) {
-                items.append(getControlCli().commandMessage("project.midiInOut", midiInOut.getClass().getSimpleName(), midiInOut.getName()));
+                items.append(getControlCli().commandMessage("project.midiInOut", midiInOut.getHumanTypeName(), midiInOut.getName()));
             }
             stdout.print(getControlCli().commandMessage("project", items.toString(), getProject().getPath()));
         }

@@ -15,7 +15,7 @@ public class MidiDeviceLinkCli<M extends MidiDeviceLink> extends MidiInOutCli<M>
 
     @Override
     public void midiDeviceChanged() {
-        feedback("MidiDeviceLinkCli.midiDeviceChanged", getMidiInOut().getName(),  MidiDeviceMgr.getDisplayName(getMidiInOut().getMidiDevice()));
+        notifyUser("MidiDeviceLinkCli.midiDeviceChanged", getMidiInOut().getName(),  MidiDeviceMgr.getDisplayName(getMidiInOut().getMidiDevice()));
     }
     
 }

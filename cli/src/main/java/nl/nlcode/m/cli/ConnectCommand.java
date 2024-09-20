@@ -41,7 +41,7 @@ public class ConnectCommand extends ChildCommand<MidiInOutCommand> implements Ru
     private MidiInOut lookup(Project project, String name) {
         MidiInOut result = project.getMidiInOutLookup().get(name);
         if (result == null) {
-            getControlCli().commandOutput("MidiInOut.name.none", name, project.getPath());
+            getControlCli().printMessage("MidiInOut.name.none", name, project.getPath());
         }
         return result;
     }
